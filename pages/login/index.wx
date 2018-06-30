@@ -1,0 +1,89 @@
+<template>
+  <view class="container">
+    <view class="loginMsg" wx:if="{{ loginMsg.status == 500 ? true : false }}">{{ loginMsg.message }}</view>
+    <!-- 需要使用 button 来授权登录 -->
+    <!-- <button class="btnApply" wx:if="{{ canIUse }}" open-type="getUserInfo" bindgetuserinfo="bindGetUserInfo" disabled="{{ loginMsg.status == 500 ? true : false }}" class="weui-btn" type="default">授权登录</button> -->
+    <button class="btnApply" wx:if="{{ canIUse }}" open-type="getUserInfo" bindgetuserinfo="bindGetUserInfo" class="weui-btn" type="default">授权登录</button>
+    <view wx:else>请升级微信版本</view>
+  </view>
+</template>
+
+<script>
+var app = getApp();
+import system from '../../static/utils/system'
+export default {
+  config: {
+    navigationBarTitleText: '登录'
+  },
+  data: {
+    canIUse: wx.canIUse('button.open-type.getUserInfo'),
+    loginMsg:{}
+  },
+  onLoad(options){
+    let that = this;
+    // 登录.....
+    wx.login({
+      success: function(res) {
+        if (res.code) {
+          console.log('code', res)
+          //发起网络请求
+          system.http({
+            url:`wechat/miniapp/login/${res.code}`,
+            param:{},
+            method:"get",
+            scb(res){
+              if (res.data.status == '500') {
+                // system.msgTip({title: '提示', content: res.data.message,scb(){},ccb(){}})
+                console.log("loginsuccess" , res )
+                that.setData({
+                  loginMsg:res.data
+                })
+              } else {
+                system.stateMsg({title: '登录成功',icon: 'success',time: 2000})
+              }
+            },
+            fcb(res){
+              system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
+            }
+          })
+        } else {
+          console.log('登录失败！' + res.errMsg)
+        }
+      }
+    })
+  },
+  bindGetUserInfo(e){
+    console.log( e )
+    var that = this;
+    if('iv' in e.detail){//成功授权
+      wx.setStorage({
+        key:"userMsg",
+        data:e.detail.userInfo,
+        success(){
+          app.globalData.userMsg = e.detail.userInfo;
+          console.log("uu", app.globalData.userMsg )
+          wx.redirectTo({
+            url: `/pages/home/index`
+          })
+        }
+      })
+    }else{
+      system.stateMsg({title:"授权失败, 无法进入群组。", icon:"none",time:1500})
+    }
+  }
+}
+</script>
+
+<style lang="less">
+  .container{
+    padding: 0 15px;
+  }
+  .loginMsg{
+    padding-top:140px;
+    padding-bottom:20px;
+    text-align: center;
+  }
+  .btnApply{
+  
+  }
+</style>

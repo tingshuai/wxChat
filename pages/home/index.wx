@@ -1,0 +1,360 @@
+<template>
+  <view>
+    <ui-fixed-view top="0" left="0" right="0" style="z-index:111;position:relative;">
+      <view class="fixed-view-content">
+          <view class="weui-search-bar">
+              <view class="weui-search-bar__form">
+                  <view class="weui-search-bar__box">
+                      <icon class="weui-icon-search_in-box" type="search" size="14"></icon>
+                      <input type="text" class="weui-search-bar__input" placeholder="搜索" value="{{inputVal}}" focus="{{ inputShowed }}" bindinput="inputTyping" />
+                      <view class="weui-icon-clear" wx:if="{{ inputVal.length > 0 }}" bindtap="clearInput">
+                          <icon type="clear" size="14"></icon>
+                      </view>
+                  </view>
+              </view>
+              <view class="weui-search-bar__cancel-btn" bindtap="clearInput">取消</view>
+          </view>
+      </view>
+    </ui-fixed-view>
+    <!-- 设置内容距离nav-bar高度占位 -->
+    <view style="height:49px"></view>
+    <!-- //右滑菜单.........  -->
+    <view style="z-index:0;">
+      <view class="sample_title" style="background-color:white;border-bottom:1px solid #E5E5E5;" wx:if="{{ list1.length != 0 }}">已加入</view>
+      <!-- <ui-swipe-out style="height:80px;display:block;" bindtap="toChat" operate-width="80" data-item="{{ item }}" data-index="{{index}}" bindchange="changeHandler1" wx:for="{{list1}}" wx:key="{{ index }}">
+          <view slot="content">
+              <ui-row height="80" class="top_tip" border-bottom>
+                  <ui-col width="80" align="center" vertical-align="middle">
+                      <view class="left_icon left_icon1" style="">
+                          <image src="{{ item.icon }}"></image>
+                      </view>
+                  </ui-col>
+                  <ui-col class="text" align="left" vertical-align="middle" space="20">
+                      <view style="width: 100%;">
+                          <ui-row height="30">
+                              <ui-col align="left" vertical-align="middle">
+                                  <text>{{ item.groupName }}</text>
+                              </ui-col>
+                              <ui-col align="right" width="100" vertical-align="middle" space-right="10">
+                                  <text>09-18</text>
+                              </ui-col>
+                          </ui-row>
+                          <view class="txt">{{ item.groupDesc }}</view>
+                      </view>
+                  </ui-col>
+              </ui-row>
+          </view>
+          <view slot="operate">
+              <view class="delete" data-item='{{ item }}' catchtap="exitGroup">退群</view>
+          </view>
+      </ui-swipe-out> -->
+        <ui-accordion bindchange="slide" wx:for="{{ list1 }}" wx:key="{{ index }}" header-height="50">
+            <view slot="header" class="accorHeader">
+                <ui-row height="80" class="top_tip" border-bottom style="padding-right:35px;">
+                  <ui-col width="80" align="center" vertical-align="middle" bindtap="toChat" data-item="{{ item }}">
+                      <view class="left_icon left_icon1" style="">
+                          <image src="{{ item.icon }}"></image>
+                      </view>
+                  </ui-col>
+                  <ui-col class="text" align="left" vertical-align="middle" space="20" bindtap="toChat" data-item="{{ item }}">
+                      <view style="width: 100%;">
+                          <ui-row height="22">
+                              <ui-col align="left" vertical-align="middle">
+                                  <text>{{ item.groupName }}</text>
+                              </ui-col>
+                              <!-- <ui-col align="right" width="100" vertical-align="middle" space-right="10">
+                                  <text>09-18</text>
+                              </ui-col> -->
+                          </ui-row>
+                          <view class="txt">{{ item.groupDesc }}</view>
+                      </view>
+                  </ui-col>
+              </ui-row>
+            </view>
+            <view slot="content" class="accorContent">
+                <ui-row height="70" style="padding-right:0;" class="top_tip" border-bottom wx:for="{{item.children}}" wx:key="indexTow" wx:for-item="itemChidren" wx:for-index="indexTow">
+                  <ui-col space-left="25" width="80" align="center" vertical-align="middle" bindtap="toChat" data-item="{{ itemChidren }}">
+                      <view class="left_icon left_icon1" style="">
+                          <image src="{{ itemChidren.icon }}"></image>
+                      </view>
+                  </ui-col>
+                  <ui-col space-left="25" class="text" align="left" vertical-align="middle" space="20" bindtap="toChat" data-item="{{ itemChidren }}">
+                      <view style="width: 100%;">
+                          <ui-row height="24">
+                              <ui-col align="left" vertical-align="middle">
+                                  <text>{{ itemChidren.groupName }}</text>
+                              </ui-col>
+                              <!-- <ui-col align="right" width="100" vertical-align="middle" space-right="10">
+                                  <text>09-18</text>
+                              </ui-col> -->
+                          </ui-row>
+                          <view class="txt">{{ itemChidren.groupDesc }}</view>
+                      </view>
+                  </ui-col>
+                </ui-row>
+            </view>
+        </ui-accordion>
+    </view>
+
+    <view class="top_tip result_list">
+      <view class="sample_title" wx:if="{{ overList.length != 0 }}" style="border-bottom:1px solid #E5E5E5;">未加入</view>
+      <ui-row height="80" border-bottom border-top wx:for="{{ overList }}" wx:key="index" data-item="{{ item }}" bindtap="toDetailPage" class="listRow">
+          <ui-col space-right="0" vertical-align="middle">
+              <ui-row>
+                  <ui-col width="80" space="20" align="center" vertical-align="middle">
+                    <view class="left_icon left_icon1">
+                        <!-- <ui-icon type="api-access" color="#fff" size="20"></ui-icon> -->
+                        <image src="{{ item.icon }}"></image>
+                    </view>
+                  </ui-col>
+                  <ui-col align="left">
+                    <ui-row height="20">
+                        <ui-col vertical-align="bottom" width="100%">
+                            <text>{{item.groupName}}</text>
+                        </ui-col>
+                    </ui-row>
+                    <ui-row>
+                        <ui-col align="left" width="100%" >
+                            <text class="article">{{ item.groupDesc }}</text>
+                        </ui-col>
+                    </ui-row>
+                  </ui-col>
+              </ui-row>
+          </ui-col>
+          <ui-col class="text" align="right" vertical-align="middle" width="80" space-right="10">
+              <button type="primary" size="20" plain="true" class="btn" catchtap="jionGroup" data-item="{{ item }}" hover-class="touchui-hover"> 加入 </button>
+          </ui-col>
+      </ui-row>
+    </view>
+  </view>
+</template>
+
+<script>
+var app = getApp();
+import system from '../../static/utils/system'
+export default {
+  config: {
+    navigationBarTitleText: '首页',
+    backgroundColor: '#F4F4F4',
+    navigationBarTextStyle: 'black'
+  },
+  data: {
+    isShow:false,
+    inputShowed: false,
+    inputVal: "",
+    list1: [],
+    overList:[],
+    el: 'undefined',
+  },
+  onLoad(option){
+      var that = this;
+      this.requestGroupList('/chat/groups/tree','over');
+    //   this.requestGroupList('/chat/groups/req',"no");
+  },
+  exitGroup(e){
+    let that = this;
+    console.log( e.target.dataset.item )
+    let groupMsg = e.target.dataset.item;
+    system.http({ url:'chat/groups/quit', method:"post",param:{groupId : groupMsg.groupId,openId:app.globalData.openId,} ,scb(res){
+        console.log( res )
+        if ( res.data.status == 200) {
+            system.stateMsg({title:"退群成功",icon:"success",time:1500});
+            setTimeout(() => {
+                wx.reLaunch({
+                    url: `/pages/home/index`
+                })
+            }, 1500);
+        }
+    }})
+  },
+  requestGroupList(search,type){
+    var that = this;
+    wx.request({
+        url: `${app.globalData.httpHost}${search}`, //请求已加入群组或者未加入群组
+        data: {
+            openId: app.globalData.openId,
+            keywords: that.data.inputVal
+        },
+        header: {
+            'content-type': 'application/json' // 默认值
+        },
+        success: function(res) {
+            console.log( "resList" , res )
+            if(type == 'over'){
+                that.setData({
+                    list1:res.data.data.rows
+                });
+            }else if( type == 'no' ){
+                that.setData({
+                    overList:res.data.data.rows
+                });
+            }
+        }
+    })
+  },
+  toChat(event){//跳转到群聊页面.....
+    var item = JSON.stringify( event.currentTarget.dataset.item );
+    wx.navigateTo({
+      url: `/pages/groupChat/index?item=${item}`
+    })
+  },
+  toDetailPage(event){//跳转到群详情页面....
+    var item = JSON.stringify( event.currentTarget.dataset.item );
+    wx.navigateTo({
+      url: `/pages/applyTheGroup/index?item=${item}`
+    })
+  },
+  jionGroup(event){//跳转到入群表单填写页面...
+    var item =  JSON.stringify(event.currentTarget.dataset.item);
+    wx.navigateTo({
+      url: `/pages/fillInApplycation/index?item=${item}`
+    })
+  },
+  starShow () {
+    this.setData({
+      isShow: true,
+    })
+  },
+    //   搜索.....
+  inputTyping: function (e) {
+      this.setData({
+          inputVal: e.detail.value
+      });
+      this.requestGroupList('/chat/groups/tree',"over");
+      this.requestGroupList('/chat/groups/req',"no");
+  },
+  clearInput: function () {
+      this.setData({
+          inputVal: ""
+      });
+      this.requestGroupList('/chat/groups/tree',"over");
+      this.requestGroupList('/chat/groups/req',"no");
+  },
+  changeHandler1 (res) {
+      console.log(this.data.el)
+      let index = res.currentTarget.dataset.index
+      if(this.data.el !== index){
+          if (this.data.el !== 'undefined') {
+              this.data.list1[this.data.el].switcher = 'off'
+          }
+          this.data.list1[index].switcher = 'on'
+          this.setData({
+              list1:this.data.list1
+          })
+          this.data.el = index  
+      }
+  }
+}
+</script>
+
+<style lang="less">
+.btn[type="primary"]{
+    font-family:PingFang-SC-Regular;
+    color:#1aad19 !important;
+    border:1px solid #1aad19 !important;
+    width:52px;
+    height:27px;
+    font-size:12px;
+    text-align:left;
+    line-height:27px;
+}
+.accorContent{
+    // padding-right: 35px;
+}
+.listRow{
+    border-bottom:none;
+}
+.article{
+    font-family:PingFang-SC-Medium;
+    color:rgba(102,102,102,1);
+    font-size: 12px;
+    .mix-text-overflow();
+}
+.content{
+  .mix-flex-center();
+}
+.starContent{
+  padding:50px 50px 0px 50px;
+}
+.buttonContent{
+  padding:50px;
+}
+
+.delete{
+    width: 80px;
+    text-align: center;
+    line-height: 80px;
+    font-size: 14px;
+    color: #fff;
+    background: #f22;
+}
+.top_tip{
+    background-color: #fff;
+    .left_icon{
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color:#FCB300; 
+        text-align: center;
+        line-height: 50px;
+    }
+    .text{
+        .ui-text{
+            font-size: 16px;
+            color: #313338;
+        }
+        .ui-view{
+            color: #9C9FA4;
+            font-size: 12px;
+            .mix-text-overflow();
+        }
+        .txt{
+          font-size:12px;
+          font-family:PingFang-SC-Medium;
+          color:rgba(102,102,102,1);
+          text-align: left;
+        }
+    }
+}
+  .sample_title{
+    font-size: 14px;
+    font-family:PingFang-SC-Medium;
+    color:rgba(102,102,102,1);
+    height: 50px;
+    line-height: 50px;
+    text-indent: 20px;
+   
+  }
+  .fixed-view-content{
+    z-index: 100;
+    
+  }
+
+  .result_list{
+    .left_icon{
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color:#FCB300; 
+        text-align: center;
+        line-height: 50px;
+    }
+    .left_icon2{
+        background-color: #FF7360;
+    }
+    .left_icon3{
+        background-color: #39CCC5;
+    }
+    .text{
+        text{
+            font-size: 16px;
+            color: #313338;
+        }
+        view{
+            color: #9C9FA4;
+            font-size: 12px;
+            .mix-text-overflow();
+        }
+    }
+}
+</style>

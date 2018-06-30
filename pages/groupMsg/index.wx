@@ -1,0 +1,125 @@
+<template>
+  <view class="content" hover-class="none" hover-stop-propagation="true">
+    <!-- 群成员头像 -->
+    <view class="talkItem" hover-class="none" hover-stop-propagation="true">
+        <view width="60" align="left" vertical-align="top" class="mycol" hover-stop-propagation="true" wx:for="{{ groupMsg.groupUsers }}" wx:key="{{index}}" >
+            <view class="left_icon left_icon1">
+                <image src="{{ item.headImgUrl }}"/>
+            </view>
+            <text>{{ item.username }}</text>
+        </view>
+    </view>
+    <ui-row class="groupName">
+      <ui-col vertical-align="middle" space-left="10" align="left" class="txtLeft">群名称</ui-col>
+      <ui-col vertical-align="middle" space-right="10" align="right" class="txtRight">{{ groupMsg.groupName }}</ui-col>
+    </ui-row>
+    <ui-row class="groupDescribe">
+      <ui-col vertical-align="middle" space-left="10" align="left" class="txtLeft">群描述</ui-col>
+      <ui-col vertical-align="middle" space-right="10" align="right" class="txtRight">{{ groupMsg.groupDesc }}</ui-col>
+    </ui-row>
+    <!--退群按钮-->
+    <ui-fixed-view bottom="15" left="0" right="0">
+      <button type="warn" class="fixed_bottom" bindtap="exitGroup">删除并退群</button>
+    </ui-fixed-view>
+  </view>
+</template>
+
+<script>
+  import system from '../../static/utils/system'
+  console.log( system )
+  var app = getApp();
+  export default {
+    config: {
+      navigationBarTitleText: '群信息',
+    },
+    data: {
+      groupMsg:{},
+      userList:[]
+    },
+    onLoad( option ){
+        this.setData({
+            groupMsg:JSON.parse( option.item )
+        })
+        console.log("option.item" , option.item )
+    },
+    exitGroup(){//退群
+        let that = this;
+        system.http({ url:'chat/groups/quit', method:"post",param:{groupId : that.data.groupMsg.groupId,openId:app.globalData.openId,} ,scb(res){
+            console.log( res )
+            if ( res.data.status == 200) {
+                system.stateMsg({title:"退群成功",icon:"success",time:1500});
+                setTimeout(() => {
+                    wx.reLaunch({
+                        url: `/pages/home/index`
+                    })
+                }, 1500);
+            }
+        }})
+    }
+  }
+</script>
+
+<style lang="less">
+ .content{
+    // padding:0px 8px 0px 8px;
+    .groupName,.groupDescribe{
+      background-color:white;
+      height: 40px;
+      margin: 20px 0;
+      .txtLeft{
+        font-size: 14px;
+      }
+      .txtRight{
+        font-size: 12px;
+        color:rgba(153,153,153,1);
+      }
+    }
+    .fixed_bottom{
+      margin:0 20px;
+    }
+    .talkItem{
+      margin:15px 0;
+      padding: 15px 0;
+      text-align: left;
+      justify-content:left;
+      white-space:pre-line;
+      background-color:white;
+
+    }
+    .left_icon{
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color:#FCB300; 
+        text-align: center;
+        line-height: 50px;
+        display: inline-block;
+        >image{
+          border-radius: 7px;
+        }
+        &:active{
+        opacity: 0.8;
+      }
+    }
+    .left_icon2{
+        background-color: #FF7360;
+    }
+    .left_icon3{
+        background-color: #39CCC5;
+    }
+    .mycol{
+      width: 60px;
+      display: inline-block;
+      height: 90px;
+      text-align: center;
+      >text{
+        width: 100%;
+        font-size: 12px;
+        font-family:PingFang-SC-Medium;
+        color:rgba(51,51,51,1);
+        text-align: center;
+        display:block;
+      }
+    }
+}
+</style>

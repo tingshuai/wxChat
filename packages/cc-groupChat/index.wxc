@@ -1,0 +1,195 @@
+<template>
+  <view class="article">
+    <button class="groupMsgBtn" bindtap="groupMsg"> 群信息 </button>
+    <view class="content">
+       <ui-row hover-class="touchui-hover" class="talkItem">
+            <ui-col width="60" align="left" vertical-align="top" class="mycol">
+                <view class="left_icon left_icon1">
+                    <image src="https://t12.baidu.com/it/u=4239869624,2005225806&fm=173&app=25&f=JPEG?w=640&h=434&s=92AAEBA054423EE41A302499030050C0"/>
+                </view>
+            </ui-col>
+            <ui-col class="text" align="left" vertical-align="top" space-left="0" space-right="5">
+                <view style="width: 100%;">
+                    <ui-row height="20">
+                        <ui-col align="left" vertical-align="top">
+                            <view class="userMsg"><text class="name">郭晶晶</text><text decode="true">&nbsp;&nbsp;</text><text class="job">前端工程师</text></view>
+                        </ui-col>
+                    </ui-row>
+                    <view class="talkContent">第37周|总票房8.11亿较上周上涨4.38%，《猩猿崛起》突破票房10亿</view>
+                </view>
+            </ui-col>
+        </ui-row>
+        <ui-row hover-class="touchui-hover" class="talkItem">
+            <ui-col width="60" align="left" vertical-align="top" class="mycol">
+                <view class="left_icon left_icon1">
+                    <image src="https://t12.baidu.com/it/u=4239869624,2005225806&fm=173&app=25&f=JPEG?w=640&h=434&s=92AAEBA054423EE41A302499030050C0"/>
+                </view>
+            </ui-col>
+            <ui-col class="text" align="left" vertical-align="top" space-left="0" space-right="5">
+                <view style="width: 100%;">
+                    <ui-row height="20">
+                        <ui-col align="left" vertical-align="top">
+                            <view class="userMsg"><text class="name">郭晶晶</text><text decode="true">&nbsp;&nbsp;</text><text class="job">前端工程师</text></view>
+                        </ui-col>
+                    </ui-row>
+                    <view class="talkContent">第37周|总票房8.11亿较上周上涨4.38%，《猩猿崛起》突破票房10亿</view>
+                </view>
+            </ui-col>
+        </ui-row>
+    </view>
+
+
+    <ui-fixed-view bottom="0" left="0" right="0">
+            <view class="fixed_bottom" >
+              <ui-row class="rowInputs" height="50" border-top border-bottom>
+                <ui-col width="50" style="font-size:14px;" align="center" vertical-align="middle"><text class="iconfont {{ msgType == 0 ? 'myWx-jianpan' : 'myWx-ai01' }}" bindtap="toggleMsgType"></text></ui-col>
+                <ui-col vertical-align="middle" hidden="{{ msgType == 0 }}"><input cursor-spacing="4" class="myInput"/></ui-col>
+                <ui-col vertical-align="middle" hidden="{{ msgType == 1 }}"><button bindtap="setLoading">按住说话</button></ui-col>
+                <ui-col width="50" style="font-size:14px;" align="center" vertical-align="middle"><text class="iconfont myWx-jia" bindtap="toggleIsHidden"></text></ui-col>
+              </ui-row>
+              <ui-row height="100" class="sentType" hidden="{{ isHidden }}">
+                <ui-col class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-zhaopian"></text></ui-col>
+                <ui-col class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-wenjian1"></text></ui-col>
+              </ui-row>
+            </view>
+          </ui-fixed-view>
+  </view>
+</template>
+<script>
+export default {
+  config:{
+    "component": true,
+    "usingComponents": {}
+  },
+  data: {
+    msg: 'This is a test msg!'
+  },
+  methods: {
+    handleTap () {
+      console.log(this.data.msg)
+    }
+  }
+}
+</script>
+<style lang="less">
+  .mycol,.text{
+    display: flex;
+  }
+  .mycol{
+    justify-content:flex-start;
+  }
+  .text{
+    justify-content:flex-end;
+  }
+  .article{
+    .fixed_bottom{
+      background: #fff;
+      box-shadow: 0 0px 15px 0 #eaeaea;
+      .form_list{
+        background: #FE6A3C;
+        color: #fff;
+        height: 50px;
+        text-align: center;
+        line-height: 50px;
+        font-size: 14px;
+      }
+    }
+    .groupMsgBtn{
+        position: absolute;
+        right: 12px;
+        top: 10px;
+        z-index: 10000;
+        font-size: 14px;
+        border-radius: 12px;
+        border:1px solid #FFEEEEF2;
+        background-color: #FFF7F7FA;
+        &::after{ border: none; }
+        line-height: 24px;
+      }
+  }
+  .content{
+    padding:0px 8px 0px 8px;
+    .talkItem{
+      margin:15px 0;
+    }
+    .left_icon{
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color:#FCB300; 
+        text-align: center;
+        line-height: 50px;
+    }
+    .left_icon2{
+        background-color: #FF7360;
+    }
+    .left_icon3{
+        background-color: #39CCC5;
+    }
+    // .text{
+    //     view{
+    //         color: #9C9FA4;
+    //         font-size: 12px;
+    //         .mix-text-overflow();
+    //     }
+    // }
+    
+    .name,.job{
+      font-family:PingFang-SC-Medium;
+      color:rgba(102,102,102,1);
+      display: inline-block;
+    }
+    .name{
+      font-size: 13px;
+    }
+    .job{
+      font-size: 11px;
+    }
+    .userMsg{
+      vertical-align: top;
+      line-height: 13px;
+    }
+    .talkContent{
+      font-size: 15px;
+      font-family:PingFang-SC-Medium;
+      color:rgba(51,51,51,1);
+      background-color: white;
+      padding: 5px;
+      border-radius: 5px;
+    }
+}
+
+
+  .sentType{
+    justify-content:left;
+    .sentType_col{
+      margin-left: 20px;
+    }
+    .iconfont{
+      font-size:30px;
+      padding:0px 8px;
+      border:1px solid #999999;
+      border-radius: 7px;
+      color: #666666;
+        opacity: 0.8;
+      &:active{
+      }
+    }
+  }
+  .myInput{
+    // background:rgba(255,255,255,1);
+    border-radius:5px;
+    border: 1px solid #999999;
+    height: 30px;
+    text-indent: 10px;
+    padding-left: 5px;
+  }
+  .myWx-ai01 , .myWx-jia ,.myWx-jianpan{
+    font-size: 33px;
+    color: #666666;
+    &:active{
+      opacity: 0.8;
+    }
+  }
+
+</style>

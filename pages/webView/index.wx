@@ -1,0 +1,35 @@
+<template>
+  <view>
+      <web-view src="{{ fileSrc }}"></web-view>
+  </view>
+</template>
+
+<script>
+export default {
+  config: {
+    navigationBarTitleText: ''
+  },
+  data: {
+    fileSrc:''
+  },
+  onLoad(options){
+    this.setData({
+      fileSrc:options.fileUrl
+    })
+    // wx.showModal({
+    //   title: "提示",
+    //   content: options.fileUrl,
+    //   success: function(res) {
+    //     if (res.confirm) {
+    //       console.log('确定')
+    //     } else if (res.cancel) {
+    //       console.log('取消')
+    //     }
+    //   }
+    // })
+  }
+}
+</script>
+
+<style lang="less">
+</style>

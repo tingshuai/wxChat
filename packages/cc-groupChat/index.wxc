@@ -37,22 +37,6 @@
             </ui-col>
         </ui-row>
     </view>
-
-
-    <ui-fixed-view bottom="0" left="0" right="0">
-            <view class="fixed_bottom" >
-              <ui-row class="rowInputs" height="50" border-top border-bottom>
-                <ui-col width="50" style="font-size:14px;" align="center" vertical-align="middle"><text class="iconfont {{ msgType == 0 ? 'myWx-jianpan' : 'myWx-ai01' }}" bindtap="toggleMsgType"></text></ui-col>
-                <ui-col vertical-align="middle" hidden="{{ msgType == 0 }}"><input cursor-spacing="4" class="myInput"/></ui-col>
-                <ui-col vertical-align="middle" hidden="{{ msgType == 1 }}"><button bindtap="setLoading">按住说话</button></ui-col>
-                <ui-col width="50" style="font-size:14px;" align="center" vertical-align="middle"><text class="iconfont myWx-jia" bindtap="toggleIsHidden"></text></ui-col>
-              </ui-row>
-              <ui-row height="100" class="sentType" hidden="{{ isHidden }}">
-                <ui-col class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-zhaopian"></text></ui-col>
-                <ui-col class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-wenjian1"></text></ui-col>
-              </ui-row>
-            </view>
-          </ui-fixed-view>
   </view>
 </template>
 <script>
@@ -158,38 +142,4 @@ export default {
       border-radius: 5px;
     }
 }
-
-
-  .sentType{
-    justify-content:left;
-    .sentType_col{
-      margin-left: 20px;
-    }
-    .iconfont{
-      font-size:30px;
-      padding:0px 8px;
-      border:1px solid #999999;
-      border-radius: 7px;
-      color: #666666;
-        opacity: 0.8;
-      &:active{
-      }
-    }
-  }
-  .myInput{
-    // background:rgba(255,255,255,1);
-    border-radius:5px;
-    border: 1px solid #999999;
-    height: 30px;
-    text-indent: 10px;
-    padding-left: 5px;
-  }
-  .myWx-ai01 , .myWx-jia ,.myWx-jianpan{
-    font-size: 33px;
-    color: #666666;
-    &:active{
-      opacity: 0.8;
-    }
-  }
-
 </style>

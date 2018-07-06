@@ -66,12 +66,12 @@
                                   <text>09-18</text>
                               </ui-col> -->
                           </ui-row>
-                          <view class="txt">{{ item.groupDesc }}</view>
+                          <view class="txt">{{ item.groupDesc ? item.groupDesc : "" }}</view>
                       </view>
                   </ui-col>
               </ui-row>
             </view>
-            <view slot="content" class="accorContent">
+            <view slot="content" class="accorContent" v-if="{{ item.children.length != 0 }}">
                 <ui-row height="70" style="padding-right:0;" class="top_tip" border-bottom wx:for="{{item.children}}" wx:key="indexTow" wx:for-item="itemChidren" wx:for-index="indexTow">
                   <ui-col space-left="25" width="80" align="center" vertical-align="middle" bindtap="toChat" data-item="{{ itemChidren }}">
                       <view class="left_icon left_icon1" style="">
@@ -88,7 +88,7 @@
                                   <text>09-18</text>
                               </ui-col> -->
                           </ui-row>
-                          <view class="txt">{{ itemChidren.groupDesc }}</view>
+                          <view class="txt">{{ item.groupDesc ? item.groupDesc : "" }}</view>
                       </view>
                   </ui-col>
                 </ui-row>

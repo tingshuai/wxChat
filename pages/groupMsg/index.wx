@@ -11,11 +11,11 @@
     </view>
     <ui-row class="groupName">
       <ui-col vertical-align="middle" space-left="10" align="left" class="txtLeft">群名称</ui-col>
-      <ui-col vertical-align="middle" space-right="10" align="right" class="txtRight">{{ groupMsg.groupName }}</ui-col>
+      <ui-col vertical-align="middle" space-right="10" align="right" class="txtRight">{{ groupMsg.groupName ? groupMsg.groupName : '' }}</ui-col>
     </ui-row>
     <ui-row class="groupDescribe">
       <ui-col vertical-align="middle" space-left="10" align="left" class="txtLeft">群描述</ui-col>
-      <ui-col vertical-align="middle" space-right="10" align="right" class="txtRight">{{ groupMsg.groupDesc }}</ui-col>
+      <ui-col vertical-align="middle" space-right="10" align="right" class="txtRight">{{ groupMsg.groupDesc ? groupMsg.groupDesc : '' }}</ui-col>
     </ui-row>
     <!--退群按钮-->
     <ui-fixed-view bottom="15" left="0" right="0">

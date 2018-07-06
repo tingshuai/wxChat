@@ -19,21 +19,22 @@
                               </ui-col>
                           </ui-row>
                           <!--文本类型-->
-                          <text selectable='true' class="talkContent {{ item.status == 1 ? 'readed' : '' }} {{ item.status == 0 ? 'unRead' : '' }}" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 0 }}" style="background-color: {{ sendInputMsg.fromUser == item.fromUser ? '#A0E75A' : 'white' }}">{{ item.content }} </text>
+                          <text selectable='true' class="talkContent {{ item.status == 1 && sendInputMsg.fromUser == item.fromUser ? 'readed' : '' }} {{ item.status == 0 && sendInputMsg.fromUser == item.fromUser ? 'unRead' : '' }}" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 0 }}" style="background-color: {{ sendInputMsg.fromUser == item.fromUser ? '#A0E75A' : 'white' }}">{{ item.content }} </text>
                           <!--图片类型-->
                           <view class="talkContent" wx:if="{{ item.msgType == 1 }}" style="height:100px;background-color:rgba(0,0,0,0);width:40%;"><image mode="aspectFit" data-item="{{item}}" bindtap="previewImage" bind:longpress="openActionsheet" style="height:100%;width:auto" src="{{ item.attachUrl }}"></image></view>
                           <!--语音类型-->
-                          <view class="talkContent" wx:if="{{ item.msgType == 2 }}" style="width:100px;">
-                              <text class="iconfont {{ voice.play }}" style="font-size:16px;text-align:center;"></text>
+                          <view class="talkContent" wx:if="{{ item.msgType == 2 }}" style="width:100px;" data-index="{{ index }}" catchtap="playVoice" data-item="{{item}}">
+                              <!-- <text class="iconfont" style="font-size:16px;text-align:center;background-image:url(./static/img/voice.gif)"></text> -->
+                              <image mode="aspectFit" style="height:20px;width:20px;" src="{{ item.src ? item.src : '../../static/img/voice2.png' }}"></image>
                           </view>
                           <!--视频类型-->
                           <view class="talkContent" wx:if="{{ item.msgType == 3 }}" style="width:90%;">
                               <video style="width:100%;height:117px;" src="{{ item.attachUrl }}" controls></video>
                           </view>
                           <!--文件类型-->
-                          <view class="talkContent" wx:if="{{ item.msgType == 6 }}" style="width:80%;">
+                          <view class="talkContent" wx:if="{{ item.msgType == 6 }}" data-item="{{item}}" style="width:80%;" catchtap="openFile">
                             <ui-row>
-                                <ui-col span="9" align="left" vertical-align="top" data-item="{{item}}" catch:longpress="openActionsheet" catchtap="openFile">
+                                <ui-col span="9" align="left" vertical-align="top" data-item="{{item}}" catch:longpress="openActionsheet">
                                     <view style="font-size:13px;color:#333333;">{{ item.content }}</view>
                                 </ui-col>
                                 <ui-col span="3">
@@ -74,8 +75,9 @@
         </scroll-view>
         <ui-fixed-view top="30%" left="{{ voice.plVoice }}" style="z-index:9999;" wx:if="{{ voice.show }}">
             <view class="fixed-view-content" style="background-color:rgba(0,0,0,0.5);padding:0px 35px 20px 35px;border-radius:7px;">
-              <text wx:if="{{ !voice.iconStop}}" class="iconfont {{ voice.icon }}" style="font-size:100px;color:white;display:block;line-height:140px;height:135px;"></text>
-              <text wx:if="{{ voice.iconStop }}" class="iconfont myWx-huatongshixinjinyong" style="font-size:100px;color:white;display:block;line-height:140px;height:135px;"></text>
+              <!-- <text wx:if="{{ !voice.iconStop}}" class="iconfont {{ voice.icon }}" style="font-size:100px;color:white;display:block;line-height:140px;height:135px;"></text> -->
+              <!-- <text wx:if="{{ voice.iconStop }}" class="iconfont myWx-huatongshixinjinyong" style="font-size:100px;color:white;display:block;line-height:140px;height:135px;"></text> -->
+              <image src="{{ voice.icon }}" style="width:100px;height:100px;"></image>
               <text style="display:block;text-align:center;color:white;background-color:{{ voice.color }}">{{ voice.content }}</text>
             </view>
         </ui-fixed-view>
@@ -93,8 +95,8 @@
                 <ui-col width="50" style="font-size:14px;" align="center" vertical-align="middle" hidden="{{ isInputing }}"><text class="iconfont myWx-jia" bindtap="toggleIsHidden"></text></ui-col>
                 <ui-col width="50" vertical-align="middle" hidden="{{ !isInputing }}" class="sendBtn" space-left="3" space-right="3"><button type="primary" bindtap="sendMsg">发送</button></ui-col>
               </ui-row>
-              <ui-row height="100" class="sentType" hidden="{{ isHidden }}">
-                <ui-col class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-zhaopian" bindtap="chooseFile" data-type="1"></text></ui-col>
+              <ui-row height="100" class="sentType" hidden="{{ isHidden }}" style="text-align:left;">
+                <ui-col style="display:inline-block;float:left;" class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-zhaopian" bindtap="chooseFile" data-type="1"></text></ui-col>
                 <!-- <ui-col class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-wenjian1" bindtap="chooseFile" data-type="6"></text></ui-col> -->
               </ui-row>
             </view>
@@ -107,7 +109,7 @@ import system from '../../static/utils/system'
 var app = getApp();
 // var plugin = requirePlugin("WechatSI")
 // let manager = plugin.getRecordRecognitionManager();
-var recorderManager,wx_timer,wx_timer2,wx_n1=0,wx_n2=1;
+var recorderManager,wx_timer,wx_timer2,wx_n1=0,wx_n2=1,backgroundAudioManager=wx.getBackgroundAudioManager();
 export default {
   config: {
     navigationBarTitleText: '欢迎进入群聊',
@@ -132,9 +134,10 @@ export default {
       chatType:0,//聊天类型0-未知，1-公聊，2-私聊
       groupId:'',//群聊ID....群聊必填..
       attachUrl:'',//附件地址...
-      position:"职业经理人",
+      position:"",
       msgId:'',
-      status:0
+      status:0,
+      src:'../../static/img/voice2.png'//语音消息的图片地址
     },
     userMsg:{},
     theGroupMsg:{},
@@ -142,19 +145,20 @@ export default {
     newHeight:0,
     pageNum:1,
     startPageY:'',
-    longTap:'',
     voice:{
       plVoice:(wx.WIN_WIDTH - 170)/2 + 'px',//发送语音时话筒的距离左侧位置....
       color:'',
       show:false,
       content:'上划取消',
-      icon:'myWx-huatongyinliang0',
+      icon:'../../static/img/record.gif',
       iconStop:false,
-      play:'myWx-play1'//聊天列表中的语音icon
-    }
+      play:'../../static/img/voice2.png'//聊天列表中的语音icon
+    },
+    fileSrc:''//文件在webview中展示的地址
   },
   onLoad(options){
-    let that = this;
+    var that = this;
+    var onFirst = 1;
     this.setData({
       theGroupMsg:JSON.parse (options.item),
       userMsg:app.globalData.userMsg,
@@ -164,8 +168,8 @@ export default {
       ['sendInputMsg.groupId']:JSON.parse (options.item).groupId,
     })
     var socketOpen = false;
-    wx_timer = setInterval( that.go , 100 ,0 ,6);//话筒.....
-    wx_timer2 = setInterval( that.go , 200 ,1, 3);//语音列表
+    // wx_timer = setInterval( that.go , 100 ,0 ,6);//话筒.....
+    // wx_timer2 = setInterval( that.go , 200 ,1, 3);//语音列表
 
 // 连接sockey服务
     wx.connectSocket({
@@ -184,11 +188,21 @@ export default {
     //连接状态
     wx.onSocketOpen(function(res) {
       socketOpen = true;
-      console.log("onSocketOpen:: res ::::" , res )
+      console.log( "onSocketOpen:: res ::::" , res )
     })
     wx.onSocketMessage(function(res) {
       var data = JSON.parse( res.data );
-      // debugger;
+      var chatDataMsgId;
+      if( onFirst == 1 ){
+        that.data.chatData.forEach((val,ii,arr)=>{
+          if(val.msgId){
+            chatDataMsgId = val.msgId;
+          }
+        })
+      }else{
+          chatDataMsgId = data.msgId;
+      }
+      var dataMsg =JSON.stringify( { "cmd" : 3, msgId:chatDataMsgId, "groupId":that.data.theGroupMsg.groupId ,"fromUser":data.fromUser } ) ;
       function set(){
         that.data.chatData.push( data );
         that.setData({
@@ -221,18 +235,20 @@ export default {
         }else{
           set();
         }
-        wx.sendSocketMessage({"data":JSON.stringify({msgId:data.msgId,cmd:'3',groupId:that.data.theGroupMsg.groupId,fromUser:data.fromUser}),
-          success(res){
-            console.log("消息回执成功:::" , res )
-          },
-          fail:function(res){
-            console.log("消息回执错误:::" , res )
-          }
+        wx.sendSocketMessage({"data": dataMsg ,
+          success(res){},
+          fail(res){}
         });
       }else if( data.cmd == 2 ){//系统推送消息.
         set();
+        if( onFirst == 1 ){
+          wx.sendSocketMessage({"data":dataMsg ,
+            success(res){},
+            fail(res){}
+          });
+          onFirst ++ ;
+        }
       }else if( data.cmd == 3 ){//已读消息提醒.....
-        //  debugger;
         that.data.chatData.forEach((val,i,arr)=>{
           val.status = 1; //标识所有消息已读.....
         })
@@ -243,12 +259,14 @@ export default {
     })
   },
   onUnload(e){
-    wx.closeSocket()
+    wx.closeSocket({
+      success(res){},
+      fail(res){}
+    })
   },
   // 发送socket消息
   sendSocketMessage(msg) {
     var that = this;
-    // debugger;
       wx.sendSocketMessage({
         data: msg ,
         success:function(res){
@@ -288,14 +306,10 @@ export default {
     })
   },
   openActionsheet(e){
-    console.log(e.target.dataset.item)
     var that = this;
     var item = e.target.dataset.item;
     var typeCode = e.target.dataset.item.msgType;
     var list = [];
-    this.setData({
-      longTap:item
-    })
     if( item.fromUser == app.globalData.openId ){
         if (typeCode == 0) {//文本类型
           list = ['撤回','提醒查看'];
@@ -316,45 +330,40 @@ export default {
                 system.http({
                   url:'chat/msg/chatRemind',
                   method:'post',
-                  scb(res){},
-                  fcb(res){}
+                  header:{'content-type': 'application/x-www-form-urlencoded'},
+                  param:{
+                    groupId:item.groupId,
+                    fromUserName:item.fromUserName,
+                    headImgUrl:that.data.theGroupMsg.icon,
+                    managerId :that.data.theGroupMsg.managerId,
+                    groupName :that.data.theGroupMsg.groupName
+                  },
+                  scb(res){
+                    system.stateMsg({title:"提醒成功",icon:"success",time:1000})
+                  },
+                  fcb(res){
+                    system.stateMsg({title:"提醒失败",icon:"fail",time:1000})
+                  }
                 })
               }
           }
       });
     }
   },
-  go(n,m){
-      if(m == 6){
-        wx_n1++ ;
-        if( wx_n1 > m ){
-            wx_n1 = n;
-        }
-        this.setData({
-          ['voice.icon']:`myWx-huatongyinliang${wx_n1}`
-        })
-      }else{
-        wx_n2++ ;
-        if( wx_n2 > m ){
-            wx_n2 = n;
-        }
-        this.setData({
-          ['voice.play']:`myWx-play${wx_n2}`
-        })
-      }
-  },
   touchmove(e){
     let that = this;
     let moveY = this.data.startPageY -  e.changedTouches[0].pageY;
     if( moveY > 80 ){
       this.setData({
-        ['voice.color']:"rgba(255,0,0,0.5)",
+        ['voice.icon']:"../../static/img/back_voice.png",
         ['voice.content']:'松手取消发送',
+        ['voice.color']:'rgba(200,0,0,0.6)',
         ['voice.iconStop']:true
       })
     }else{
       this.setData({
-        ['voice.color']:"",
+        ['voice.color']:'',
+        ['voice.icon']:"../../static/img/record.gif",
         ['voice.content']:'上滑取消',
         ['voice.iconStop']:false
       })
@@ -366,13 +375,19 @@ export default {
       recorderManager = wx.getRecorderManager()
       recorderManager.onStart(() => {
         console.log('recorder start')
+        that.setData({
+          ['voice.iconStop']:false
+        })
       })
       recorderManager.onPause(() => {
         console.log('recorder pause')
       })
       recorderManager.onStop((res) => {
         console.log('recorder stop', res)
-        const { tempFilePath } = res
+        if( that.data.voice.iconStop == false ){
+          const { tempFilePath } = res
+          that.upload(res.tempFilePath,2)
+        }
       })
       var music = function(){
         const options = {
@@ -380,7 +395,7 @@ export default {
           sampleRate: 44100,
           numberOfChannels: 1,
           encodeBitRate: 192000,
-          format: 'aac',
+          format: 'mp3',
           frameSize: 50
         }
         recorderManager.start(options)
@@ -403,36 +418,53 @@ export default {
     var pageY = e.changedTouches[0].pageY;
     this.setData({
       startPageY:pageY,
-      ['voice.show']:true,
-      ['voice.iconStop']:false
+      ['voice.show']:true
     })
   },
   touchend(e){
     console.log(e)
     recorderManager.stop()
-    this.setData({['voice.show']:false,['voice.content']:"上滑取消",['voice.color']:''});
+    this.setData({['voice.show']:false,['voice.content']:"上滑取消",['voice.icon']:"../../static/img/record.gif",});
   },
   openFile(e){
-    console.log(e)
     var that = this;
     var item = e.currentTarget.dataset.item;
     const downloadTask = wx.downloadFile({
-      url: `${app.globalData.httpHost}/chat/attach/?attachUrl=${item.attachUrl}&fileName=${item.content}`,
-      success(res) {
+      url: item.attachUrl,
+      success(ress) {
         // 只要服务器有响应数据，就会把响应内容写入文件并进入 success 回调，业务需要自行判断是否下载到了想要的内容
-        // console.log( res )
-        if (res.statusCode === 200) {
-            console.log( res )
-            // wx.playVoice({
-            //   filePath: res.tempFilePath
-            // })
+        function validate(url){//检测文件类型
+          var d = /\.[^\.]+$/.exec(url);
+          return d; 
+        }
+        if (ress.statusCode === 200) {
+            if( validate(ress.tempFilePath) == ".doc" || validate(ress.tempFilePath) == ".xls" || validate(ress.tempFilePath) == ".ppt" || validate(ress.tempFilePath) == ".pdf" || validate(ress.tempFilePath) == ".docx" || validate(ress.tempFilePath) == ".xlsx" || validate(ress.tempFilePath) == ".pptx" ){
+              wx.openDocument({
+                filePath: ress.tempFilePath,
+                success: function (res) {
+                  console.log('打开文档成功',res)
+                },
+                fail(res){
+                  console.log( "打开文档失败" , res)
+                }
+              })
+            }else{//不支持类型.....
+              wx.navigateTo({
+                url: `/pages/webView/index?fileUrl=${item.attachUrl}`,
+                success: function (res) {
+                  console.log('跳转成功',res)
+                },
+                fail(res){
+                  console.log( "跳转失败" , res)
+                }
+              })
+            }
         }
       },
       fail(res){
-
+        console.log( "下载失败" , res )
       }
     })
-    // debugger;
     downloadTask.onProgressUpdate((res) => {
         console.log('下载进度', res.progress)
         console.log('已经下载的数据长度', res.totalBytesWritten)
@@ -443,6 +475,38 @@ export default {
     var that = this;
     console.log( e )
     this.getHistoryMsg( that.data.theGroupMsg.groupId ,10 , that.data.pageNum ,false,e);
+  },
+  // 播放语音....
+  playVoice(e){
+    var that = this;
+    var item = e.currentTarget.dataset.item;
+    var i = e.currentTarget.dataset.index;
+    backgroundAudioManager.stop();
+    // backgroundAudioManager = wx.getBackgroundAudioManager();
+    backgroundAudioManager.src = item.attachUrl; // 设置了 src 之后会自动播放
+    backgroundAudioManager.onPlay(()=>{
+      var d = that.data.chatData[i];
+      this.setData({
+        [`chatData[${i}].src`]:'../../static/img/voice.gif',
+      })
+    })
+    backgroundAudioManager.onPause(()=>{
+      this.setData({
+        [`chatData[${i}].src`]:'../../static/img/voice2.png',
+      })
+    })
+    backgroundAudioManager.onStop(()=>{
+      this.data.chatData.forEach((val,ii ,arr)=>{
+        this.setData({
+          [`chatData[${ii}].src`]:'../../static/img/voice2.png',
+        })
+      })
+    })
+    backgroundAudioManager.onEnded(()=>{
+      this.setData({
+        [`chatData[${i}].src`]:'../../static/img/voice2.png',
+      })
+    })
   },
   // 请求历史记录....
   getHistoryMsg(id,size,num,isFirst,event){
@@ -475,23 +539,6 @@ export default {
   // 上传.....
   upload( tempFilePaths , type){
     var that = this;
-    // debugger;
-    // system.http({
-    //   url:`chat/attach`,
-    //   data:{
-    //     file:tempFilePaths
-    //   },
-    //   method:'post',
-    //   header:{
-    //     'content-type':'multipart/form-data'
-    //   },
-    //   success(res){
-    //     debugger;
-    //   },
-    //   fail(res){
-    //     debugger;
-    //   }
-    // })
     wx.uploadFile({
       url: `${app.globalData.httpHost}/chat/attach`,
       filePath: tempFilePaths,
@@ -499,13 +546,8 @@ export default {
       header:{
         'content-type':'multipart/form-data'
       },
-      // formData:{
-      //   'fileType ': type
-      // },
       success: function(res){
         var data = res.data
-        console.log( "上传" ,  JSON.parse(res.data).data )
-        // debugger;
         that.setData({
           ['sendInputMsg.msgType']:type,
           ['sendInputMsg.attachUrl']:JSON.parse(res.data).data
@@ -526,15 +568,13 @@ export default {
         success: function(res) {
           var tempFilePaths = res.tempFilePaths;
           that.upload( tempFilePaths[0] , type );
-          console.log("上唇------" , res )
         },
         fail(res){
           
         }
       })
-      // debugger;
     }else if( type == 6 ){//file文件
-      console.log( type )
+      // console.log( type )
     }
   },
   // 发送消息
@@ -546,7 +586,7 @@ export default {
   onInput(e){
     if( e.detail.value != '' ){
       var key = 'sendInputMsg.content';
-      this.setData({ isInputing: true ,[key]:e.detail.value});
+      this.setData({ isInputing: true ,[key]:e.detail.value,['sendInputMsg.msgType']:0});
     }else{
        this.setData({ isInputing: false });
     }
@@ -578,28 +618,6 @@ export default {
 </script>
 
 <style lang="less">
-  .readed{
-    &:after{
-      content: '已读';
-      display: inline-block;
-      color:gray;
-      font-size: 10px;
-      position: absolute;
-      bottom: -17px;
-      right: 5px;
-    }
-  }
-  .unRead{
-    &:after{
-      content: '未读';
-      display: inline-block;
-      color:red;
-      font-size: 10px;
-      position: absolute;
-      bottom: -17px;
-      right: 5px;
-    }
-  }
   .inVoice{
     position:absolute;
     display:block;
@@ -635,7 +653,6 @@ export default {
     color: white;
   }
   .sendBtn{
-
     button{
       font-size:12px;
       padding:0;
@@ -743,6 +760,7 @@ export default {
       white-space: pre-line;
       overflow-wrap:break-word;
       text-align: left;
+      min-height: 20px;
     }
 }
 </style>

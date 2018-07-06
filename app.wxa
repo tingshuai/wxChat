@@ -16,12 +16,14 @@ export default {
       'pages/fillInApplycation/index',
       'pages/groupChat/index',
       'pages/groupMsg/index',
+      'pages/webView/index.wx',
+      'pages/webView/index'
     ],
-    "plugins": {
-        // "WechatSI": {
-        //     "version": "0.0.7",
-        //     "provider": "wx069ba97219f66d99"
-        // }
+    plugins: {
+      // "WechatSI": {
+      //     "version": "0.0.7",
+      //     "provider": "wx069ba97219f66d99"
+      // }
     },
     window: {
       backgroundTextStyle: 'dark',
@@ -38,47 +40,47 @@ export default {
     }
   },
   globalData: {
-    socketHost: 'wss://192.168.0.143:8000',
-    httpHost: 'https://192.168.0.143:8000',
+    socketHost: 'wss://www.china-cms.com', // 'wss://192.168.0.143:8000',
+    httpHost: 'https://www.china-cms.com', //'https://192.168.0.143:8000',
     userMsg: {},
     openId: 'oc6Hd1BHJF55T1jIWr2eC2AEYoUQ'
   },
   onLaunch() {
     system.attachInfo()
-    var that = this;
+    var that = this
     // 可以通过 wx.getSetting 先查询一下用户是否授权了 "scope.record" 这个 scope
     wx.getSetting({
-        success(res) {
-            if (res.authSetting['scope.userInfo']) {
-              wx.getUserInfo({
-                timeout:5000,
-                success(res){
-                  console.log( "userInfo", res)
-                  that.globalData.userMsg = res.userInfo;
-                  console.log( that.globalData.userMsg )
-                },
-                fail(res){
-                  console.log( "err", res )
-                }
-              })
-              wx.reLaunch({
-                url: `/pages/home/index`
-              })
+      success(res) {
+        if (res.authSetting['scope.userInfo']) {
+          wx.getUserInfo({
+            timeout: 5000,
+            success(res) {
+              console.log('userInfo', res)
+              that.globalData.userMsg = res.userInfo
+              console.log(that.globalData.userMsg)
+            },
+            fail(res) {
+              console.log('err', res)
             }
-        },
-        fail(res){
-          console.log("查询是否授权失败" , res )
-          // system.stateMsg({title:res})
+          })
+          wx.reLaunch({
+            url: `/pages/home/index`
+          })
         }
+      },
+      fail(res) {
+        console.log('查询是否授权失败', res)
+        // system.stateMsg({title:res})
+      }
     })
   }
 }
 </script>
 
 <style lang="less">
-  @import './static/styles/index.less';
-  @import './static/styles/weui.wxss';
-  page {
-    background-color: #EFEFF4;
-  }
+@import './static/styles/index.less';
+@import './static/styles/weui.wxss';
+page {
+  background-color: #EFEFF4;
+}
 </style>

@@ -45,7 +45,7 @@ export default {
       }
     })
   },
-  // post请求......
+  // http请求......
   http(options={header:{'content-type': 'application/json'}}){
     wx.request({
       url: `${getApp().globalData.httpHost}/${options.url}`,

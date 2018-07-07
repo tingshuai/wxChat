@@ -113,8 +113,8 @@
                             <text>{{item.groupName}}</text>
                         </ui-col>
                     </ui-row>
-                    <ui-row>
-                        <ui-col align="left" width="100%" >
+                    <ui-row style="width:100%">
+                        <ui-col align="left" width="100%">
                             <text class="article">{{ item.groupDesc }}</text>
                         </ui-col>
                     </ui-row>
@@ -232,7 +232,6 @@ export default {
           this.setData({
               overList:[]
           })
-          this.data.overList
       }else{
         this.requestGroupList('/chat/groups/req',"no");
       }
@@ -243,6 +242,9 @@ export default {
           inputVal: ""
       });
       this.requestGroupList('/chat/groups/tree',"over");
+      this.setData({
+          overList:[]
+      })
     //   this.requestGroupList('/chat/groups/req',"no");
   },
   changeHandler1 (res) {
@@ -283,6 +285,7 @@ export default {
     font-family:PingFang-SC-Medium;
     color:rgba(102,102,102,1);
     font-size: 12px;
+    width:100%;
     .mix-text-overflow();
 }
 .content{

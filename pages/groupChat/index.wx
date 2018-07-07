@@ -113,7 +113,7 @@ var recorderManager,wx_timer,wx_timer2,wx_n1=0,wx_n2=1;
 var backgroundAudioManager=wx.getBackgroundAudioManager();
 export default {
   config: {
-    navigationBarTitleText: '欢迎进入群聊',
+    navigationBarTitleText: "欢迎进入群聊",
     usingComponents: {
       'cc-group-chat': '../../packages/cc-groupChat/index'
     }
@@ -159,6 +159,9 @@ export default {
     fileSrc:''//文件在webview中展示的地址
   },
   onLoad(options){
+    wx.setNavigationBarTitle({
+     title: JSON.parse (options.item).groupName,
+    })
     var that = this;
     var onFirst = 1;
     this.setData({

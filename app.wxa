@@ -16,7 +16,6 @@ export default {
       'pages/fillInApplycation/index',
       'pages/groupChat/index',
       'pages/groupMsg/index',
-      'pages/webView/index.wx',
       'pages/webView/index'
     ],
     plugins: {

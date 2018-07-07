@@ -137,6 +137,7 @@ export default {
       attachUrl:'',//附件地址...
       position:"",
       msgId:'',
+      groupName:'',
       status:0,
       src:'../../static/img/voice2.png'//语音消息的图片地址
     },
@@ -164,14 +165,14 @@ export default {
       theGroupMsg:JSON.parse (options.item),
       userMsg:app.globalData.userMsg,
       ['userMsg.userHeadImg']:app.globalData.userMsg.avatarUrl,
+      ['sendInputMsg.groupName']:JSON.parse (options.item).groupName,
       nickName:app.globalData.userMsg.nickName,
-      ['sendInputMsg.fromUserName']:app.globalData.userMsg.nickName,
+      ['sendInputMsg.fromUserName']:app.globalData.userMsgReq.username,
       ['sendInputMsg.fromUser']:app.globalData.openId,
       ['sendInputMsg.groupId']:JSON.parse (options.item).groupId,
       ['sendInputMsg.position']:app.globalData.userMsgReq.position,
       ['sendInputMsg.headImgUrl']:app.globalData.userMsgReq.headImgUrl,
-      ['sendInputMsg.isGroupManager']:app.globalData.userMsgReq.isGroupManager,
-      ['sendInputMsg.username']:app.globalData.userMsgReq.username
+      ['sendInputMsg.isGroupManager']:app.globalData.userMsgReq.isGroupManager
     })
     var socketOpen = false;
     // wx_timer = setInterval( that.go , 100 ,0 ,6);//话筒.....

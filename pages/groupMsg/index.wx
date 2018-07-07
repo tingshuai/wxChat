@@ -39,12 +39,17 @@
         this.setData({
             groupMsg:JSON.parse( option.item )
         })
-        console.log("option.item" , option.item )
     },
     exitGroup(){//退群
         let that = this;
-        system.http({ url:'chat/groups/quit', method:"post",param:{groupId : that.data.groupMsg.groupId,openId:app.globalData.openId,sessionId:app.globalData.sessionId} ,scb(res){
-            console.log( res )
+        // var dataParam =JSON.stringify( {groupId : that.data.groupMsg.groupId,openId:app.globalData.openId,sessionId:app.globalData.sessionId})
+        system.http({ url:'chat/groups/quit', 
+          method:"post",
+          param: {groupId : that.data.groupMsg.groupId,openId:app.globalData.openId,sessionId:app.globalData.sessionId},
+          header: {
+              'content-type': 'application/x-www-form-urlencoded'
+          },
+          scb(res){
             if ( res.data.status == 200) {
                 system.stateMsg({title:"退群成功",icon:"success",time:1500});
                 setTimeout(() => {
@@ -52,8 +57,13 @@
                         url: `/pages/home/index`
                     })
                 }, 1500);
+            }else{
+              system.msgTip({title: '提示',content: res.data.message,scb(){},ccb(){}})
             }
-        }})
+          },fcb(res){
+            system.msgTip({title: '提示',content: res.data.message,scb(){},ccb(){}})
+          }
+        })
     }
   }
 </script>

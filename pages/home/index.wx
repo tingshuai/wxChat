@@ -147,16 +147,25 @@ export default {
     el: 'undefined',
   },
   onLoad(option){
-      var that = this;
-      this.requestGroupList('/chat/groups/tree','over');
-    //   this.requestGroupList('/chat/groups/req',"no");
+    var that = this;
+    wx.getStorage({
+        key: 'openId',
+        success: function(res) {
+            app.globalData.openId = res.data;
+            that.requestGroupList('/chat/groups/tree','over');
+        }
+    })
+    wx.getStorage({
+        key: 'userMsgReq',
+        success: function(res) {
+            app.globalData.userMsgReq = res.data;
+        }
+    })
   },
   exitGroup(e){
     let that = this;
-    console.log( e.target.dataset.item )
     let groupMsg = e.target.dataset.item;
-    system.http({ url:'chat/groups/quit', method:"post",param:{groupId : groupMsg.groupId,openId:app.globalData.openId,} ,scb(res){
-        console.log( res )
+    system.http({ url:'chat/groups/quit', method:"post",param:{groupId : groupMsg.groupId,openId:app.globalData.openId} ,scb(res){
         if ( res.data.status == 200) {
             system.stateMsg({title:"退群成功",icon:"success",time:1500});
             setTimeout(() => {
@@ -179,7 +188,6 @@ export default {
             'content-type': 'application/json' // 默认值
         },
         success: function(res) {
-            console.log( "resList" , res )
             if(type == 'over'){
                 that.setData({
                     list1:res.data.data.rows
@@ -220,15 +228,22 @@ export default {
       this.setData({
           inputVal: e.detail.value
       });
-      this.requestGroupList('/chat/groups/tree',"over");
-      this.requestGroupList('/chat/groups/req',"no");
+      if( e.detail.value == ''){
+          this.setData({
+              overList:[]
+          })
+          this.data.overList
+      }else{
+        this.requestGroupList('/chat/groups/req',"no");
+      }
+    //   this.requestGroupList('/chat/groups/tree',"over");
   },
   clearInput: function () {
       this.setData({
           inputVal: ""
       });
       this.requestGroupList('/chat/groups/tree',"over");
-      this.requestGroupList('/chat/groups/req',"no");
+    //   this.requestGroupList('/chat/groups/req',"no");
   },
   changeHandler1 (res) {
       console.log(this.data.el)
@@ -313,6 +328,7 @@ export default {
           font-family:PingFang-SC-Medium;
           color:rgba(102,102,102,1);
           text-align: left;
+          .mix-text-overflow();
         }
     }
 }

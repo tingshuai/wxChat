@@ -44,7 +44,7 @@
     },
     exitGroup(){//退群
         let that = this;
-        system.http({ url:'chat/groups/quit', method:"post",param:{groupId : that.data.groupMsg.groupId,openId:app.globalData.openId,} ,scb(res){
+        system.http({ url:'chat/groups/quit', method:"post",param:{groupId : that.data.groupMsg.groupId,openId:app.globalData.openId,sessionId:app.globalData.sessionId} ,scb(res){
             console.log( res )
             if ( res.data.status == 200) {
                 system.stateMsg({title:"退群成功",icon:"success",time:1500});

@@ -1,4 +1,3 @@
-
 export default {
   attachInfo () {
     let res = wx.getSystemInfoSync()

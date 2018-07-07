@@ -124,7 +124,6 @@ var app = getApp();
       var obj = that.data.validate;
         var promise = new Promise(function(resolve){
             Object.keys(obj).forEach(function(key){
-                console.log("isLegal" , obj[key].isLegal )
                 if(obj[key].isLegal == false){
                     dis = true;
                 }
@@ -132,7 +131,6 @@ var app = getApp();
             resolve(dis);
         });
         promise.then(function(value){
-            console.log(value);
             that.setData({
                 disabled:dis
             })
@@ -173,7 +171,7 @@ var app = getApp();
         this.initValidate();
     },
     blur(e){
-        console.log(e)
+    
     },
     formSubmit: function(e) {
       // 创建实例对象
@@ -186,7 +184,6 @@ var app = getApp();
                  'content-type': 'application/x-www-form-urlencoded'
             },
             success: function(res) {
-                console.log("提交返回",res.data)
                 if( res.data.status == 200 ){
                     wx.showToast({
                         title: '加入成功',
@@ -212,9 +209,7 @@ var app = getApp();
             }
         })
     },
-    formReset: function() {
-      console.log('form发生了reset事件')
-    }
+    formReset: function() {}
   }
 </script>
 

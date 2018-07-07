@@ -1,10 +1,10 @@
 <template>
   <view class="container">
-    <image style="height:110px; background-color: #eeeeee;margin:20% 0 5% 0" mode="aspectFit" src="https://www.china-cms.com/images/icon_chat.png"></image>
+    <image style="height:110px; background-color: #eeeeee;margin:20% 0 5% 0" mode="aspectFit" src="{{ wxImg }}"></image>
     <view class="loginMsg" wx:if="{{ loginMsg.status == 500 ? true : false }}">{{ loginMsg.message }}</view>
     <!-- 需要使用 button 来授权登录 -->
-    <button class="btnApply" wx:if="{{ canIUse }}" open-type="getUserInfo" bindgetuserinfo="bindGetUserInfo" disabled="{{ loginMsg.status == 500 ? true : false }}" class="weui-btn" type="default">授权登录</button>
-    <!-- <button class="btnApply" wx:if="{{ canIUse }}" open-type="getUserInfo" bindgetuserinfo="bindGetUserInfo" class="weui-btn" type="default">授权登录</button> -->
+    <button class="btnApply" wx:if="{{ canIUse }}" open-type="getUserInfo" bindgetuserinfo="bindGetUserInfo" disabled="{{ loginMsg.status == 500 ? true : false }}" class="weui-btn" type="default" style="margin-top:{{ loginMsg.status != 500 ? '30%' : ''}}">授权登录</button>
+    <!-- <button class="btnApply" wx:if="{{ canIUse }}" open-type="getUserInfo" bindgetuserinfo="bindGetUserInfo" class="weui-btn" type="default" style="margin-top:{{ loginMsg.status != 500 ? '30%' : ''}}">授权登录</button> -->
     <view wx:else>请升级微信版本</view>
     <!-- <cc-group-chat></cc-group-chat> -->
   </view>
@@ -22,16 +22,23 @@ export default {
   },
   data: {
     canIUse: wx.canIUse('button.open-type.getUserInfo'),
-    loginMsg:{}
+    loginMsg:{},
+    wxImg:''
   },
   onLoad(options){
-    console.log("99999", options )
     let that = this;
+    wx.getStorage({
+      key:"wxImg",
+      success(res){
+        that.setData({
+          wxImg:res.data
+        })
+      }
+    })
     // 登录.....
     wx.login({
       success: function(res) {
         if (res.code) {
-          console.log('code', res)
           //发起网络请求
           system.http({
             url:`wechat/miniapp/login/${res.code}`,
@@ -40,12 +47,12 @@ export default {
             scb(res){
               if (res.data.status == '500') {
                 // system.msgTip({title: '提示', content: res.data.message,scb(){},ccb(){}})
-                console.log("loginsuccess" , res )
                 that.setData({
                   loginMsg:res.data
                 })
               } else {
                 system.stateMsg({title: '登录成功',icon: 'success',time: 2000})
+                app.globalData.sessionId = res.data.data.sessionId;
               }
             },
             fcb(res){
@@ -53,21 +60,48 @@ export default {
             }
           })
         } else {
-          console.log('登录失败！' + res.errMsg)
+          system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
         }
       }
     })
   },
   bindGetUserInfo(e){
-    console.log( e )
     var that = this;
+    system.http({
+      url:`wechat/miniapp/getOpenId`,
+      header:{'content-type': 'application/json',"sessionId":app.globalData.sessionId},
+      param:{
+        encryptedData:e.detail.encryptedData,
+        ivStr:e.detail.iv
+      },
+      method:"get",
+      scb(res){
+        if (res.data.status == '500') {
+          system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
+        } else if( res.data.status == '200' ) {
+          system.stateMsg({title: '登录成功',icon: 'success',time: 2000})
+          app.globalData.openId= res.data.data.openId;
+          app.globalData.userMsgReq= res.data.data;
+          wx.setStorage({
+            key:"openId",
+            data:res.data.data.openId
+          })
+          wx.setStorage({
+            key:"userMsgReq",
+            data:res.data.data
+          })
+        }
+      },
+      fcb(res){
+        system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
+      }
+    })
     if('iv' in e.detail){//成功授权
       wx.setStorage({
         key:"userMsg",
         data:e.detail.userInfo,
         success(){
           app.globalData.userMsg = e.detail.userInfo;
-          console.log("uu", app.globalData.userMsg )
           wx.redirectTo({
             url: `/pages/home/index`
           })

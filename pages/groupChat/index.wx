@@ -109,7 +109,8 @@ import system from '../../static/utils/system'
 var app = getApp();
 // var plugin = requirePlugin("WechatSI")
 // let manager = plugin.getRecordRecognitionManager();
-var recorderManager,wx_timer,wx_timer2,wx_n1=0,wx_n2=1,backgroundAudioManager=wx.getBackgroundAudioManager();
+var recorderManager,wx_timer,wx_timer2,wx_n1=0,wx_n2=1;
+var backgroundAudioManager=wx.getBackgroundAudioManager();
 export default {
   config: {
     navigationBarTitleText: '欢迎进入群聊',
@@ -165,7 +166,12 @@ export default {
       ['userMsg.userHeadImg']:app.globalData.userMsg.avatarUrl,
       nickName:app.globalData.userMsg.nickName,
       ['sendInputMsg.fromUserName']:app.globalData.userMsg.nickName,
+      ['sendInputMsg.fromUser']:app.globalData.openId,
       ['sendInputMsg.groupId']:JSON.parse (options.item).groupId,
+      ['sendInputMsg.position']:app.globalData.userMsgReq.position,
+      ['sendInputMsg.headImgUrl']:app.globalData.userMsgReq.headImgUrl,
+      ['sendInputMsg.isGroupManager']:app.globalData.userMsgReq.isGroupManager,
+      ['sendInputMsg.username']:app.globalData.userMsgReq.username
     })
     var socketOpen = false;
     // wx_timer = setInterval( that.go , 100 ,0 ,6);//话筒.....
@@ -182,13 +188,12 @@ export default {
         that.getHistoryMsg(that.data.theGroupMsg.groupId, 10 , that.data.pageNum,true);
       },
       fail:function(msg){
-        console.log("connectSocket---error--msg::" , msg )
+        system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
       }
     })
     //连接状态
     wx.onSocketOpen(function(res) {
       socketOpen = true;
-      console.log( "onSocketOpen:: res ::::" , res )
     })
     wx.onSocketMessage(function(res) {
       var data = JSON.parse( res.data );
@@ -269,28 +274,19 @@ export default {
     var that = this;
       wx.sendSocketMessage({
         data: msg ,
-        success:function(res){
-          console.log( "sendSocketMessage:: success-----res ::::" , res )
-        },
-        fail:function(res){
-          console.log( "sendSocketMessage:: error-----res ::::" , res )
-        }
+        success(res){},
+        fail(res){}
       })
   },
   sendReadedReceipt(){//发送已读消息回执....
     this.data.chatData.forEach((val ,i ,arr)=>{
       if( val.status == 0 ){//如果有消息未读.....
         wx.sendSocketMessage({"data":JSON.stringify({msgId:val.msgId,cmd:'3',groupId:that.data.theGroupMsg.groupId,fromUser:val.fromUser}),
-          success(res){
-            console.log("已读消息回执成功:::" , res )
-          },
-          fail:function(res){
-            console.log("已读消息回执错误:::" , res )
-          }
+          success(res){},
+          fail(res){}
         });
       }
     })
-    console.log( this.data.chatData )
   },
   previewImage: function(e){//图片预览.....
     var imgUrl = e.target.dataset.item.attachUrl;
@@ -336,7 +332,8 @@ export default {
                     fromUserName:item.fromUserName,
                     headImgUrl:that.data.theGroupMsg.icon,
                     managerId :that.data.theGroupMsg.managerId,
-                    groupName :that.data.theGroupMsg.groupName
+                    groupName :that.data.theGroupMsg.groupName,
+                    sessionId:app.globalData.sessionId
                   },
                   scb(res){
                     system.stateMsg({title:"提醒成功",icon:"success",time:1000})
@@ -370,20 +367,15 @@ export default {
     }
   },
   touchstart(e){
-      console.log(e)
       var that = this;
       recorderManager = wx.getRecorderManager()
       recorderManager.onStart(() => {
-        console.log('recorder start')
         that.setData({
           ['voice.iconStop']:false
         })
       })
-      recorderManager.onPause(() => {
-        console.log('recorder pause')
-      })
+      recorderManager.onPause(() => {})
       recorderManager.onStop((res) => {
-        console.log('recorder stop', res)
         if( that.data.voice.iconStop == false ){
           const { tempFilePath } = res
           that.upload(res.tempFilePath,2)
@@ -422,7 +414,6 @@ export default {
     })
   },
   touchend(e){
-    console.log(e)
     recorderManager.stop()
     this.setData({['voice.show']:false,['voice.content']:"上滑取消",['voice.icon']:"../../static/img/record.gif",});
   },
@@ -441,39 +432,26 @@ export default {
             if( validate(ress.tempFilePath) == ".doc" || validate(ress.tempFilePath) == ".xls" || validate(ress.tempFilePath) == ".ppt" || validate(ress.tempFilePath) == ".pdf" || validate(ress.tempFilePath) == ".docx" || validate(ress.tempFilePath) == ".xlsx" || validate(ress.tempFilePath) == ".pptx" ){
               wx.openDocument({
                 filePath: ress.tempFilePath,
-                success: function (res) {
-                  console.log('打开文档成功',res)
-                },
-                fail(res){
-                  console.log( "打开文档失败" , res)
-                }
+                success(res) {},
+                fail(res){}
               })
             }else{//不支持类型.....
               wx.navigateTo({
                 url: `/pages/webView/index?fileUrl=${item.attachUrl}`,
-                success: function (res) {
-                  console.log('跳转成功',res)
-                },
-                fail(res){
-                  console.log( "跳转失败" , res)
-                }
+                success(res) {},
+                fail(res){}
               })
             }
         }
       },
       fail(res){
-        console.log( "下载失败" , res )
+        system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
       }
     })
-    downloadTask.onProgressUpdate((res) => {
-        console.log('下载进度', res.progress)
-        console.log('已经下载的数据长度', res.totalBytesWritten)
-        console.log('预期需要下载的数据总长度', res.totalBytesExpectedToWrite)
-    })
+    downloadTask.onProgressUpdate((res) => {})
   },
   bindscrolltoupper(e){
     var that = this;
-    console.log( e )
     this.getHistoryMsg( that.data.theGroupMsg.groupId ,10 , that.data.pageNum ,false,e);
   },
   // 播放语音....
@@ -482,8 +460,13 @@ export default {
     var item = e.currentTarget.dataset.item;
     var i = e.currentTarget.dataset.index;
     backgroundAudioManager.stop();
+    backgroundAudioManager.title = '此时此刻'
+    backgroundAudioManager.epname = '此时此刻'
+    backgroundAudioManager.singer = '许巍'
+    backgroundAudioManager.coverImgUrl = 'http://y.gtimg.cn/music/photo_new/T002R300x300M000003rsKF44GyaSk.jpg?max_age=2592000'
     // backgroundAudioManager = wx.getBackgroundAudioManager();
     backgroundAudioManager.src = item.attachUrl; // 设置了 src 之后会自动播放
+    backgroundAudioManager.paused = false;
     backgroundAudioManager.onPlay(()=>{
       var d = that.data.chatData[i];
       this.setData({
@@ -516,7 +499,8 @@ export default {
       data: {
          groupId : id ,//群ID
          pageSize : size,//一页几条
-         pageNum :num//第几页
+         pageNum :num,//第几页
+         sessionId:app.globalData.sessionId
       },
       success: function(res) {
         var oldList = that.data.chatData.length;
@@ -525,7 +509,6 @@ export default {
           chatData:that.data.chatData,
           pageNum:++that.data.pageNum
         })
-        console.log( "chat.data.chatData" ,JSON.stringify( that.data.chatData )  )
         var newList = that.data.chatData.length;
         if(isFirst){
           that.setData({scrollTop:10000})
@@ -555,7 +538,7 @@ export default {
         that.sendMsg()
       },
       fail(res){
-        console.log( "上传失败",res)
+        system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
       }
     })
   },
@@ -574,7 +557,7 @@ export default {
         }
       })
     }else if( type == 6 ){//file文件
-      // console.log( type )
+     
     }
   },
   // 发送消息

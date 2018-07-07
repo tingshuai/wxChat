@@ -9,13 +9,13 @@
             <text>{{ item.username }}</text>
         </view>
     </view>
-    <ui-row class="groupName">
+    <ui-row class="groupName" vertical-align="middle">
       <ui-col vertical-align="middle" space-left="10" align="left" class="txtLeft">群名称</ui-col>
       <ui-col vertical-align="middle" space-right="10" align="right" class="txtRight">{{ groupMsg.groupName ? groupMsg.groupName : '' }}</ui-col>
     </ui-row>
     <ui-row class="groupDescribe">
-      <ui-col vertical-align="middle" space-left="10" align="left" class="txtLeft">群描述</ui-col>
-      <ui-col vertical-align="middle" space-right="10" align="right" class="txtRight">{{ groupMsg.groupDesc ? groupMsg.groupDesc : '' }}</ui-col>
+      <ui-col vertical-align="middle" space-left="10" align="left" class="txtLeft" span="2">群描述</ui-col>
+      <ui-col vertical-align="middle" space-right="10" align="right" span="10" class="txtRight">{{ groupMsg.groupDesc ? groupMsg.groupDesc : '' }}</ui-col>
     </ui-row>
     <!--退群按钮-->
     <ui-fixed-view bottom="15" left="0" right="0">
@@ -26,7 +26,6 @@
 
 <script>
   import system from '../../static/utils/system'
-  console.log( system )
   var app = getApp();
   export default {
     config: {
@@ -68,12 +67,24 @@
       margin: 20px 0;
       .txtLeft{
         font-size: 14px;
+        width:30px;
         .mix-text-overflow();
       }
       .txtRight{
         font-size: 12px;
+        text-align: left;
+        padding-left: 4px;
         color:rgba(153,153,153,1);
-        .mix-text-overflow();
+      }
+    }
+    .groupDescribe{
+      height: auto;
+      min-height: 40px;
+      .txtLeft{
+        top:4px;
+      }
+      .txtRight{
+        padding:5px 0;
       }
     }
     .fixed_bottom{

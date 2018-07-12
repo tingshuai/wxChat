@@ -142,6 +142,7 @@
         color:rgba(51,51,51,1);
         text-align: center;
         display:block;
+        .mix-text-overflow();
       }
     }
 }

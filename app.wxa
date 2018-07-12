@@ -69,7 +69,14 @@ export default {
     // 可以通过 wx.getSetting 先查询一下用户是否授权了 "scope.record" 这个 scope
     wx.getSetting({
       success(res) {
-        if (res.authSetting['scope.userInfo']) {
+        var loginMsg = {};
+        wx.getStorage({
+          key:"loginMsg",
+          success(res){
+            loginMsg = res.data;
+          }
+        })
+        if (res.authSetting['scope.userInfo'] && loginMsg.code == 200) {
           wx.getUserInfo({
             timeout: 5000,
             success(res) {
@@ -89,6 +96,9 @@ export default {
         // system.stateMsg({title:res})
       }
     })
+  },
+    onHide: function() {
+      
   }
 }
 </script>

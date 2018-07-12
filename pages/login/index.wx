@@ -3,7 +3,7 @@
     <image style="height:110px; background-color: #eeeeee;margin:20% 0 5% 0" mode="aspectFit" src="{{ wxImg }}"></image>
     <view class="loginMsg" wx:if="{{ loginMsg.status == 500 ? true : false }}">{{ loginMsg.message }}</view>
     <!-- 需要使用 button 来授权登录 -->
-    <button class="btnApply" wx:if="{{ canIUse }}" open-type="getUserInfo" bindgetuserinfo="bindGetUserInfo" disabled="{{ loginMsg.status == 500 ? true : false }}" class="weui-btn" type="default" style="margin-top:{{ loginMsg.status != 500 ? '30%' : ''}}">授权登录</button>
+    <button disabled="{{ loading }}" loading="{{loading}}" class="btnApply" wx:if="{{ canIUse }}" open-type="getUserInfo" bindgetuserinfo="bindGetUserInfo" disabled="{{ loginMsg.status == 500 ? true : false }}" class="weui-btn" type="default" style="margin-top:{{ loginMsg.status != 500 ? '30%' : ''}}">授权登录</button>
     <!-- <button class="btnApply" wx:if="{{ canIUse }}" open-type="getUserInfo" bindgetuserinfo="bindGetUserInfo" class="weui-btn" type="default" style="margin-top:{{ loginMsg.status != 500 ? '30%' : ''}}">授权登录</button> -->
     <view wx:else>请升级微信版本</view>
     <!-- <cc-group-chat></cc-group-chat> -->
@@ -23,7 +23,8 @@ export default {
   data: {
     canIUse: wx.canIUse('button.open-type.getUserInfo'),
     loginMsg:{},
-    wxImg:''
+    wxImg:'',
+    loading:false
   },
   onLoad(options){
     let that = this;
@@ -51,7 +52,6 @@ export default {
                   loginMsg:res.data
                 })
               } else {
-                system.stateMsg({title: '登录成功',icon: 'success',time: 2000})
                 app.globalData.sessionId = res.data.data.sessionId;
               }
             },
@@ -65,8 +65,15 @@ export default {
       }
     })
   },
+  // formSubmit(e) {
+  //   console.log('form发生了submit事件，携带数据为：', e)
+  //   debugger;
+  // },
   bindGetUserInfo(e){
     var that = this;
+    this.setData({
+      "loading":true
+    })
     system.http({
       url:`wechat/miniapp/getOpenId`,
       header:{'content-type': 'application/json',"sessionId":app.globalData.sessionId},
@@ -77,11 +84,20 @@ export default {
       method:"get",
       scb(res){
         if (res.data.status == '500') {
-          system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
+          // system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
+          // system.stateMsg({title:"授权失败, 无法进入群组。", icon:"none",time:1500})
+          that.setData({
+            'loginMsg':res.data
+          })
+          wx.setStorage({
+            key:"loginMsg",
+            data:res.data
+          })
         } else if( res.data.status == '200' ) {
-          system.stateMsg({title: '登录成功',icon: 'success',time: 2000})
+          // system.stateMsg({title: '登录成功',icon: 'success',time: 2000})
           app.globalData.openId= res.data.data.openId;
           app.globalData.userMsgReq= res.data.data;
+          // that.formSubmit();
           wx.setStorage({
             key:"openId",
             data:res.data.data.openId
@@ -90,26 +106,39 @@ export default {
             key:"userMsgReq",
             data:res.data.data
           })
+          wx.setStorage({
+            key:"userMsg",
+            data:e.detail.userInfo,
+            success(){
+              app.globalData.userMsg = e.detail.userInfo;
+              wx.redirectTo({
+                url: `/pages/home/index`
+              })
+              that.setData({
+                "loading":false
+              })
+            }
+          })
         }
       },
       fcb(res){
         system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
       }
     })
-    if('iv' in e.detail){//成功授权
-      wx.setStorage({
-        key:"userMsg",
-        data:e.detail.userInfo,
-        success(){
-          app.globalData.userMsg = e.detail.userInfo;
-          wx.redirectTo({
-            url: `/pages/home/index`
-          })
-        }
-      })
-    }else{
-      system.stateMsg({title:"授权失败, 无法进入群组。", icon:"none",time:1500})
-    }
+    // if('iv' in e.detail){//成功授权
+    //   wx.setStorage({
+    //     key:"userMsg",
+    //     data:e.detail.userInfo,
+    //     success(){
+    //       app.globalData.userMsg = e.detail.userInfo;
+    //       wx.redirectTo({
+    //         url: `/pages/home/index`
+    //       })
+    //     }
+    //   })
+    // }else{
+    //   system.stateMsg({title:"授权失败, 无法进入群组。", icon:"none",time:1500})
+    // }
   }
 }
 </script>

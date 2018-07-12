@@ -1,56 +1,33 @@
 <template>
   <view class="container">
-    <ui-fixed-view top="0" left="0" right="0" style="z-index:111;position:relative;">
+    <!-- <ui-fixed-view top="0" left="0" right="0" style="position:relative;"> -->
       <view class="fixed-view-content">
           <view class="weui-search-bar">
               <view class="weui-search-bar__form">
                   <view class="weui-search-bar__box">
-                      <icon class="weui-icon-search_in-box" type="search" size="14"></icon>
-                      <input type="text" class="weui-search-bar__input" placeholder="搜索" value="{{inputVal}}" focus="{{ inputShowed }}" bindinput="inputTyping" />
+                      <icon class="weui-icon-search_in-box" type="search" size="14" wx:if="{{ !showInput }}"></icon>
+                      <input type="text" class="weui-search-bar__input" placeholder="{{showInput ? '' :  '搜索'}}" value="{{inputVal}}" focus="{{ inputShowed }}" bindinput="inputTyping" />
                       <view class="weui-icon-clear" wx:if="{{ inputVal.length > 0 }}" bindtap="clearInput">
                           <icon type="clear" size="14"></icon>
                       </view>
                   </view>
               </view>
-              <view class="weui-search-bar__cancel-btn" bindtap="clearInput">取消</view>
+              <view class="weui-search-bar__cancel-btn" bindtap="clearInput" wx:if="{{ inputVal.length > 0 }}">取消</view>
+              <label class="weui-search-bar__label" bindtap="showInput" wx:if="{{ showInput }}" style="position:absolute;top:8px;background-color:rgba(0,0,0,0);">
+                  <icon class="weui-icon-search" type="search" size="14" style="top:2px;position:relative;"></icon>
+                  <view class="weui-search-bar__text">搜索</view>
+              </label>
           </view>
       </view>
-    </ui-fixed-view>
+    <!-- </ui-fixed-view> -->
     <!-- 设置内容距离nav-bar高度占位 -->
-    <view style="height:49px"></view>
+    <!-- <view style="height:49px"></view> -->
     <view class="weui-loadmore weui-loadmore_line" wx:if="{{ list1.length == 0 && overList.length == 0 }}">
         <view class="weui-loadmore__tips weui-loadmore__tips_in-line" style="background-color:none;">暂无数据 可尝试下拉刷新</view>
     </view>
     <!-- //右滑菜单.........  -->
     <view style="z-index:0;">
       <view class="sample_title" style="background-color:white;border-bottom:1px solid #E5E5E5;" wx:if="{{ list1.length != 0 }}">已加入</view>
-      <!-- <ui-swipe-out style="height:80px;display:block;" bindtap="toChat" operate-width="80" data-item="{{ item }}" data-index="{{index}}" bindchange="changeHandler1" wx:for="{{list1}}" wx:key="{{ index }}">
-          <view slot="content">
-              <ui-row height="80" class="top_tip" border-bottom>
-                  <ui-col width="80" align="center" vertical-align="middle">
-                      <view class="left_icon left_icon1" style="">
-                          <image src="{{ item.icon }}"></image>
-                      </view>
-                  </ui-col>
-                  <ui-col class="text" align="left" vertical-align="middle" space="20">
-                      <view style="width: 100%;">
-                          <ui-row height="30">
-                              <ui-col align="left" vertical-align="middle">
-                                  <text>{{ item.groupName }}</text>
-                              </ui-col>
-                              <ui-col align="right" width="100" vertical-align="middle" space-right="10">
-                                  <text>09-18</text>
-                              </ui-col>
-                          </ui-row>
-                          <view class="txt">{{ item.groupDesc }}</view>
-                      </view>
-                  </ui-col>
-              </ui-row>
-          </view>
-          <view slot="operate">
-              <view class="delete" data-item='{{ item }}' catchtap="exitGroup">退群</view>
-          </view>
-      </ui-swipe-out> -->
         <ui-accordion bindchange="slide" wx:for="{{ list1 }}" wx:key="{{ index }}" header-height="50">
             <view slot="header" class="accorHeader">
                 <ui-row height="80" class="top_tip" border-bottom style="padding-right:35px;">
@@ -149,6 +126,7 @@ export default {
     list1: [],
     overList:[],
     el: 'undefined',
+    showInput:true
   },
   onLoad(option){
     var that = this;
@@ -165,6 +143,13 @@ export default {
             app.globalData.userMsgReq = res.data;
         }
     })
+  },
+  showInput(){
+      var that = this;
+      this.setData({
+          'showInput':!that.data.showInput,
+          'inputShowed':true
+      })
   },
   exitGroup(e){
     let that = this;
@@ -253,7 +238,8 @@ export default {
   },
   clearInput: function () {
       this.setData({
-          inputVal: ""
+          inputVal: "",
+          showInput:true
       });
       this.requestGroupList('/chat/groups/tree',"over");
       this.setData({

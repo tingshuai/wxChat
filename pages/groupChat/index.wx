@@ -21,11 +21,12 @@
                           <!--文本类型-->
                           <text selectable='true' class="talkContent {{ item.status == 1 && sendInputMsg.fromUser == item.fromUser ? 'readed' : '' }} {{ item.status == 0 && sendInputMsg.fromUser == item.fromUser ? 'unRead' : '' }}" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 0 }}" style="background-color: {{ sendInputMsg.fromUser == item.fromUser ? '#A0E75A' : 'white' }}">{{ item.content }} </text>
                           <!--图片类型-->
-                          <view class="talkContent" wx:if="{{ item.msgType == 1 }}" style="height:100px;background-color:rgba(0,0,0,0);width:40%;"><image mode="aspectFit" data-item="{{item}}" bindtap="previewImage" bind:longpress="openActionsheet" style="height:100%;width:auto" src="{{ item.attachUrl }}"></image></view>
+                          <view class="talkContent" wx:if="{{ item.msgType == 1 }}" style="height:100px;background-color:rgba(0,0,0,0);width:40%;"><image mode="aspectFit" data-item="{{item}}" bindtap="previewImage" catch:longpress="openActionsheet" style="height:100%;width:auto" src="{{ item.attachUrl }}"></image></view>
                           <!--语音类型-->
-                          <view class="talkContent" wx:if="{{ item.msgType == 2 }}" style="width:100px;" data-index="{{ index }}" catchtap="playVoice" data-item="{{item}}">
-                              <!-- <text class="iconfont" style="font-size:16px;text-align:center;background-image:url(./static/img/voice.gif)"></text> -->
-                              <image mode="aspectFit" style="height:20px;width:20px;" src="{{ item.src ? item.src : '../../static/img/voice2.png' }}"></image>
+                          <view class="talkContent" wx:if="{{ item.msgType == 2 }}" style="width:100px;" catchtap="playVoice" bind:longpress="openActionsheet" data-index="{{ index }}" data-item="{{item}}">
+                              <!-- <cover-image> -->
+                                <image mode="aspectFit" catchtap="playVoice" data-item="{{item}}" style="height:20px;width:20px;" src="{{ item.src ? item.src : '../../static/img/voice2.png' }}"></image>
+                              <!-- </cover-image> -->
                           </view>
                           <!--视频类型-->
                           <view class="talkContent" wx:if="{{ item.msgType == 3 }}" style="width:90%;">
@@ -93,7 +94,7 @@
                 <ui-col vertical-align="middle" hidden="{{ msgType == 0 }}"><input cursor-spacing="6" class="myInput" bindinput="onInput" value="{{ sendInputMsg.content }}"/></ui-col>
                 <ui-col vertical-align="middle" hidden="{{ msgType == 1 }}"><button catch:touchstart="touchstart" catch:touchend="touchend" catch:touchmove="touchmove">按住说话</button></ui-col>
                 <ui-col width="50" style="font-size:14px;" align="center" vertical-align="middle" hidden="{{ isInputing }}"><text class="iconfont myWx-jia" bindtap="toggleIsHidden"></text></ui-col>
-                <ui-col width="50" vertical-align="middle" hidden="{{ !isInputing }}" class="sendBtn" space-left="3" space-right="3"><button type="primary" bindtap="sendMsg">发送</button></ui-col>
+                <ui-col width="55" vertical-align="middle" hidden="{{ !isInputing }}" class="sendBtn" space-left="3" space-right="3"><button type="primary" bindtap="sendMsg">发送</button></ui-col>
               </ui-row>
               <ui-row height="100" class="sentType" hidden="{{ isHidden }}" style="text-align:left;">
                 <ui-col style="display:inline-block;float:left;" class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-zhaopian" bindtap="chooseFile" data-type="1"></text></ui-col>
@@ -310,13 +311,26 @@ export default {
     var item = e.target.dataset.item;
     var typeCode = e.target.dataset.item.msgType;
     var list = [];
+    let creatTime = '';
+    if(item.createAt.toString().search('-') != -1){
+      creatTime = Date.parse(item.createAt.replace(/-/g,"/"))
+    }else{
+      creatTime = item.createAt
+    }
+    function toggle(){
+      if(new Date().getTime() - creatTime > 120000){
+        list = ['提醒查看']
+      }else{
+        list = ['提醒查看','撤回'];
+      }
+    }
     if( item.fromUser == app.globalData.openId ){
-        if (typeCode == 0) {//文本类型
-          list = ['撤回','提醒查看'];
+        if (typeCode == 0 || typeCode == 2) {//文本类型
+          toggle();
         }else if( typeCode == 1 ){//图片类型
-          list = ['撤回','提醒查看']
+          toggle();
         }else if(typeCode == 6){//文件类型
-          list = ['撤回']
+          toggle();
         }
     }
     // 消息撤回.....
@@ -324,9 +338,9 @@ export default {
       wx.showActionSheet({
           itemList: list,
           success: function(res) {
-              if (res.tapIndex == 0 ) {//撤回
+              if (res.tapIndex == 1 ) {//撤回
                   wx.sendSocketMessage({"data":JSON.stringify({msgId:item.msgId,cmd:'1',groupId:item.groupId,fromUser:item.fromUser,fromUserName:item.fromUserName})});
-              }else if( res.tapIndex == 1 ){//提醒查看
+              }else if( res.tapIndex == 0 ){//提醒查看
                 system.http({
                   url:'chat/msg/chatRemind',
                   method:'post',
@@ -573,7 +587,8 @@ export default {
   onInput(e){
     if( e.detail.value != '' ){
       var key = 'sendInputMsg.content';
-      this.setData({ isInputing: true ,[key]:e.detail.value,['sendInputMsg.msgType']:0});
+      var val = system.searchUrl( { "str":e.detail.value,"color":'blue' } )
+      this.setData({ isInputing: true , [key]:val, ['sendInputMsg.msgType']:0});
     }else{
        this.setData({ isInputing: false });
     }

@@ -97,7 +97,7 @@ export default {
       }
     })
   },
-    onHide: function() {
+  onHide: function() {
       
   }
 }

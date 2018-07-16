@@ -1,8 +1,16 @@
 <template>
   <view>
+      <view class="loadingData" style="top:{{ loadingMsg.top }}">
+        <icon class="iconfont myWx-unif032" style="color:{{ loadingMsg.color }};font-size:32px;"></icon>
+      </view>
       <view class="article">
-        <button class="groupMsgBtn" bindtap="groupMsg"> 群信息 </button>
-        <scroll-view scroll-y="true" style="height:{{ scrollHeight }};" id="viewport" scroll-into-view="{{toView}}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden">
+        <view class="groupMsgBtn">
+          <button bindtap="groupMsg" wx:if="{{ !transmit.isTransmit }}" class="seeGroupMsg cBtn0"> 群信息 </button>
+          <button bindtap="cancelSelect" wx:if="{{ transmit.isTransmit }}" class="iconfont myWx-houtui3 cancelSelect cBtn0"> </button>
+          <icon class="line_icon" wx:if="{{ transmit.isTransmit }}"></icon>
+          <button bindtap="toGroupList" wx:if="{{ transmit.isTransmit }}" class="iconfont myWx-qianjin4 toGroupList cBtn0"> </button>
+        </view>
+        <scroll-view scroll-y="true" bindscroll="scrllView" style="height:{{ scrollHeight }};" id="viewport" scroll-into-view="{{toView}}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden"><!-- bindscrolltoupper="bindscrolltoupper"，，，，catch:touchstart="loadTouchstart" catch:touchend="loadTouchend" catch:touchmove="loadTouchmove"-->
           <view class="content" id="content">
             <ui-row hover-class="touchui-hover" class="talkItem" wx:for="{{ chatData }}" wx:key="index" id="the{{index}}">
                   <view class="historyLine" wx:if="{{ item.cmd == 'time' || item.cmd == '2' }}">{{ item.content }}</view>
@@ -11,6 +19,7 @@
                           <image src="{{  item.headImgUrl }}"/>
                       </view>
                   </ui-col>
+                  <!-- <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && (sendInputMsg.fromUser == item.fromUser) && transmit.isTransmit }}"><checkbox-group data-item="{{ item }}" bindchange="checkboxChange"><label><checkbox class="checkbox" value="{{item.msgId}}"/></label></checkbox-group></view>消息转发选项框...... -->
                   <ui-col class="text" align="left" vertical-align="top" space-left="0" space-right="5" wx:if="{{ item.cmd == 0 }}">
                       <view style="width: 100%; text-align:{{ sendInputMsg.fromUser == item.fromUser ? 'right' : 'left' }};">
                           <ui-row height="20" wx:if="{{ sendInputMsg.fromUser != item.fromUser }}">
@@ -24,9 +33,7 @@
                           <view class="talkContent {{ (item.status == 1 || item.status == 4) && sendInputMsg.fromUser == item.fromUser ? 'readed' : '' }} {{ item.status == 0 && sendInputMsg.fromUser == item.fromUser ? 'unRead' : '' }}" wx:if="{{ item.msgType == 1 }}" style="height:100px;background-color:rgba(0,0,0,0);width:40%;"><image mode="aspectFit" data-item="{{item}}" bindtap="previewImage" catch:longpress="openActionsheet" style="height:100%;width:auto" src="{{ item.attachUrl }}"></image></view>
                           <!--语音类型-->
                           <view class="talkContent {{ (item.status == 1 || item.status == 4) && sendInputMsg.fromUser == item.fromUser ? 'readed' : '' }} {{ item.status == 0 && sendInputMsg.fromUser == item.fromUser ? 'unRead' : '' }}" wx:if="{{ item.msgType == 2 }}" style="width:100px;" catchtap="playVoice" bind:longpress="openActionsheet" data-index="{{ index }}" data-item="{{item}}">
-                              <!-- <cover-image> -->
-                                <image mode="aspectFit" catchtap="playVoice" data-item="{{item}}" style="height:20px;width:20px;" src="{{ item.src ? item.src : '../../static/img/voice2.png' }}"></image>
-                              <!-- </cover-image> -->
+                              <image mode="aspectFit" catchtap="playVoice" data-item="{{item}}" style="height:20px;width:20px;" src="{{ item.src ? item.src : '../../static/img/voice2.png' }}"></image>
                           </view>
                           <!--视频类型-->
                           <view class="talkContent {{ (item.status == 1 || item.status == 4) && sendInputMsg.fromUser == item.fromUser ? 'readed' : '' }} {{ item.status == 0 && sendInputMsg.fromUser == item.fromUser ? 'unRead' : '' }}" wx:if="{{ item.msgType == 3 }}" style="width:90%;">
@@ -53,31 +60,14 @@
                       <view class="left_icon left_icon1">
                           <image src="{{  userMsg.userHeadImg }}"/>
                       </view>
+                      <!-- 消息转发选项框...... -->
                   </ui-col>
+                  <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && transmit.isTransmit }}"><checkbox-group data-item="{{ item }}" bindchange="checkboxChange"><label><checkbox class="checkbox" value="{{item.msgId}}"/></label></checkbox-group></view>
               </ui-row>
-              <!-- <ui-row hover-class="touchui-hover" class="talkItem">
-                  <ui-col width="60" align="left" vertical-align="top">
-                      <view class="left_icon left_icon1">
-                          <image src="https://t12.baidu.com/it/u=4239869624,2005225806&fm=173&app=25&f=JPEG?w=640&h=434&s=92AAEBA054423EE41A302499030050C0"/>
-                      </view>
-                  </ui-col>
-                  <ui-col class="text" align="left" vertical-align="top" space-left="0" space-right="5">
-                      <view style="width: 100%;">
-                          <ui-row height="20">
-                              <ui-col align="left" vertical-align="top">
-                                  <view class="userMsg"><text class="name">郭晶晶</text><text decode="true">&nbsp;&nbsp;</text><text class="job">前端工程师</text></view>
-                              </ui-col>
-                          </ui-row>
-                          <view class="talkContent">第37周|总票房8.11亿较上周上涨4.38%，《猩猿崛起》突破票房10亿</view>
-                      </view>
-                  </ui-col>
-              </ui-row> -->
           </view>
         </scroll-view>
         <ui-fixed-view top="30%" left="{{ voice.plVoice }}" style="z-index:9999;" wx:if="{{ voice.show }}">
             <view class="fixed-view-content" style="background-color:rgba(0,0,0,0.5);padding:0px 35px 20px 35px;border-radius:7px;">
-              <!-- <text wx:if="{{ !voice.iconStop}}" class="iconfont {{ voice.icon }}" style="font-size:100px;color:white;display:block;line-height:140px;height:135px;"></text> -->
-              <!-- <text wx:if="{{ voice.iconStop }}" class="iconfont myWx-huatongshixinjinyong" style="font-size:100px;color:white;display:block;line-height:140px;height:135px;"></text> -->
               <image src="{{ voice.icon }}" style="width:100px;height:100px;"></image>
               <text style="display:block;text-align:center;color:white;background-color:{{ voice.color }}">{{ voice.content }}</text>
             </view>
@@ -96,8 +86,9 @@
                 <ui-col width="50" style="font-size:14px;" align="center" vertical-align="middle" hidden="{{ isInputing }}"><text class="iconfont myWx-jia" bindtap="toggleIsHidden"></text></ui-col>
                 <ui-col width="55" vertical-align="middle" hidden="{{ !isInputing }}" class="sendBtn" space-left="3" space-right="3"><button type="primary" bindtap="sendMsg">发送</button></ui-col>
               </ui-row>
-              <ui-row height="100" class="sentType" hidden="{{ isHidden }}" style="text-align:left;">
-                <ui-col style="display:inline-block;float:left;" class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-zhaopian" bindtap="chooseFile" data-type="1"></text></ui-col>
+              <ui-row height="100" class="sentType" hidden="{{ isHidden }}" style="justify-content:flex-start;">
+                <ui-col style="display:inline-block;" class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-zhaopian1" bindtap="chooseFile" data-type="1" data-watermark = "false"></text></ui-col>
+                <ui-col style="display:inline-block;" class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-tupianshuiyinshezhi" bindtap="chooseFile" data-type="1" data-watermark = "true" style="font-size:"></text></ui-col>
                 <!-- <ui-col class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-wenjian1" bindtap="chooseFile" data-type="6"></text></ui-col> -->
               </ui-row>
             </view>
@@ -108,8 +99,9 @@
 <script>
 import system from '../../static/utils/system'
 var app = getApp();
-// var plugin = requirePlugin("WechatSI")
-// let manager = plugin.getRecordRecognitionManager();
+var plugin = requirePlugin("WechatSI");
+let wx_manager = plugin.getRecordRecognitionManager();
+
 var recorderManager,wx_timer,wx_timer2,wx_n1=0,wx_n2=1;
 var backgroundAudioManager=wx.getBackgroundAudioManager();
 export default {
@@ -157,12 +149,22 @@ export default {
       iconStop:false,
       play:'../../static/img/voice2.png'//聊天列表中的语音icon
     },
-    fileSrc:''//文件在webview中展示的地址
+    fileSrc:'',//文件在webview中展示的地址
+    transmit:{
+      isTransmit:false,//是否显示转发消息checkbox
+      transData:{}//选中的项目.
+    },
+    loadingMsg:{//加载数据的loading
+      top:'-100%',
+      color:'#666666',
+      startY:'',
+      endY:''
+    }
   },
   onLoad(options){
     wx.setNavigationBarTitle({
-     title: JSON.parse (options.item).groupName,
-    })
+     title: JSON.parse (options.item).groupName,
+    })
     var that = this;
     var onFirst = 1;
     this.setData({
@@ -293,6 +295,22 @@ export default {
       }
     })
   },
+  checkboxChange(e){ //消息转发选项框选中事件......
+    debugger;
+  },
+  cancelSelect(){//取消消息选择......
+    this.setData({
+      ["transmit.isTransmit"]:false
+    })
+  },
+  toGroupList(){//选择完转发消息后跳转到群组列表页面
+    let that = this;
+    wx.navigateTo({
+      url: `/pages/home/index?selData=${that.data.transmit.transData}`,
+      success(res) {},
+      fail(res){}
+    })
+  },
   previewImage: function(e){//图片预览.....
     var imgUrl = e.target.dataset.item.attachUrl;
     var imgList = [];
@@ -319,9 +337,9 @@ export default {
     }
     function toggle(){
       if(new Date().getTime() - creatTime > 120000){
-        list = ['提醒查看']
+        typeCode == 2 ? list = ['提醒查看','转发',"语音转文字"] : list = ['提醒查看','转发'];
       }else{
-        list = ['提醒查看','撤回'];
+        typeCode == 2 ? list = ['提醒查看','转发','撤回',"语音转文字"] : list = ['提醒查看','转发','撤回'];
       }
     }
     if( item.fromUser == app.globalData.openId ){
@@ -338,8 +356,12 @@ export default {
       wx.showActionSheet({
           itemList: list,
           success: function(res) {
-              if (res.tapIndex == 1 ) {//撤回
+              if (res.tapIndex == 2 ) {
+                if(new Date().getTime() - creatTime > 120000){//语音转文字.....
+                  debugger;
+                }else{//撤回
                   wx.sendSocketMessage({"data":JSON.stringify({msgId:item.msgId,cmd:'1',groupId:item.groupId,fromUser:item.fromUser,fromUserName:item.fromUserName})});
+                }
               }else if( res.tapIndex == 0 ){//提醒查看
                 system.http({
                   url:'chat/msg/chatRemind',
@@ -360,6 +382,12 @@ export default {
                     system.stateMsg({title:"提醒失败",icon:"fail",time:1000})
                   }
                 })
+              }else if( res.tapIndex == 1){//转发
+                that.setData({
+                  ["transmit.isTransmit"]:true
+                })
+              }else if( res.tapIndex == 3){
+                debugger;
               }
           }
       });
@@ -368,6 +396,13 @@ export default {
   touchmove(e){
     let that = this;
     let moveY = this.data.startPageY -  e.changedTouches[0].pageY;
+    wx_manager.onRecognize = function(res) {
+    console.log("current result", res.result)
+    }
+    wx_manager.onStop = function(res) {
+        console.log("record file path", res.tempFilePath)
+        console.log("result", res.result)
+    }
     if( moveY > 80 ){
       this.setData({
         ['voice.icon']:"../../static/img/back_voice.png",
@@ -386,6 +421,7 @@ export default {
   },
   touchstart(e){
       var that = this;
+      wx_manager.start({duration:30000, lang: "zh_CN"});//开始转译
       recorderManager = wx.getRecorderManager()
       recorderManager.onStart(() => {
         that.setData({
@@ -432,7 +468,8 @@ export default {
     })
   },
   touchend(e){
-    recorderManager.stop()
+    recorderManager.stop();
+    wx_manager.stop();
     this.setData({['voice.show']:false,['voice.content']:"上滑取消",['voice.icon']:"../../static/img/record.gif",});
   },
   openFile(e){
@@ -470,6 +507,10 @@ export default {
   },
   bindscrolltoupper(e){
     var that = this;
+    this.setData({
+      ['loadingMsg.top']:0,
+      ['loadingMsg.color']:'#666666'
+    })
     this.getHistoryMsg( that.data.theGroupMsg.groupId ,10 , that.data.pageNum ,false,e);
   },
   // 播放语音....
@@ -533,17 +574,24 @@ export default {
           that.sendReadedReceipt();
         }else{
           that.setData({toView:`the${newList - oldList}`})//回滚到原来查看的位置
+          that.setData({
+            ['loadingMsg.top']:'-100%',
+            ['loadingMsg.color']:'#A0E75A'
+          })
         }
       }
     })
   },
   // 上传.....
-  upload( tempFilePaths , type){
+  upload( tempFilePaths , type ,watermark){
     var that = this;
     wx.uploadFile({
       url: `${app.globalData.httpHost}/chat/attach`,
       filePath: tempFilePaths,
       name: 'file',
+      formData:{
+        "watermark":watermark
+      },
       header:{
         'content-type':'multipart/form-data'
       },
@@ -562,13 +610,14 @@ export default {
   },
   chooseFile(event){
     var type = event.currentTarget.dataset.type;
+    var watermark = event.currentTarget.dataset.watermark;
     var that = this;
     if( type == 1 ){
       wx.chooseImage({
         count:1,
         success: function(res) {
           var tempFilePaths = res.tempFilePaths;
-          that.upload( tempFilePaths[0] , type );
+          that.upload( tempFilePaths[0] , type ,watermark);
         },
         fail(res){
           
@@ -597,14 +646,32 @@ export default {
     if( e.currentTarget.id == "viewport" ){
       this.setData({
         isHidden:true,
-        scrollHeight: wx.DEFAULT_CONTENT_HEIGHT - 48 + 'px'
+        scrollHeight: wx.DEFAULT_CONTENT_HEIGHT - 48 + 'px',
+        scrollTop:1000000
       })
     }else{
       this.setData({
-        isHidden:!this.data.isHidden,
-        scrollHeight:this.data.isHidden ? wx.DEFAULT_CONTENT_HEIGHT - 148 + 'px' : wx.DEFAULT_CONTENT_HEIGHT - 48 + 'px'
+        isHidden:!this.data.isHidden
+      })
+      this.setData({
+        scrollHeight: !this.data.isHidden ? wx.DEFAULT_CONTENT_HEIGHT - 148 + 'px' : wx.DEFAULT_CONTENT_HEIGHT - 48 + 'px',
+      })
+      this.setData({
+        scrollTop:10000000
       })
     }
+  },
+  scrllView(e){
+    // console.log( e )
+  },
+  loadTouchstart(e){
+    
+  },
+  loadTouchend(e){
+// debugger;
+  },
+  loadTouchmove(e){
+
   },
   toggleMsgType(){//切换输入方式.....
     this.setData({ msgType: this.data.msgType == 0 ? 1 : 0 });
@@ -620,6 +687,16 @@ export default {
 </script>
 
 <style lang="less">
+  .msgTransCheckbox{
+    .checkbox{
+      .wx-checkbox-input{
+        background-color: rgba(0,0,0,0);
+      }
+      .wx-checkbox-input-checked::before{
+
+      }
+    }
+  }
   .readed{
     &:after{
       content: '已读';
@@ -707,10 +784,32 @@ export default {
       z-index: 10000;
       font-size: 14px;
       border-radius: 12px;
-      border:1px solid #FFEEEEF2;
       background-color: #FFF7F7FA;
-      &::after{ border: none; }
       line-height: 24px;
+      overflow: hidden;
+      height:60rpx;
+      .cBtn0{
+        padding:0 30rpx;
+        height:60rpx;
+        line-height:60rpx;
+        font-size:24rpx;
+        margin:0;
+        background-color:#FFF7F7FA!important;
+        display:inline-block;
+        border-radius:0;
+        &::after{
+          border: none;
+        }
+      }
+      .line_icon{
+        border-right:0.5px solid #DBD9D9;
+        height:40rpx;
+        position:relative;
+        top:-20rpx;
+      }
+      .cancelSelect,.toGroupList{
+        font-size: 34rpx;
+      }
     }
 }
 .content{
@@ -771,4 +870,35 @@ export default {
       min-height: 20px;
     }
 }
+.loadingData{
+  text-align:center;
+  height:100%;
+  position:absolute;
+  width:100%;
+  transition: all 0.3s;
+  top:'-100%';
+  z-index: 99999;
+  .iconfont{
+    // color: #666666;
+    transition: all 0.3s;
+    animation:myRotate 1.2s linear infinite;
+  }
+}
+@keyframes myRotate
+  {
+    0% {
+      transform:rotate(0deg);
+      -ms-transform: rotate(0deg);
+      -moz-transform:rotate(0deg);
+      -webkit-transform:rotate(0deg);
+      -o-transform:rotate(0deg);
+    }
+    100% {
+      transform:rotate(360deg);
+      -ms-transform: rotate(360deg);
+      -moz-transform:rotate(360deg);
+      -webkit-transform:rotate(360deg);
+      -o-transform:rotate(360deg);
+    }
+  }
 </style>

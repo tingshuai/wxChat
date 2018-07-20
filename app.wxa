@@ -20,7 +20,7 @@ export default {
     ],
     plugins: {
       "WechatSI": {
-          "version": "0.0.7",
+          "version": "0.0.9",
           "provider": "wx069ba97219f66d99"
       }
     },
@@ -39,8 +39,8 @@ export default {
     }
   },
   globalData: {
-    socketHost: 'wss://www.china-cms.com', // 祝天洋 'wss://192.168.0.143:8000', 沈鑫：192.168.0.104，线上：www.china-cms.com
-    httpHost: 'https://www.china-cms.com', //'https://192.168.0.143:8000',
+    socketHost: 'wss://www.china-cms.com', // 祝天洋 'wss://192.168.0.144', 沈鑫：192.168.0.104，线上：www.china-cms.com
+    httpHost: 'https://www.china-cms.com', //'https://192.168.0.144',
     userMsg: {},
     openId: '',//'oc6Hd1BHJF55T1jIWr2eC2AEYoUQ',
     sessionId:'',

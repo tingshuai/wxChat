@@ -130,6 +130,7 @@ export default {
   },
   onLoad(option){
     var that = this;
+    console.log( "home 页面")
     wx.getStorage({
         key: 'openId',
         success: function(res) {
@@ -196,6 +197,7 @@ export default {
     })
   },
   toChat(event){//跳转到群聊页面.....
+    event.currentTarget.dataset.item.openId = '';
     var item = JSON.stringify( event.currentTarget.dataset.item );
     wx.navigateTo({
       url: `/pages/groupChat/index?item=${item}`

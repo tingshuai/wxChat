@@ -87,7 +87,8 @@ export default {
           // system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
           // system.stateMsg({title:"授权失败, 无法进入群组。", icon:"none",time:1500})
           that.setData({
-            'loginMsg':res.data
+            'loginMsg':res.data,
+            'loading':false
           })
           wx.setStorage({
             key:"loginMsg",

@@ -12,6 +12,7 @@
         </view>
         <scroll-view scroll-y="true" bindscroll="scrllView" style="height:{{ scrollHeight }};" id="viewport" scroll-into-view="{{toView}}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden"><!-- bindscrolltoupper="bindscrolltoupper"，，，，catch:touchstart="loadTouchstart" catch:touchend="loadTouchend" catch:touchmove="loadTouchmove"-->
           <view class="content" id="content">
+            <checkbox-group bindchange="checkboxChange">
             <ui-row hover-class="touchui-hover" class="talkItem" wx:for="{{ chatData }}" wx:key="index" id="the{{index}}">
                   <view class="historyLine" wx:if="{{ item.cmd == 'time' || item.cmd == '2' }}">{{ item.content }}</view>
                   <ui-col width="60" align="left" vertical-align="top" wx:if="{{ item.cmd == 0 &&  (sendInputMsg.fromUser != item.fromUser)}}"><!--消息来自别人-->
@@ -64,12 +65,13 @@
                   </ui-col>
                   <ui-col width="60" align="left" vertical-align="top" wx:if="{{ item.cmd != 'time' && (sendInputMsg.fromUser == item.fromUser) && item.cmd != 2 && item.cmd != 1 }}"><!--消息来自自己-->
                       <view class="left_icon left_icon1">
-                          <image src="{{  userMsg.userHeadImg }}"/>
+                          <image src="{{  userMsg.headImgUrl }}"/>
                       </view>
                       <!-- 消息转发选项框...... -->
                   </ui-col>
-                  <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && transmit.isTransmit }}"><checkbox-group data-item="{{ item }}" bindchange="checkboxChange"><label><checkbox class="checkbox" value="{{item.msgId}}"/></label></checkbox-group></view>
+                  <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && transmit.isTransmit }}"><checkbox class="checkbox" value="{{item.toString()}}"/></view>
               </ui-row>
+              </checkbox-group>
           </view>
         </scroll-view>
         <ui-fixed-view top="30%" left="{{ voice.plVoice }}" style="z-index:9999;" wx:if="{{ voice.show }}">
@@ -86,7 +88,7 @@
         <view class="fixed_bottom" >
           <ui-row class="rowInputs" height="50" border-top border-bottom>
             <ui-col width="50" style="font-size:14px;" align="center" vertical-align="middle"><text class="iconfont {{ msgType == 0 ? 'myWx-jianpan' : 'myWx-ai01' }}" bindtap="toggleMsgType"></text></ui-col>
-            <ui-col vertical-align="middle" hidden="{{ msgType == 0 }}"><input cursor-spacing="6" class="myInput" bindinput="onInput" value="{{ sendInputMsg.content }}"/></ui-col>
+            <ui-col vertical-align="middle" hidden="{{ msgType == 0 }}"><input cursor-spacing="6" class="myInput" focus="{{inputIn.inputFocus}}" bindinput="onInput" value="{{ sendInputMsg.content }}"/></ui-col>
             <ui-col vertical-align="middle" hidden="{{ msgType == 1 }}"><button catch:touchstart="touchstart" catch:touchend="touchend" catch:touchmove="touchmove">按住说话</button></ui-col>
             <ui-col width="50" style="font-size:14px;" align="center" vertical-align="middle" hidden="{{ isInputing }}"><text class="iconfont myWx-jia" bindtap="toggleIsHidden"></text></ui-col>
             <ui-col width="55" vertical-align="middle" hidden="{{ !isInputing }}" class="sendBtn" space-left="3" space-right="3"><button type="primary" bindtap="sendMsg">发送</button></ui-col>
@@ -98,8 +100,8 @@
           </ui-row>
         </view>
       </ui-fixed-view>
-      <view class="selUser0" style="bottom:{{ scrollHeight }}">
-        <button type="default" class="selUser0Txt" wx:for="{{ theGroupMsg.groupUsers }}" data-item="{{ item }}">{{ item.username }}{{ scrollHeight }}</button>
+      <view class="selUser0" style="bottom:{{ isHidden ? '48px' : '148px' }};left:{{ inputIn.isLeft ? '0px' : '-155px' }};width:{{ transmit.isTransmit ? '100px' : '55px' }};">
+        <button type="default" class="selUser0Txt" wx:for="{{ transmit.isTransmit ? transmit.groupList : theGroupMsg.groupUsers }}" data-item="{{ item }}" wx:key="index" catchtap="selUser">{{ transmit.isTransmit ? item.groupName : item.username}}</button>
       </view>
   </view>
 </template>
@@ -121,9 +123,13 @@ export default {
   data: {
     toView:'',//要滚动的位置...
     msgType:true, //0-文字，1-语音
-    isHidden:true,//
+    isHidden:true,//图片输入显示隐藏
     isInputing:false,//判断是否正在输入
     chatData:[],//聊天信息.....
+    inputIn:{
+      isLeft:false,//判断@成员显示隐藏
+      inputFocus:false
+    },
     scrollHeight: wx.DEFAULT_CONTENT_HEIGHT - 48 + 'px',
     sendInputMsg :{
       fromUser:app.globalData.openId,//发送人ID
@@ -159,7 +165,8 @@ export default {
     fileSrc:'',//文件在webview中展示的地址
     transmit:{
       isTransmit:false,//是否显示转发消息checkbox
-      transData:{}//选中的项目.
+      transData:{},//选中的项目.
+      groupList:[]
     },
     loadingMsg:{//加载数据的loading
       top:'-100%',
@@ -173,132 +180,154 @@ export default {
     }
   },
   onLoad(options){
-    wx.checkSession({
-      success: function(res){
-        console.log( 6 )
-      },
-      fail: function(res){
-        wx.redirectTo({
-          url: '/pages/login/index'
-        })
-      }
-    })
-    console.log( "执行onload函数。。",options)
-    wx.setNavigationBarTitle({
-     title: JSON.parse (options.item).groupName,
-    })
     var that = this;
     var onFirst = 1;
-    this.setData({
-      theGroupMsg:JSON.parse (options.item),
-      userMsg:app.globalData.userMsg,
-      ['userMsg.userHeadImg']:app.globalData.userMsg.avatarUrl,
-      ['sendInputMsg.groupName']:JSON.parse (options.item).groupName,
-      nickName:app.globalData.userMsg.nickName,
-      ['sendInputMsg.fromUserName']:app.globalData.userMsgReq.username,
-      ['sendInputMsg.fromUser']:options.item.openId || app.globalData.openId,
-      ['sendInputMsg.groupId']:JSON.parse (options.item).groupId,
-      ['sendInputMsg.position']:app.globalData.userMsgReq.position,
-      ['sendInputMsg.headImgUrl']:app.globalData.userMsgReq.headImgUrl,
-      ['sendInputMsg.isGroupManager']:app.globalData.userMsgReq.isGroupManager
-    })
-    this.data.theGroupMsg.groupUsers.forEach((val,i,arr)=>{
-      that.data.selUser.users.push( val.username );
-      that.setData({
-        ['selUser.users']:that.data.selUser.users
+    that.reqGroupList();//请求群列表
+    let loadPromise = new Promise((resolve,reject)=>{
+      wx.checkSession({
+        success: function(res){
+          console.log( "groupChat页面已登录",66 ,options)
+          // 直接进群聊中重新设置全局变量....
+          wx.getStorage({
+              key: 'openId',
+              success: function(res) {
+                  app.globalData.openId = res.data;
+              }
+          })
+          wx.getStorage({
+            key:'userMsgReq',
+            success(res){
+              app.globalData.userMsgReq = res.data;
+            }
+          })
+          resolve();
+        },
+        fail: function(res){
+          wx.redirectTo({
+            url: '/pages/login/index'
+          })
+        }
       })
     })
-// 连接sockey服务
-    let aaa = app.globalData.socketHost + `/websocket/${that.data.theGroupMsg.groupId}/${that.data.sendInputMsg.fromUser}`
-    console.log( "地址信息", aaa )
-    SocketTask = wx.connectSocket({
-      url: app.globalData.socketHost + `/websocket/${that.data.theGroupMsg.groupId}/${that.data.sendInputMsg.fromUser}`,//群id，用户id
-      data:{},
-      header:{
-       'content-type': 'application/json'
-      },
-      success:function(msg){
-        that.getHistoryMsg(that.data.theGroupMsg.groupId, 10 , that.data.pageNum,true);
-        console.log( "socket链接")
-      },
-      fail:function(msg){
-        system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
-      }
-    })
-    //连接状态
-    SocketTask.onOpen(function(res) { console.log( 'sockey open') })
-    //监听WebSocket错误。
-    SocketTask.onError(function(res){
-      console.log('WebSocket连接打开失败，请检查！',res)
-    })
-    SocketTask.onMessage(function(res) {
-      var data = JSON.parse( res.data );
-      var chatDataMsgId;
-      if( onFirst == 1 ){
-        that.data.chatData.forEach((val,ii,arr)=>{
-          if(val.msgId){
-            chatDataMsgId = val.msgId;
-          }
-        })
-      }else{
-          chatDataMsgId = data.msgId;
-      }
-      var dataMsg =JSON.stringify( { "cmd" : 3, msgId:chatDataMsgId, "groupId":that.data.theGroupMsg.groupId ,"fromUser":data.fromUser } ) ;
-      function set(){
-        that.data.chatData.push( data );
+    loadPromise.then(()=>{
+      console.log( "已登录继续执行",JSON.parse(options.item).groupUsers);
+      wx.setNavigationBarTitle({//设置页面标题....
+        title: JSON.parse (options.item).groupName,
+      })
+      let myMsg = {};
+      JSON.parse(options.item).groupUsers.forEach((val,i,arr)=>{
+        if(val.openId == JSON.parse(options.item).openId){
+          myMsg = val;
+        }
+      })
+      this.setData({
+        theGroupMsg:JSON.parse (options.item),
+        userMsg:app.globalData.userMsgReq,
+        ['sendInputMsg.groupName']:JSON.parse (options.item).groupName,
+        ['sendInputMsg.fromUserName']:myMsg.username || app.globalData.userMsgReq.username,
+        ['sendInputMsg.fromUser']:JSON.parse(options.item).openId || app.globalData.openId,
+        ['sendInputMsg.groupId']:JSON.parse(options.item).groupId,
+        ['sendInputMsg.position']:myMsg.position || app.globalData.userMsgReq.position,
+        ['sendInputMsg.headImgUrl']:myMsg.headImgUrl || app.globalData.userMsgReq.headImgUrl,
+        ['sendInputMsg.isGroupManager']:JSON.parse(options.item).isGroupManager || app.globalData.userMsgReq.isGroupManager
+      })
+      this.data.theGroupMsg.groupUsers.forEach((val,i,arr)=>{
+        that.data.selUser.users.push( val.username );
         that.setData({
-          chatData:that.data.chatData
+          ['selUser.users']:that.data.selUser.users
         })
-        that.setData({
-          scrollTop:10000
-        })
-      }
-      if( data.cmd == 1 ){//撤回消息...
-        that.data.chatData.forEach((val,i,arr) => {
-          if( val.msgId == data.msgId ){
-            that.data.chatData.splice(i,1)
-            that.data.chatData.push({'cmd':data.cmd,'fromUser':data.fromUser,'fromUserName':data.fromUserName,'msgId':data.msgId,'status':data.status})
-          }
-        });
-        that.setData({
-          chatData:that.data.chatData
-        })
-        //用户发送消息的时候发送 消息回执......
-      }else if( data.cmd == 0 ){
-        var isMe = data.fromUser == that.data.sendInputMsg.fromUser ? true : false;
-        if(isMe){
-          data.headImgUrl= that.data.userMsg.userHeadImg;
-          if( data.msgType == 0 ){
-            set();
-          }else{
-            that.data.chatData[that.data.chatData.length - 1].msgId = data.msgId;
-          }
-          that.setData({
-            ['sendInputMsg.content']:'',
-            'isInputing': false
+      })
+      // 连接sockey服务
+      let aaa = app.globalData.socketHost + `/websocket/${that.data.theGroupMsg.groupId}/${that.data.sendInputMsg.fromUser}`
+      console.log( "地址信息", aaa )
+      SocketTask = wx.connectSocket({
+        url: app.globalData.socketHost + `/websocket/${that.data.theGroupMsg.groupId}/${that.data.sendInputMsg.fromUser}`,//群id，用户id
+        data:{},
+        header:{
+        'content-type': 'application/json'
+        },
+        success:function(msg){
+          that.getHistoryMsg(that.data.theGroupMsg.groupId, 10 , that.data.pageNum,true);
+          console.log( "socket链接")
+        },
+        fail:function(msg){
+          system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
+        }
+      })
+      //连接状态
+      SocketTask.onOpen(function(res) { console.log( 'sockey open') })
+      //监听WebSocket错误。
+      SocketTask.onError(function(res){
+        system.msgTip({title: '提示',content: "会话连接失败。请重新连接。",scb(){},ccb(){}})
+      })
+      SocketTask.onMessage(function(res) {
+        var data = JSON.parse( res.data );
+        var chatDataMsgId;
+        if( onFirst == 1 ){
+          that.data.chatData.forEach((val,ii,arr)=>{
+            if(val.msgId){
+              chatDataMsgId = val.msgId;
+            }
           })
         }else{
-          set();
-          SocketTask.send({"data": dataMsg ,success(res){},fail(res){}});
+            chatDataMsgId = data.msgId;
         }
-      }else if( data.cmd == 2 ){//系统推送消息.
-        set();
-        if( onFirst == 1 ){
-          SocketTask.send({"data":dataMsg ,success(res){},fail(res){}});
-          onFirst ++ ;
+        var dataMsg =JSON.stringify( { "cmd" : 3, msgId:chatDataMsgId, "groupId":that.data.theGroupMsg.groupId ,"fromUser":data.fromUser } ) ;
+        function set(){
+          that.data.chatData.push( data );
+          that.setData({
+            chatData:that.data.chatData
+          })
+          that.setData({
+            scrollTop:10000
+          })
         }
-      }else if( data.cmd == 3 ){//已读消息提醒.....
-        that.data.chatData.forEach((val,i,arr)=>{
-          if( val.msgId == data.msgId ){
-            val.readStatus = 1;
-            val.readCount = data.readCount;
+        if( data.cmd == 1 ){//撤回消息...
+          that.data.chatData.forEach((val,i,arr) => {
+            if( val.msgId == data.msgId ){
+              that.data.chatData.splice(i,1)
+              that.data.chatData.push({'cmd':data.cmd,'fromUser':data.fromUser,'fromUserName':data.fromUserName,'msgId':data.msgId,'status':data.status})
+            }
+          });
+          that.setData({
+            chatData:that.data.chatData
+          })
+        }else if( data.cmd == 0 ){//用户发送消息的时候发送 消息回执......
+          var isMe = data.fromUser == that.data.sendInputMsg.fromUser ? true : false;
+          if(isMe){
+            data.headImgUrl= that.data.userMsg.userHeadImg;
+            if( data.msgType == 0 || data.msgType == 7 ){
+              set();
+            }else{
+              that.data.chatData[that.data.chatData.length - 1].msgId = data.msgId;
+            }
+            that.setData({
+              ['sendInputMsg.content']:'',
+              'isInputing': false
+            })
+          }else{
+            set();
+            SocketTask.send({"data": dataMsg ,success(res){},fail(res){}});
           }
-        })
-        that.setData({
-          chatData:that.data.chatData
-        })
-      }
-    })
+        }else if( data.cmd == 2 ){//系统推送消息.
+          set();
+          if( onFirst == 1 ){
+            SocketTask.send({"data":dataMsg ,success(res){},fail(res){}});
+            onFirst ++ ;
+          }
+        }else if( data.cmd == 3 ){//已读消息提醒.....
+          that.data.chatData.forEach((val,i,arr)=>{
+            if( val.msgId == data.msgId ){
+              val.readStatus = 1;
+              val.readCount = data.readCount;
+            }
+          })
+          that.setData({
+            chatData:that.data.chatData
+          })
+        }
+      })//onMessage结束...
+    })//resolve函数结束....
   },
   onUnload(e){
     SocketTask.close({success(res){},fail(res){}});
@@ -343,7 +372,12 @@ export default {
     })
   },
   checkboxChange(e){ //消息转发选项框选中事件......
-    // debugger;
+    console.log( e.detail.value )
+    // this.data.transmit.transData.
+    // this.setData({
+    //   ['transmit.transData']
+    // })
+    debugger;
   },
   cancelSelect(){//取消消息选择......
     this.setData({
@@ -353,7 +387,7 @@ export default {
   toGroupList(){//选择完转发消息后跳转到群组列表页面
     let that = this;
     wx.navigateTo({
-      url: `/pages/home/index?selData=${that.data.transmit.transData}`,
+      url: `/pages/home/index?selData=${that.data.transmit}`,
       success(res) {},
       fail(res){}
     })
@@ -391,7 +425,7 @@ export default {
       }
     }
     if( item.fromUser == that.data.sendInputMsg.fromUser ){
-        if (typeCode == 0 || typeCode == 2) {//文本类型
+        if (typeCode == 0 || typeCode == 2 || typeCode == 7) {//文本类型
           toggle();
         }else if( typeCode == 1 ){//图片类型
           toggle();
@@ -439,7 +473,8 @@ export default {
                 })
               }else if( res.tapIndex == 1){//转发
                 that.setData({
-                  ["transmit.isTransmit"]:true
+                  ["transmit.isTransmit"]:true,
+                  ['inputIn.isLeft']:true
                 })
               }else if( res.tapIndex == 3){
                 changeData();
@@ -447,6 +482,14 @@ export default {
           }
       });
     }
+  },
+  reqGroupList(e){
+    let that = this;
+    system.http({ url:`chat/groups/tree`, method:"get",param:{openId:app.globalData.openId} ,header:{'content-type': 'application/x-www-form-urlencoded'},scb(res){
+        that.setData({
+          ['transmit.groupList']:res.data.data.rows
+        })
+    }})
   },
   touchmove(e){
     let that = this;
@@ -480,11 +523,11 @@ export default {
         if (!res.authSetting['scope.record']) {
           wx.authorize({
             scope: 'scope.record',
-                    success() {
-                      // 用户已经同意小程序使用录音功能，后续调用 wx.startRecord 接口不会弹窗询问
-                       music();
-                    }
-                })
+                  success() {
+                    // 用户已经同意小程序使用录音功能，后续调用 wx.startRecord 接口不会弹窗询问
+                     music();
+                  }
+              })
             }else{
               music();
             }
@@ -688,6 +731,20 @@ export default {
     var that = this;
     this.sendSocketMessage( JSON.stringify( that.data.sendInputMsg) ,obj );
   },
+  selUser(e){
+    let item = e.target.dataset.item;
+    let that = this;
+    if (transmit.isTransmit) {
+
+      that.sendMsg();
+    }else{
+      this.setData({
+        ['sendInputMsg.content']:that.data.sendInputMsg.content + item.username,
+        ['inputIn.isLeft']:false,
+        ['inputIn.inputFocus']:true
+      })
+    }
+  },
   // 输入时
   onInput(event){
     let that = this;
@@ -696,12 +753,13 @@ export default {
       var val = system.searchUrl( { "str":event.detail.value,"color":'blue' } )
       let reg = /@$/
       if ( reg.test(event.detail.value ) ) { //当输入@时
-        
+        that.setData({'inputIn.isLeft':true});
+        that.setData({ isInputing: true, [key]:val, ['sendInputMsg.msgType']:7});
       }else{
-        that.setData({ isInputing: true , [key]:val, ['sendInputMsg.msgType']:0});
+        that.setData({ isInputing: true, [key]:val, ['sendInputMsg.msgType']:0,'.inputIn.isLeft':false});
       }
     }else{
-       this.setData({ isInputing: false });
+       this.setData({ isInputing: false ,'inputIn.isLeft':false });
     }
   },
   toggleIsHidden(e){//控制底部发送栏的显隐.....
@@ -945,7 +1003,11 @@ export default {
   overflow: auto;
   bottom: 50px;
   font-size: 0;
+  left: -150px;
+  transition:all 0.3s;
+  max-width: 150px;
   .selUser0Txt{
+    .mix-text-overflow();
     font-size:11px;
     color:#333;
     height:30px;

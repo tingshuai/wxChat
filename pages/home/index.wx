@@ -49,6 +49,7 @@
                           <view class="txt">{{ item.groupDesc ? item.groupDesc : "" }}</view>
                       </view>
                   </ui-col>
+                    <!-- <view class="msgTransCheckbox" wx:if="{{true }}"><checkbox-group data-item="{{ item }}" bindchange="checkboxChange"><label><checkbox class="checkbox" value="{{item.msgId}}"/></label></checkbox-group></view> -->
               </ui-row>
             </view>
             <view slot="content" class="accorContent" v-if="{{ item.children.length != 0 }}">
@@ -126,7 +127,7 @@ export default {
     list1: [],
     overList:[],
     el: 'undefined',
-    showInput:true
+    showInput:true,
   },
   onLoad(option){
     var that = this;
@@ -139,11 +140,14 @@ export default {
         }
     })
     wx.getStorage({
-        key: 'userMsgReq',
-        success: function(res) {
+        key:'userMsgReq',
+        success(res){
             app.globalData.userMsgReq = res.data;
         }
     })
+  },
+  checkboxChange(e){
+      debugger;
   },
   showInput(){
       var that = this;
@@ -189,7 +193,6 @@ export default {
             }
             wx.stopPullDownRefresh();
             wx.hideNavigationBarLoading()
-            // wx.hideLoading();
         },
         fail(res){
             system.msgTip({title: '提示',content: res.data.message,scb(){},ccb(){}})
@@ -355,7 +358,21 @@ export default {
     z-index: 100;
     
   }
+.msgTransCheckbox{
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    z-index:9999;
+    background-color:white;
+    .checkbox{
+      .wx-checkbox-input{
+        background-color: rgba(0,0,0,0);
+      }
+      .wx-checkbox-input-checked::before{
 
+      }
+    }
+  }
   .result_list{
     .left_icon{
         width: 50px;

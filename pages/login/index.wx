@@ -36,33 +36,49 @@ export default {
         })
       }
     })
-    // 登录.....
-    wx.login({
-      success: function(res) {
-        if (res.code) {
-          //发起网络请求
-          system.http({
-            url:`wechat/miniapp/login/${res.code}`,
-            param:{},
-            method:"get",
-            scb(res){
-              if (res.data.status == '500') {
-                // system.msgTip({title: '提示', content: res.data.message,scb(){},ccb(){}})
-                that.setData({
-                  loginMsg:res.data
-                })
-              } else {
-                app.globalData.sessionId = res.data.data.sessionId;
-              }
-            },
-            fcb(res){
-              system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
-            }
+    let promise = new Promise((resolve,reject)=>{
+      wx.checkSession({
+        success: function(res){
+          wx.redirectTo({
+            url: '/pages/home/index'
           })
-        } else {
-          system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
+        },
+        fail: function(res){
+          console.log( "login页面未登录",67 )
+          resolve()
         }
-      }
+      })
+    })
+
+    // 登录.....
+    promise.then(()=>{
+      wx.login({
+        success(res) {
+          if (res.code) {
+            //发起网络请求
+            system.http({
+              url:`wechat/miniapp/login/${res.code}`,
+              param:{},
+              method:"get",
+              scb(res){
+                if (res.data.status == '500') {
+                  // system.msgTip({title: '提示', content: res.data.message,scb(){},ccb(){}})
+                  that.setData({
+                    loginMsg:res.data
+                  })
+                } else {
+                  app.globalData.sessionId = res.data.data.sessionId;
+                }
+              },
+              fcb(res){
+                system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
+              }
+            })
+          } else {
+            system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
+          }
+        }
+      })
     })
   },
   // formSubmit(e) {

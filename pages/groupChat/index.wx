@@ -8,7 +8,7 @@
           <button bindtap="groupMsg" wx:if="{{ !transmit.isTransmit }}" class="seeGroupMsg cBtn0"> 群信息 </button>
           <button bindtap="cancelSelect" wx:if="{{ transmit.isTransmit }}" class="iconfont myWx-houtui3 cancelSelect cBtn0"> </button>
           <icon class="line_icon" wx:if="{{ transmit.isTransmit }}"></icon>
-          <button bindtap="toGroupList" wx:if="{{ transmit.isTransmit }}" class="iconfont myWx-qianjin4 toGroupList cBtn0"> </button>
+          <button bindtap="transMsg" wx:if="{{ transmit.isTransmit }}" class="iconfont myWx-qianjin4 toGroupList cBtn0"> </button>
         </view>
         <scroll-view scroll-y="true" bindscroll="scrllView" style="height:{{ scrollHeight }};" id="viewport" scroll-into-view="{{toView}}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden"><!-- bindscrolltoupper="bindscrolltoupper"，，，，catch:touchstart="loadTouchstart" catch:touchend="loadTouchend" catch:touchmove="loadTouchmove"-->
           <view class="content" id="content">
@@ -69,7 +69,7 @@
                       </view>
                       <!-- 消息转发选项框...... -->
                   </ui-col>
-                  <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && transmit.isTransmit }}"><checkbox class="checkbox" value="{{item.toString()}}"/></view>
+                  <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && transmit.isTransmit }}"><checkbox class="checkbox" value="{{ item.msgId }}"/></view>
               </ui-row>
               </checkbox-group>
           </view>
@@ -101,7 +101,8 @@
         </view>
       </ui-fixed-view>
       <view class="selUser0" style="bottom:{{ isHidden ? '48px' : '148px' }};left:{{ inputIn.isLeft ? '0px' : '-155px' }};width:{{ transmit.isTransmit ? '100px' : '55px' }};">
-        <button type="default" class="selUser0Txt" wx:for="{{ transmit.isTransmit ? transmit.groupList : theGroupMsg.groupUsers }}" data-item="{{ item }}" wx:key="index" catchtap="selUser">{{ transmit.isTransmit ? item.groupName : item.username}}</button>
+        <button type="default" class="selUser0Txt {{ selUser.act == index ? 'btnAct' : ''}}" wx:for="{{ transmit.isTransmit ? transmit.groupList : theGroupMsg.groupUsers }}" data-index="{{ index }}" data-item="{{ item }}" wx:key="index" catchtap="selUser">{{ transmit.isTransmit ? item.groupName : item.username }}</button>
+        <text wx:if=" {{ transmit.isTransmit && ( transmit.groupList.length == 0 )}}">请先加入群组</text>
       </view>
   </view>
 </template>
@@ -176,13 +177,13 @@ export default {
     },
     selUser:{
       selMe:'',
-      users:[]
+      users:[],
+      act:''
     }
   },
   onLoad(options){
     var that = this;
     var onFirst = 1;
-    that.reqGroupList();//请求群列表
     let loadPromise = new Promise((resolve,reject)=>{
       wx.checkSession({
         success: function(res){
@@ -237,14 +238,13 @@ export default {
           ['selUser.users']:that.data.selUser.users
         })
       })
+      that.reqGroupList();//请求群列表
       // 连接sockey服务
-      let aaa = app.globalData.socketHost + `/websocket/${that.data.theGroupMsg.groupId}/${that.data.sendInputMsg.fromUser}`
-      console.log( "地址信息", aaa )
       SocketTask = wx.connectSocket({
-        url: app.globalData.socketHost + `/websocket/${that.data.theGroupMsg.groupId}/${that.data.sendInputMsg.fromUser}`,//群id，用户id
+        url: app.globalData.socketHost + `/websocket/${that.data.sendInputMsg.fromUser}`,//用户id
         data:{},
         header:{
-        'content-type': 'application/json'
+          'content-type': 'application/json'
         },
         success:function(msg){
           that.getHistoryMsg(that.data.theGroupMsg.groupId, 10 , that.data.pageNum,true);
@@ -263,6 +263,7 @@ export default {
       SocketTask.onMessage(function(res) {
         var data = JSON.parse( res.data );
         var chatDataMsgId;
+        debugger;
         if( onFirst == 1 ){
           that.data.chatData.forEach((val,ii,arr)=>{
             if(val.msgId){
@@ -274,13 +275,17 @@ export default {
         }
         var dataMsg =JSON.stringify( { "cmd" : 3, msgId:chatDataMsgId, "groupId":that.data.theGroupMsg.groupId ,"fromUser":data.fromUser } ) ;
         function set(){
-          that.data.chatData.push( data );
-          that.setData({
-            chatData:that.data.chatData
-          })
-          that.setData({
-            scrollTop:10000
-          })
+          if( data.groupId == that.data.sendInputMsg.groupId ){//非转发消息push进消息队列......
+            that.data.chatData.push( data );
+            that.setData({
+              chatData:that.data.chatData
+            })
+            that.setData({
+              scrollTop:10000
+            })
+          }else{//转发消息返回的消息，说明转发成功了
+              system.stateMsg({title:"消息转发成功",icon:"success",time:1000})
+          }
         }
         if( data.cmd == 1 ){//撤回消息...
           that.data.chatData.forEach((val,i,arr) => {
@@ -372,24 +377,33 @@ export default {
     })
   },
   checkboxChange(e){ //消息转发选项框选中事件......
-    console.log( e.detail.value )
-    // this.data.transmit.transData.
-    // this.setData({
-    //   ['transmit.transData']
-    // })
-    debugger;
+    this.setData({
+      ['transmit.transData']:e.detail.value
+    })
   },
   cancelSelect(){//取消消息选择......
     this.setData({
-      ["transmit.isTransmit"]:false
+      ["transmit.isTransmit"]:false,
+      ['inputIn.isLeft']:false
     })
   },
-  toGroupList(){//选择完转发消息后跳转到群组列表页面
+  transMsg(){//选择完转发消息后跳转到群组列表页面
     let that = this;
-    wx.navigateTo({
-      url: `/pages/home/index?selData=${that.data.transmit}`,
-      success(res) {},
-      fail(res){}
+    this.data.chatData.forEach((val,i,arr)=>{
+      this.data.transmit.transData.forEach((value,ii,array)=>{
+        val.groupId = that.data.selUser.selMe.groupId;
+        val.groupName = that.data.selUser.selMe.groupName;
+        val.fromUser = that.data.sendInputMsg.fromUser;
+        val.position = that.data.sendInputMsg.position;
+        val.fromUserName = that.data.sendInputMsg.fromUserName;
+        if( val.msgId == value ){
+          that.sendSocketMessage( JSON.stringify( val ) );
+        }
+      })
+    })
+    that.setData({
+      ["transmit.isTransmit"]:false,
+      ['inputIn.isLeft']:false
     })
   },
   previewImage: function(e){//图片预览.....
@@ -486,8 +500,14 @@ export default {
   reqGroupList(e){
     let that = this;
     system.http({ url:`chat/groups/tree`, method:"get",param:{openId:app.globalData.openId} ,header:{'content-type': 'application/x-www-form-urlencoded'},scb(res){
+        let newArray = res.data.data.rows.filter( item => { 
+          if(item.groupId != that.data.sendInputMsg.groupId){
+            return item
+          }
+        });
         that.setData({
-          ['transmit.groupList']:res.data.data.rows
+          ['transmit.groupList']:newArray,
+          ['selUser.selMe']:newArray[0]
         })
     }})
   },
@@ -554,7 +574,7 @@ export default {
     var that = this;
     var item = e.currentTarget.dataset.item;
     const downloadTask = wx.downloadFile({
-      url: item.attachUrl,
+      url:item.attachUrl,
       success(ress) {
         // 只要服务器有响应数据，就会把响应内容写入文件并进入 success 回调，业务需要自行判断是否下载到了想要的内容
         function validate(url){//检测文件类型
@@ -571,7 +591,7 @@ export default {
             }else{//不支持类型.....
               wx.navigateTo({
                 url: `/pages/webView/index?fileUrl=${item.attachUrl}`,
-                success(res) {},
+                success(res){},
                 fail(res){}
               })
             }
@@ -637,7 +657,7 @@ export default {
          groupId : id ,//群ID
          pageSize : size,//一页几条
          pageNum :num,//第几页
-         sessionId:app.globalData.sessionId
+         openId:app.globalData.openId
       },
       success: function(res) {
         if( res.data.status == 200 ){
@@ -731,13 +751,17 @@ export default {
     var that = this;
     this.sendSocketMessage( JSON.stringify( that.data.sendInputMsg) ,obj );
   },
-  selUser(e){
+  selUser(e){//选择群成员.....
     let item = e.target.dataset.item;
     let that = this;
-    if (transmit.isTransmit) {
-
-      that.sendMsg();
-    }else{
+    this.setData({
+      ['selUser.act']:e.target.dataset.index
+    })
+    if ( that.data.transmit.isTransmit ) {//转发消息...
+      that.setData({
+        ['selUser.selMe']:item
+      })
+    }else{//@群成员......
       this.setData({
         ['sendInputMsg.content']:that.data.sendInputMsg.content + item.username,
         ['inputIn.isLeft']:false,
@@ -1021,6 +1045,9 @@ export default {
     &::after{
       border: none;
     }
+  }
+  .btnAct{
+    background-color: #ccc;
   }
 }
 @keyframes myRotate

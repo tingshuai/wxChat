@@ -1,0 +1,207 @@
+<template>
+  <view>
+    <form catchsubmit="formSubmit" catchreset="formReset">
+      <view class="btn-area">
+        <button type="primary" formType="submit">Submit</button>
+        <button formType="reset">Reset</button>
+      </view>
+
+      <view class="weui-cell weui-cell_input" style="background-color:white;height:110rpx;">
+          <view class="weui-cell__hd">
+              <view class="weui-label">群名称</view>
+          </view>
+          <view class="weui-cell__bd">
+              <input class="weui-input" name="groupName" placeholder="请输入群名称"/>
+          </view>
+      </view>
+      
+      <view class="weui-cells weui-cells_after-title">
+          <view class="weui-cell weui-cell_select">
+              <view class="weui-cell__hd weui-cell__hd_in-select-after">
+                  <view class="weui-label label0">父群组名称</view>
+              </view>
+              <view class="weui-cell__bd">
+                  <picker bindchange="bindGroupChange" name="parentGroup" value="{{formData.parentGroupIndex}}" range="{{formData.parentGroupLst}}">
+                      <view class="weui-select weui-select_in-select-after">{{formData.parentGroupValue}}</view>
+                  </picker>
+              </view>
+          </view>
+      </view>
+
+      <view class="weui-cells weui-cells_after-title">
+          <view class="weui-cell weui-cell_select">
+              <view class="weui-cell__hd weui-cell__hd_in-select-after">
+                  <view class="weui-label label0">日期</view>
+              </view>
+              <view class="weui-cell__bd">
+                  <picker mode="date" name="deadline" value="{{date}}" start="{{ formData.startTime }}" bindchange="bindDateChange">
+                    <view class="weui-input" style="text-align:right;padding-right:33rpx;">{{ formData.deadline }}</view>
+                  </picker>
+              </view>
+          </view>
+      </view>
+
+      <view class="weui-cells__title">群描述</view>
+      <view class="weui-cells weui-cells_after-title">
+          <view class="weui-cell">
+              <view class="weui-cell__bd">
+                  <textarea class="weui-textarea fontValue" name="groupDesc" placeholder="请输入群描述" style="height: 3.3em" />
+              </view>
+          </view>
+      </view>
+
+      <view class="weui-cells__title">群成员列表</view>
+      <view class="weui-search-bar__form" style="height:90rpx;line-height:90rpx;">
+          <view class="weui-search-bar__box">
+              <icon class="weui-icon-search_in-box" type="search" size="14"></icon>
+              <input style="height:90rpx;" type="text" class="weui-search-bar__input" placeholder="搜索群成员" value="{{formData.inputVal}}" bindinput="inputTyping" />
+              <view class="weui-icon-clear" wx:if="{{inputVal.length > 0}}" bindtap="clearInput">
+                  <icon type="clear" size="14"></icon>
+              </view>
+          </view>
+      </view>
+      <view class="weui-cells weui-cells_after-title">
+          <checkbox-group bindchange="checkboxChange" name="{{ formData.selUser }}">
+              <label class="weui-cell weui-check__label" wx:for="{{ formData.userList }}" wx:key="index">
+                  <image class="headImg" mode="aspectFit" src="{{ item.headImgUrl }}"></image>
+                  <view class="weui-cell__bd userNickName">{{ item.username || item.nickname }}</view>
+                  <checkbox class="weui-check nickCheckbox" value="{{ item.openId }}" checked="{{ item.checked }}"/>
+                  <view class="weui-cell__hd weui-check__hd_in-checkbox">
+                      <icon class="weui-icon-checkbox_success" type="success" size="23" wx:if="{{item.checked}}"></icon>
+                  </view>
+              </label>
+          </checkbox-group>
+      </view>
+    </form>
+  </view>
+</template>
+
+<script>
+import system from '../../static/utils/system'
+var app = getApp();
+export default {
+  config: {
+    navigationBarTitleText: '新增群组'
+  },
+  data: {
+    date:'',
+    formData:{
+      startTime:'',//日期讯择期的开始时间。。。。
+      originGroupList:[],//获取到的原群列表....
+      parentGroupLst:[],//父群组列表
+      parentGroupIndex:0,//父群组下标....
+      parentGroupValue:"",//选中的父群组的值
+      userList:[],//用户列表
+      selUser:[],//选中的群成员....
+      deadline:"",//截止日期。。。
+      inputVal:'',//搜索框的值
+      keywords:'',//搜索群成员的关键字...
+    },
+    submitFormData:{
+      openIds:[],//选中的群成员ID
+      parentId:'',//父群组id
+    }
+  },
+  onLoad(option){
+    this.reqUserList();//请求用户列表
+    this.reqGroupList();//请求群组列表...
+    let time = new Date();
+    let startTime = `${time.getFullYear()}-${time.getUTCMonth() + 1}-${time.getUTCDate()}`
+    this.setData({
+      ['formData.startTime']:startTime
+    })
+  },
+  bindDateChange(e){
+    this.setData({
+      ['formData.deadline']:e.detail.value
+    })
+  },
+  inputTyping(e){
+    this.setData({
+      ['formData.keywords']:e.detail.value
+    })
+    this.reqUserList(e.detail.value)
+  },
+  formSubmit (e) {
+    console.log('form发生了submit事件，携带数据为：', e.detail.value)
+  },
+  formReset (e) {
+    console.log('form发生了reset事件，携带数据为：', e.detail.value)
+    this.setData({
+      chosen: ''
+    })
+  },
+  checkboxChange(e){
+    this.setData({
+      ['submitFormData.openIds']:e.detail.value
+    })
+  },
+  bindGroupChange(e){
+    let that = this;
+    this.setData({
+      ['submitFormData.parentId']:that.data.formData.originGroupList[e.detail.value].groupId,
+      ['formData.parentGroupValue']:that.data.formData.parentGroupLst[e.detail.value]
+    })
+  },
+  reqGroupList(){
+    let that = this;
+    system.http({
+      url:'chat/groups',
+      method:'get',
+      param:{},
+      scb(res){
+        res.data.data.rows.forEach((val,i,arr)=>{
+          that.data.formData.parentGroupLst.push( val.groupName )
+        })
+        that.setData({
+          ['formData.originGroupList']:res.data.data.rows,
+          ['formData.parentGroupLst']:that.data.formData.parentGroupLst
+        })
+      },
+      fcb(res){system.stateMsg({title:"获取群列表失败！",time:1000})}
+    })
+  },
+  reqUserList(keywords=""){///请求用户列表.
+    let that = this;
+    system.http({
+      url:'chat/users',
+      method:'get',
+      param:{
+        "keywords":keywords
+      },
+      scb(res){
+        that.setData({
+          ['formData.userList']:res.data.data.rows
+        })
+      },
+      fcb(res){
+        system.stateMsg({title:"获取成员失败！",time:1000})
+      }
+    })
+  }
+}
+</script>
+
+<style lang="less">
+  .weui-check{
+    position: relative;
+    left: 0;
+  }
+  .headImg{
+    width: 65rpx;
+    height: 65rpx;
+    margin-right: 20rpx;
+  }
+  .userNickName{
+    font-size: 30rpx;
+  }
+  .nickCheckbox{
+    left: 37rpx;
+  }
+  .label0{
+    font-size: 17px;
+  }
+  .fontValue{
+    font-size: 19px;
+  }
+</style>

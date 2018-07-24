@@ -27,13 +27,16 @@
     </view>
     <!-- //右滑菜单.........  -->
     <view style="z-index:0;">
-      <view class="sample_title" style="background-color:white;border-bottom:1px solid #E5E5E5;" wx:if="{{ list1.length != 0 }}">已加入</view>
+        <view class="sample_title" style="background-color:white;border-bottom:1px solid #E5E5E5;" wx:if="{{ list1.length != 0 }}">
+           <text>已加入</text>
+           <icon catchtap="addGroup" class="iconfont myWx-jia1" style="float:right;right:25rpx;position:relative;font-size:55rpx;"></icon>
+        </view>
         <ui-accordion bindchange="slide" wx:for="{{ list1 }}" wx:key="{{ index }}" header-height="50">
             <view slot="header" class="accorHeader">
                 <ui-row height="80" class="top_tip" border-bottom style="padding-right:35px;">
                   <ui-col width="80" align="center" vertical-align="middle" bindtap="toChat" data-item="{{ item }}">
                       <view class="left_icon left_icon1" style="">
-                          <image src="{{ item.icon }}"></image>
+                          <image src="{{ item.icon || defaultHeadImg }}"></image>
                       </view>
                   </ui-col>
                   <ui-col class="text" align="left" vertical-align="middle" space="20" bindtap="toChat" data-item="{{ item }}">
@@ -49,6 +52,7 @@
                           <view class="txt">{{ item.groupDesc ? item.groupDesc : "" }}</view>
                       </view>
                   </ui-col>
+                  <text class="angleIcon" wx:if="{{ item.unreadCount != 0 }}">{{ item.unreadCount > 100 ? '99+' : item.unreadCount }}</text>
                     <!-- <view class="msgTransCheckbox" wx:if="{{true }}"><checkbox-group data-item="{{ item }}" bindchange="checkboxChange"><label><checkbox class="checkbox" value="{{item.msgId}}"/></label></checkbox-group></view> -->
               </ui-row>
             </view>
@@ -56,7 +60,7 @@
                 <ui-row height="70" style="padding-right:0;" class="top_tip" border-bottom wx:for="{{item.children}}" wx:key="indexTow" wx:for-item="itemChidren" wx:for-index="indexTow">
                   <ui-col space-left="25" width="80" align="center" vertical-align="middle" bindtap="toChat" data-item="{{ itemChidren }}">
                       <view class="left_icon left_icon1" style="">
-                          <image src="{{ itemChidren.icon }}"></image>
+                          <image src="{{ itemChidren.icon || defaultHeadImg}}"></image>
                       </view>
                   </ui-col>
                   <ui-col space-left="25" class="text" align="left" vertical-align="middle" space="20" bindtap="toChat" data-item="{{ itemChidren }}">
@@ -72,6 +76,7 @@
                           <view class="txt">{{ item.groupDesc ? item.groupDesc : "" }}</view>
                       </view>
                   </ui-col>
+                  <text class="angleIcon">{{ item.unreadCount }}</text>
                 </ui-row>
             </view>
         </ui-accordion>
@@ -85,7 +90,7 @@
                   <ui-col width="80" space="20" align="center" vertical-align="middle">
                     <view class="left_icon left_icon1">
                         <!-- <ui-icon type="api-access" color="#fff" size="20"></ui-icon> -->
-                        <image src="{{ item.icon }}"></image>
+                        <image src="{{ item.icon || defaultHeadImg }}"></image>
                     </view>
                   </ui-col>
                   <ui-col align="left">
@@ -128,6 +133,7 @@ export default {
     overList:[],
     el: 'undefined',
     showInput:true,
+    defaultHeadImg:''
   },
   onLoad(option){
     var that = this;
@@ -145,9 +151,12 @@ export default {
             app.globalData.userMsgReq = res.data;
         }
     })
+    this.getDefaultImg();
   },
-  checkboxChange(e){
-      debugger;
+  addGroup(e){
+      wx.navigateTo({
+          url:'/pages/newGroup/index',success(res){},fail(res){}
+      })
   },
   showInput(){
       var that = this;
@@ -192,7 +201,7 @@ export default {
                 });
             }
             wx.stopPullDownRefresh();
-            wx.hideNavigationBarLoading()
+            wx.hideNavigationBarLoading();
         },
         fail(res){
             system.msgTip({title: '提示',content: res.data.message,scb(){},ccb(){}})
@@ -264,11 +273,26 @@ export default {
           })
           this.data.el = index  
       }
+  },
+  getDefaultImg(){
+      let that = this;
+      system.http({
+          url:'chat/attach/defaultGroupIcon',
+          method:'get',
+          scb(res){
+              that.setData({
+                  "defaultHeadImg":res.data.data.base64Str
+              })
+          },fcb(res){}
+      })
   }
 }
 </script>
 
 <style lang="less">
+::content .arrow{
+    top:30px;
+}
 .btn[type="primary"]{
     font-family:PingFang-SC-Regular;
     color:#1aad19 !important;
@@ -285,9 +309,26 @@ export default {
         background-color: none;
     }
 }
+.angleIcon{
+    position:absolute;
+    z-index:10000;
+    right:14rpx;
+    top:14rpx;
+    display:inline-block;
+    width:auto;
+    font-size:22rpx;
+    min-width:45rpx;
+    height:45rpx;
+    border-radius:40%;
+    background-color:#FF7360;
+    color:white;
+    line-height:45rpx;
+    padding:2rpx 8rpx;
+}
 .accorContent{
     // padding-right: 35px;
 }
+
 .listRow{
     border-bottom:none;
 }

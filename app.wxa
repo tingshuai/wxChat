@@ -16,12 +16,13 @@ export default {
       'pages/fillInApplycation/index',
       'pages/groupChat/index',
       'pages/groupMsg/index',
-      'pages/webView/index'
+      'pages/webView/index',
+      'pages/newGroup/index'
     ],
     plugins: {
-      "WechatSI": {
-          "version": "0.0.9",
-          "provider": "wx069ba97219f66d99"
+      WechatSI: {
+        version: '0.0.9',
+        provider: 'wx069ba97219f66d99'
       }
     },
     window: {
@@ -42,38 +43,38 @@ export default {
     socketHost: 'wss://www.china-cms.com', // 祝天洋 'wss://192.168.0.144', 沈鑫：192.168.0.104，线上：www.china-cms.com
     httpHost: 'https://www.china-cms.com', //'https://192.168.0.144',
     userMsg: {},
-    openId: '',//'oc6Hd1BHJF55T1jIWr2eC2AEYoUQ',
-    sessionId:'',
-    userMsgReq:{},
-    wxImg:''
+    openId: '', //'oc6Hd1BHJF55T1jIWr2eC2AEYoUQ',
+    sessionId: '',
+    userMsgReq: {},
+    wxImg: ''
   },
   onLaunch() {
     system.attachInfo()
-    var that = this;
+    var that = this
     wx.request({
       url: `${that.globalData.httpHost}/chat/attach/logo`, //请求已加入群组或者未加入群组
       data: {},
-      method:'get',
+      method: 'get',
       header: {
-          'content-type': 'application/json' // 默认值
+        'content-type': 'application/json' // 默认值
       },
       success(res) {
-           if ( res.data.status == 200) {
-            wx.setStorage({
-              key:"wxImg",
-              data:res.data.data.base64Str
-            })
+        if (res.data.status == 200) {
+          wx.setStorage({
+            key: 'wxImg',
+            data: res.data.data.base64Str
+          })
         }
       }
     })
     // 可以通过 wx.getSetting 先查询一下用户是否授权了 "scope.record" 这个 scope
     wx.getSetting({
       success(res) {
-        var loginMsg = {};
+        var loginMsg = {}
         wx.getStorage({
-          key:"loginMsg",
-          success(res){
-            loginMsg = res.data;
+          key: 'loginMsg',
+          success(res) {
+            loginMsg = res.data
           }
         })
         if (res.authSetting['scope.userInfo'] && loginMsg.code == 200) {
@@ -83,7 +84,12 @@ export default {
               that.globalData.userMsg = res.userInfo
             },
             fail(res) {
-              system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
+              system.msgTip({
+                title: '提示',
+                content: res.errMsg,
+                scb() {},
+                ccb() {}
+              })
             }
           })
           wx.reLaunch({
@@ -92,14 +98,17 @@ export default {
         }
       },
       fail(res) {
-        system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
+        system.msgTip({
+          title: '提示',
+          content: res.errMsg,
+          scb() {},
+          ccb() {}
+        })
         // system.stateMsg({title:res})
       }
     })
   },
-  onHide: function() {
-      
-  }
+  onHide: function() {}
 }
 </script>
 

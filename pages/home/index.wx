@@ -73,10 +73,10 @@
                                   <text>09-18</text>
                               </ui-col> -->
                           </ui-row>
-                          <view class="txt">{{ item.groupDesc ? item.groupDesc : "" }}</view>
+                          <view class="txt">{{ itemChidren.groupDesc ? itemChidren.groupDesc : "" }}</view>
                       </view>
                   </ui-col>
-                  <text class="angleIcon">{{ item.unreadCount }}</text>
+                  <text class="angleIcon" wx:if="{{ itemChidren.unreadCount != 0 }}">{{ itemChidren.unreadCount > 100 ? '99+' : itemChidren.unreadCount }}</text>
                 </ui-row>
             </view>
         </ui-accordion>

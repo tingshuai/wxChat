@@ -96,7 +96,7 @@
           <ui-row height="100" class="sentType" hidden="{{ isHidden }}" style="justify-content:flex-start;">
             <ui-col style="display:inline-block;" class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-zhaopian1" bindtap="chooseFile" data-type="1" data-watermark = "false"></text></ui-col>
             <ui-col style="display:inline-block;" class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-tupianshuiyinshezhi" bindtap="chooseFile" data-type="1" data-watermark = "true" style="font-size:"></text></ui-col>
-            <!-- <ui-col class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-wenjian1" bindtap="chooseFile" data-type="6"></text></ui-col> -->
+            <ui-col class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-wenjian1" bindtap="chooseFile" data-type="6"></text></ui-col>
           </ui-row>
         </view>
       </ui-fixed-view>
@@ -263,7 +263,6 @@ export default {
       SocketTask.onMessage(function(res) {
         var data = JSON.parse( res.data );
         var chatDataMsgId;
-        debugger;
         if( onFirst == 1 ){
           that.data.chatData.forEach((val,ii,arr)=>{
             if(val.msgId){
@@ -743,7 +742,9 @@ export default {
         }
       })
     }else if( type == 6 ){//file文件
-     
+      wx.navigateTo({
+        url:`/pages/fileList/index?groupMsg=${that.data.theGroupMsg.groupId}`
+      })
     }
   },
   // 发送消息

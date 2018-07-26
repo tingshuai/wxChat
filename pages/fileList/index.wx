@@ -1,0 +1,149 @@
+<template>
+  <view>
+    <view class="weui-search-bar">
+      <view class="weui-search-bar__form">
+        <view class="weui-search-bar__box">
+            <icon class="weui-icon-search_in-box" type="search" size="14"></icon>
+            <input type="text" class="weui-search-bar__input" placeholder="搜索" value="{{inputVal}}" focus="{{inputShowed}}" bindinput="inputTyping" />
+            <view class="weui-icon-clear" wx:if="{{inputVal.length > 0}}" bindtap="clearInput">
+                <icon type="clear" size="14"></icon>
+            </view>
+        </view>
+      </view>
+    </view>
+    <view class="top_tip">
+        <ui-row height="80" border-bottom hover-class="touchui-hover" wx:for="{{ fileList }}" wx:key="{{ index }}" catchtap="openFile" data-item="{{item}}">
+            <ui-col width="80" align="center" vertical-align="middle">
+                <view class="left_icon left_icon1">
+                    <ui-icon type="api-access" color="#6BD39F" size="50" class="iconfont {{ item.extendName == '.doc' || item.extendName == '.docx' ? 'myWx-yunxiangmugongdanweixintubiao-1' : item.extendName == '.pdf' ? 'myWx-yunxiangmugongdanweixintubiao-' : item.extendName == '.ppt' || item.extendName == '.pptx' ? 'myWx-yunxiangmugongdanweixintubiao-2' : item.extendName == '.xls' || item.extendName == '.xlsx' ? 'myWx-yunxiangmugongdanweixintubiao-3' : 'myWx-552cd47fba2cc'}}"></ui-icon>
+                </view>
+            </ui-col>
+            <ui-col class="text" align="left" vertical-align="middle" space="20">
+                <view style="width: 100%;">
+                    <ui-row height="30">
+                        <ui-col align="left" vertical-align="middle">
+                            <text>{{ item.content }}</text>
+                        </ui-col>
+                    </ui-row>
+                </view>
+            </ui-col>
+        </ui-row>
+    </view>
+  </view>
+</template>
+
+<script>
+import system from '../../static/utils/system'
+var app = getApp();
+export default {
+  config: {
+    navigationBarTitleText: '文件列表'
+  },
+  data: {
+    inputShowed: false,
+    inputVal: "",
+    fileList:[]
+  },
+  onLoad(option){
+    this.getFileList( option );
+  },
+  openFile(e){
+    var that = this;
+    var item = e.currentTarget.dataset.item;
+    const downloadTask = wx.downloadFile({
+      url:item.attachUrl,
+      success(ress) {
+        // 只要服务器有响应数据，就会把响应内容写入文件并进入 success 回调，业务需要自行判断是否下载到了想要的内容
+        function validate(url){//检测文件类型
+          var d = /\.[^\.]+$/.exec(url);
+          return d;
+        }
+        if (ress.statusCode === 200) {
+            if( validate(ress.tempFilePath) == ".doc" || validate(ress.tempFilePath) == ".xls" || validate(ress.tempFilePath) == ".ppt" || validate(ress.tempFilePath) == ".pdf" || validate(ress.tempFilePath) == ".docx" || validate(ress.tempFilePath) == ".xlsx" || validate(ress.tempFilePath) == ".pptx" ){
+              wx.openDocument({
+                filePath: ress.tempFilePath,
+                success(res) {},
+                fail(res){}
+              })
+            }else{//不支持类型.....
+              wx.navigateTo({
+                url: `/pages/webView/index?fileUrl=${item.attachUrl}`,
+                success(res){},
+                fail(res){}
+              })
+            }
+        }
+      },
+      fail(res){
+        console.log( "fail" )
+        system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
+      }
+    })
+    downloadTask.onProgressUpdate((res) => {})
+  },
+  getFileList(option){
+    let that = this;
+    system.http({
+      url:'chat/msg',
+      method:"get",
+      param:{
+        "keywords":that.data.inputVal,
+        "msgType":6,
+        "groupId":option.groupMsg,
+        "pageSize":0
+      },
+      scb(res){
+        res.data.data.rows.filter((item)=>{
+          item.extendName = /\.[^\.]+$/.exec(item.attachUrl)
+        })
+        that.setData({
+          "fileList":res.data.data.rows
+        })
+      },
+      fcb(res){
+        system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
+      }
+    })
+  },
+  clearInput: function () {
+      this.setData({
+          inputVal: ""
+      });
+  },
+  inputTyping: function (e) {
+      this.setData({
+          inputVal: e.detail.value
+      });
+  }
+}
+</script>
+
+<style lang="less">
+.top_tip{
+    .left_icon{
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        // background-color:#FCB300; 
+        text-align: center;
+        line-height: 50px;
+    }
+    .left_icon2{
+        background-color: #FF7360;
+    }
+    .left_icon3{
+        background-color: #39CCC5;
+    }
+    .text{
+        text{
+            font-size: 16px;
+            color: #313338;
+        }
+        view{
+            color: #9C9FA4;
+            font-size: 12px;
+            .mix-text-overflow();
+        }
+    }
+}
+</style>

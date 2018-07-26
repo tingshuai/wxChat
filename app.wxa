@@ -17,7 +17,8 @@ export default {
       'pages/groupChat/index',
       'pages/groupMsg/index',
       'pages/webView/index',
-      'pages/newGroup/index'
+      'pages/newGroup/index',
+      'pages/fileList/index'
     ],
     plugins: {
       WechatSI: {

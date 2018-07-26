@@ -236,7 +236,8 @@ export default {
       url:'chat/groups/selector',
       method:'get',
       param:{
-        "openId":app.globalData.openId
+        "openId":app.globalData.openId,
+        "pageSize":0
       },
       scb(res){
         res.data.data.forEach((val,i,arr)=>{
@@ -317,7 +318,8 @@ export default {
       url:'chat/users',
       method:'get',
       param:{
-        "keywords":keywords
+        "keywords":keywords,
+        "status":1
       },
       scb(res){
         if(res.data.status == 200){

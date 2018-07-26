@@ -1,25 +1,52 @@
 <template>
-  <view class="content" hover-class="none" hover-stop-propagation="true">
+  <view class="content">
     <!-- 群成员头像 -->
-    <view class="talkItem" hover-class="none" hover-stop-propagation="true">
-        <view width="60" align="left" vertical-align="top" class="mycol" hover-stop-propagation="true" wx:for="{{ groupMsg.groupUsers }}" wx:key="{{index}}" >
+    <view class="talkItem" >
+        <view width="60" align="left" vertical-align="top" bindtap="sel" data-index="{{index}}" data-item="{{item}}" class="mycol" wx:for="{{ groupMsg.groupUsers }}" wx:key="{{index}}">
             <view class="left_icon left_icon1">
                 <image src="{{ item.headImgUrl }}"/>
+                <icon class="iconfont myWx-qunzhu" wx:if="{{ groupMsg.managerId == item.openId }}"></icon>
             </view>
             <text>{{ item.username }}</text>
+            <icon type="success" size="15" class="figure" wx:if="{{ item.authAddMember }}"></icon>
         </view>
     </view>
-    <ui-row class="groupName" vertical-align="middle">
+    <!-- <ui-row class="groupName" vertical-align="middle">
       <ui-col vertical-align="middle" space-left="10" align="left" class="txtLeft">群名称</ui-col>
       <ui-col vertical-align="middle" space-right="10" align="right" class="txtRight">{{ groupMsg.groupName ? groupMsg.groupName : '' }}</ui-col>
     </ui-row>
     <ui-row class="groupDescribe">
       <ui-col vertical-align="middle" space-left="10" align="left" class="txtLeft" span="2">群描述</ui-col>
       <ui-col vertical-align="middle" space-right="10" align="right" span="10" class="txtRight">{{ groupMsg.groupDesc ? groupMsg.groupDesc : '' }}</ui-col>
-    </ui-row>
+    </ui-row> -->
+    <view class="weui-cells weui-cells_after-title">
+      <view class="weui-cell weui-cell_input" style="height:35px;">
+          <view class="weui-cell__hd">
+              <view class="weui-label label0" style="width:57px;">群名称</view>
+          </view>
+          <view class="weui-cell__bd">
+              <input class="weui-input label1" bindinput="onInput" value="{{ groupMsg.groupName ? groupMsg.groupName : '' }}"/>
+          </view>
+      </view>
+      <view class="weui-cell weui-cell_input">
+          <view class="weui-cell__hd" style="width:57px;top:-22px;position:relative;">
+              <view class="weui-label label0">群描述</view>
+          </view>
+          <view class="weui-cell__bd">
+              <textarea class="weui-textarea fontValue" bindinput="onInputTxt" placeholder=""  style="height: auto;min-height:180rpx;" value="{{ groupMsg.groupDesc ? groupMsg.groupDesc : '' }}"/>
+          </view>
+      </view>
+    </view>
     <!--退群按钮-->
-    <ui-fixed-view bottom="15" left="0" right="0">
-      <button type="warn" class="fixed_bottom" bindtap="exitGroup">删除并退群</button>
+    <ui-fixed-view bottom="0" left="0" right="0">
+      <view class="fixed-view-content" style="padding:0 35rpx;">
+        <view class="btn-area">
+          <button type="warn" class="fixed_bottom" bindtap="exitGroup" wx:if="{{ !isEdit }}">删除并退群</button>
+          <button type="primary" class="fixed_bottom" bindtap="confirm" wx:if="{{ isEdit }}">确定</button>
+          <button type="primary" class="fixed_bottom" bindtap="cancel" wx:if="{{ isEdit }}">取消</button>
+          <button type="default" class="fixed_bottom" bindtap="editGroup" wx:if="{{ !isEdit }}">编辑</button>
+        </view>
+      </view>
     </ui-fixed-view>
   </view>
 </template>
@@ -33,12 +60,77 @@
     },
     data: {
       groupMsg:{},
-      userList:[]
+      userList:[],
+      isEdit:false,
+      submitData:{
+        groupId:"",
+        groupName :"",
+        groupDesc:"",
+        addMemberOpenIds:[]
+      }
     },
     onLoad( option ){
-        this.setData({
-            groupMsg:JSON.parse( option.item )
-        })
+      this.setData({
+        groupMsg:JSON.parse( option.item ),
+        ['submitData.groupId']:JSON.parse( option.item ).groupId,
+        ['submitData.groupName']:JSON.parse( option.item ).groupName,
+        ['submitData.groupDesc']:JSON.parse( option.item ).groupDesc,
+      })
+    },
+    sel(e){
+      let item = e.currentTarget.dataset;
+      this.data.groupMsg.groupUsers[ item.index ].authAddMember = !this.data.groupMsg.groupUsers[ item.index ].authAddMember;
+      this.setData({
+        "groupMsg":this.data.groupMsg
+      })
+    },
+    onInput(e){
+      this.setData({
+        ['submitData.groupName']:e.detail.value
+      })
+    },
+    onInputTxt(e){
+      this.setData({
+        ['submitData.groupDesc']:e.detail.value
+      })
+    },
+    editGroup(e){//编辑群组
+      this.setData({
+        "isEdit":true
+      })
+    },
+    confirm(e){//确定....
+      let that = this;
+      this.data.groupMsg.groupUsers.forEach((val,i,arr)=>{
+        if( val.authAddMember == true){
+          that.data.submitData.addMemberOpenIds.push( val.openId )
+        }
+      })
+      this.setData({
+        "isEdit":true,
+        ["submitData.addMemberOpenIds"]:that.data.submitData.addMemberOpenIds
+      })
+      system.http({
+        url:`chat/groups/${that.data.submitData.groupId}`,
+        method:"post",
+        header:{'content-type': 'application/x-www-form-urlencoded'},
+        param:that.data.submitData,
+        scb(res){
+          debugger;
+          this.setData({
+            "isEdit":true
+          })
+        },
+        fcb(res){
+          debugger;
+        }
+      })
+
+    },
+    cancel(e){
+      this.setData({
+        "isEdit":false
+      })
     },
     exitGroup(){//退群
         let that = this;
@@ -71,7 +163,7 @@
 <style lang="less">
  .content{
     // padding:0px 8px 0px 8px;
-    padding-bottom: 60px;
+    padding-bottom: 135px;
     .groupName,.groupDescribe{
       background-color:white;
       height: 40px;
@@ -99,7 +191,7 @@
       }
     }
     .fixed_bottom{
-      margin:0 20px;
+      // margin:0 20px;
     }
     .talkItem{
       margin:15px 0;
@@ -135,6 +227,7 @@
       display: inline-block;
       height: 90px;
       text-align: center;
+      position: relative;
       >text{
         width: 100%;
         font-size: 12px;
@@ -146,4 +239,31 @@
       }
     }
 }
+.label0{
+    font-size: 30rpx;
+  }
+  .figure{
+    position: absolute;
+    font-size: 22rpx;
+    background-color: antiquewhite;
+    bottom:36px;
+    right:4px;
+    border-radius:50%;
+  }
+  .label1{
+    font-size: 28rpx;
+  }
+  .fontValue{
+    font-size: 28rpx;
+    line-height: 38rpx;
+    padding-top: 20rpx;
+  }
+  .myWx-qunzhu{
+    position:absolute;
+    top:-24px;
+    left:-4px;
+    color:#00bb00;
+    font-size:60rpx;
+    transform:rotate(-45deg);
+  }
 </style>

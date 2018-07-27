@@ -6,13 +6,13 @@
       <view class="weui-cells weui-cells_after-title">
           <view class="weui-cell weui-cell_input">
               <view class="weui-cell__hd">
-                  <view class="weui-label label0">群名称<text class="xingxing {{  formRuler.groupName.require ? 'warnXing' : 'defaultXing' }}">★</text></view>
+                  <view class="weui-label label0">群名称<text class="xingxing {{  formData.groupName == '' ? 'warnXing' : 'defaultXing' }}">★</text></view>
               </view>
               <view class="weui-cell__bd">
-                  <input class="weui-input" bindinput="inputName" name="groupName" placeholder="请输入群名称" placeholder-class="placeholderClass"/>
+                  <input class="weui-input" value="{{ formData.groupName }}" bindinput="inputName" name="groupName" placeholder="请输入群名称" placeholder-class="placeholderClass"/>
               </view>
           </view>
-          <view class="weui-cell weui-cell_select">
+          <view class="weui-cell weui-cell_select" wx:if="{{ edit == 'true' ? false : true}}">
               <view class="weui-cell__hd weui-cell__hd_in-select-after">
                   <view class="weui-label label0">父群组名称</view>
               </view>
@@ -38,10 +38,10 @@
       <view class="weui-cells weui-cells_after-title">
           <view class="weui-cell weui-cell_select">
               <view class="weui-cell__hd weui-cell__hd_in-select-after">
-                  <view class="weui-label label0">日期<text class="xingxing {{  formRuler.deadline.require ? 'warnXing' : 'defaultXing' }}">★</text></view>
+                  <view class="weui-label label0">日期<text class="xingxing {{  formData.date == '' ? 'warnXing' : 'defaultXing' }}">★</text></view>
               </view>
               <view class="weui-cell__bd">
-                  <picker mode="date" name="deadline" value="{{date}}" start="{{ formData.startTime }}" bindchange="bindDateChange">
+                  <picker mode="date" name="deadline" value="{{ formData.date }}" start="{{ formData.startTime }}" bindchange="bindDateChange">
                     <view class="weui-input" style="text-align:right;padding-right:33rpx;">{{ formData.deadline }}</view>
                   </picker>
               </view>
@@ -52,7 +52,7 @@
       <view class="weui-cells weui-cells_after-title">
           <view class="weui-cell">
               <view class="weui-cell__bd">
-                  <textarea placeholder-class="placeholderClass" class="weui-textarea fontValue" name="groupDesc" placeholder="请输入群描述" style="height: 3.3em" />
+                  <textarea placeholder-class="placeholderClass" value="{{ formData.groupDesc }}" class="weui-textarea fontValue" name="groupDesc" placeholder="请输入群描述" style="height: 3.3em" />
               </view>
           </view>
       </view>
@@ -74,9 +74,6 @@
                     <icon type="success" size="15" class="figure" wx:if="{{ item.isAddMember }}"></icon>
                     <view class="weui-cell__bd userNickName">{{ item.username || item.nickname }}</view>
                     <checkbox class="weui-check nickCheckbox" value="{{ item.openId }}" checked="{{ item.checked }}"/>
-                    <!-- <view class="weui-cell__hd weui-check__hd_in-checkbox">
-                        <icon class="weui-icon-checkbox_success" type="success" size="23" wx:if="{{item.checked}}"></icon>
-                    </view> -->
               </view>
           </checkbox-group>
       </view>
@@ -101,13 +98,17 @@ export default {
     navigationBarTitleText: '新增群组'
   },
   data: {
-    date:'',
     tip:{
       showTopTips:false,
       tipMsg:"",
       enable:true
     },
+    edit:"",//是否是编辑进来的。。。。
+    groupMsg:{},
     formData:{
+      date:'',
+      groupName:"",
+      groupDesc:"",//群描述的值..
       startTime:'',//日期讯择期的开始时间。。。。
       originGroupList:[], //获取到的原群列表....
       originUserList:[],//获取到的原用户列表.....
@@ -137,19 +138,50 @@ export default {
     }
   },
   onLoad(option){
-    this.reqUserList();//请求用户列表
-    this.reqGroupList();//请求群组列表...
     let time = new Date();
+    let that = this;
     let startTime = `${time.getFullYear()}-${time.getUTCMonth() + 1}-${time.getUTCDate()}`
+    let promise = new Promise((resolve,reject)=>{
+      that.reqGroupList();//请求群组列表...
+      that.reqUserList( "", resolve );//请求用户列表.....
+    })
     this.setData({
       ['formData.startTime']:startTime,
-      ['submitFormData.managerId']:app.globalData.openId
+      ['submitFormData.managerId']:app.globalData.openId,
+      "groupMsg":JSON.parse(option.groupMsg),
+      "edit":option.edit
+    })
+    promise.then((that)=>{
+      if(option.edit == "true"){
+        that.setData({
+          "groupMsg":JSON.parse(option.groupMsg),
+          ['formData.groupName']:that.data.groupMsg.groupName,
+          ['formData.deadline']:that.data.groupMsg.deadline,
+          ['formData.date']:that.data.groupMsg.deadline,
+          ['formData.groupDesc']:that.data.groupMsg.groupDesc,
+        });
+        let openIds = [];
+        that.data.groupMsg.groupUsers.forEach((value,ii,array)=>{
+          that.data.formData.userList.filter((val,i,arr)=>{
+            if(val.openId == value.openId){
+              val.checked = true;
+              openIds.push( value.openId )
+              if(value.authAddMember){
+                val.isAddMember = true;
+              }
+            }
+          })
+        })
+        that.setData({
+          ["formData.userList"]:that.data.formData.userList,
+          ['submitFormData.openIds']:openIds
+        })
+      }
     })
   },
   inputFocus(e){//搜索成员聚焦时
     // var query = wx.createSelectorQuery();
     // query.select('#groupUser').boundingClientRect((res)=>{
-      
     // }).exec();
     // setTimeout(() => {
     //   wx.pageScrollTo({
@@ -160,7 +192,7 @@ export default {
   },
   tabHead(e){
     let that = this;
-    let item = e.target.dataset;
+    let item = e.currentTarget.dataset;
     that.data.formData.userList[item.index].checked = true;
     that.data.formData.userList[item.index].isAddMember = !that.data.formData.userList[item.index].isAddMember;
     this.setData({
@@ -180,12 +212,18 @@ export default {
     this.setData({
       ['formData.keywords']:e.detail.value
     })
-    this.reqUserList(e.detail.value)
+    this.reqUserList( e.detail.value );
   },
   formCancel (e) {
-    wx.navigateTo({
-      url: '/pages/home/index'
-    })
+    if( this.data.edit == "true" ){
+      wx.navigateTo({
+        url: '/pages/groupMsg/index'
+      })
+    }else{
+      wx.navigateTo({
+        url: '/pages/home/index'
+      })
+    }
   },
   checkboxChange(e){
     let list=[];
@@ -265,7 +303,7 @@ export default {
   submitGroupData(e){
     let that = this;
     let promise = new Promise((resolve,reject)=>{
-      if(that.data.formRuler.groupName.require == false && that.data.formRuler.deadline.require == false){
+      if(that.data.formData.groupName != '' && that.data.formRuler.deadline.require != ''){
         resolve();
       }else{
         that.setData({
@@ -275,8 +313,7 @@ export default {
         })
         setTimeout(function(){
           that.setData({
-            ["tip.showTopTips"]:false,
-            ["tip.tipMsg"]:"请补充完带星号内容"
+            ["tip.showTopTips"]:false
           })
         },1000)
       }
@@ -289,14 +326,17 @@ export default {
         ['submitFormData.addMemberOpenIds']:that.data.submitFormData.addMemberOpenIds
       })
       let formData = Object.assign({},e.detail.value,that.data.submitFormData);
+      if(that.data.edit == 'true'){
+        formData.groupId = that.data.groupMsg.groupId;
+      }
       system.http({
-        url:'chat/groups',
+        url: that.data.edit == 'true' ? `chat/groups/${that.data.groupMsg.groupId}` : 'chat/groups',//新增&修改....
         method:'post',
         header:{'content-type': 'application/x-www-form-urlencoded'},
         param: formData,
         scb(res){
           if(res.data.status == 200){
-            system.stateMsg({title:"新建群组成功",icon:"success",time:1000})
+            system.stateMsg({title: that.data.edit == 'true' ? "修改群组成功" : '新增群组成功',icon:"success",time:1000})
             setTimeout(function(){
               wx.redirectTo({
                 url: '/pages/home/index'
@@ -307,18 +347,19 @@ export default {
           }
         },
         fcb(res){
-          system.stateMsg({title:"创建群组失败！",time:1000})
+          system.stateMsg({title:that.data.edit == 'true' ? "修改群组成功" : '新增群组成功',time:1000})
         }
       })
     })
   },
-  reqUserList(keywords=""){///请求用户列表.
+  reqUserList(keywords="",resolve){///请求用户列表.
     let that = this;
     system.http({
       url:'chat/users',
       method:'get',
       param:{
         "keywords":keywords,
+        "pageSize":0,
         "status":1
       },
       scb(res){
@@ -330,6 +371,7 @@ export default {
           that.setData({
             ['formData.userList']:res.data.data.rows
           })
+          resolve(that);
         }else{
           system.stateMsg({title:res.data.data.message,time:1000})
         }
@@ -371,7 +413,9 @@ export default {
     font-size: 30rpx;
   }
   .fontValue{
-    font-size: 19px;
+    font-size:35rpx;
+    line-height:38rpx;
+    padding-top:13rpx;
   }
   .figure{
     position: absolute;

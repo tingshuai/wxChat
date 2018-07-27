@@ -37,6 +37,7 @@
                   <ui-col width="80" align="center" vertical-align="middle" bindtap="toChat" data-item="{{ item }}">
                       <view class="left_icon left_icon1" style="">
                           <image src="{{ item.icon || defaultHeadImg }}"></image>
+                          <text class="angleIcon" wx:if="{{ item.unreadCount != 0 }}">{{ item.unreadCount >= 100 ? '99+' : item.unreadCount }}</text>
                       </view>
                   </ui-col>
                   <ui-col class="text" align="left" vertical-align="middle" space="20" bindtap="toChat" data-item="{{ item }}">
@@ -52,7 +53,6 @@
                           <view class="txt">{{ item.groupDesc ? item.groupDesc : "" }}</view>
                       </view>
                   </ui-col>
-                  <text class="angleIcon" wx:if="{{ item.unreadCount != 0 }}">{{ item.unreadCount > 100 ? '99+' : item.unreadCount }}</text>
                     <!-- <view class="msgTransCheckbox" wx:if="{{true }}"><checkbox-group data-item="{{ item }}" bindchange="checkboxChange"><label><checkbox class="checkbox" value="{{item.msgId}}"/></label></checkbox-group></view> -->
               </ui-row>
             </view>
@@ -61,6 +61,7 @@
                   <ui-col space-left="25" width="80" align="center" vertical-align="middle" bindtap="toChat" data-item="{{ itemChidren }}">
                       <view class="left_icon left_icon1" style="">
                           <image src="{{ itemChidren.icon || defaultHeadImg}}"></image>
+                          <text class="angleIcon" wx:if="{{ itemChidren.unreadCount != 0 }}">{{ itemChidren.unreadCount >= 100 ? '99+' : itemChidren.unreadCount }}</text>
                       </view>
                   </ui-col>
                   <ui-col space-left="25" class="text" align="left" vertical-align="middle" space="20" bindtap="toChat" data-item="{{ itemChidren }}">
@@ -76,7 +77,6 @@
                           <view class="txt">{{ itemChidren.groupDesc ? itemChidren.groupDesc : "" }}</view>
                       </view>
                   </ui-col>
-                  <text class="angleIcon" wx:if="{{ itemChidren.unreadCount != 0 }}">{{ itemChidren.unreadCount > 100 ? '99+' : itemChidren.unreadCount }}</text>
                 </ui-row>
             </view>
         </ui-accordion>
@@ -167,7 +167,7 @@ export default {
   },
   exitGroup(e){
     let that = this;
-    let groupMsg = e.target.dataset.item;
+    let groupMsg = e.currentTarget.dataset.item;
     system.http({ url:'chat/groups/quit', method:"post",param:{groupId : groupMsg.groupId,openId:app.globalData.openId} ,scb(res){
         if ( res.data.status == 200) {
             system.stateMsg({title:"退群成功",icon:"success",time:1500});
@@ -323,7 +323,7 @@ export default {
     background-color:#FF7360;
     color:white;
     line-height:45rpx;
-    padding:2rpx 8rpx;
+    padding:2rpx;
 }
 .accorContent{
     // padding-right: 35px;

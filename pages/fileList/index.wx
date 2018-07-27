@@ -28,6 +28,13 @@
                 </view>
             </ui-col>
         </ui-row>
+        <view style="width: 100%;" wx:if="{{ fileList.length == 0 }}">
+            <ui-row height="30">
+                <ui-col align="center" vertical-align="middle" style="margin-top:109px;color:gray;">
+                    <text>空空如也</text>
+                </ui-col>
+            </ui-row>
+        </view>
     </view>
   </view>
 </template>

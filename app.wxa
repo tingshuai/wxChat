@@ -41,8 +41,8 @@ export default {
     }
   },
   globalData: {
-    socketHost: 'wss://www.china-cms.com', // 祝天洋 'wss://192.168.0.144', 沈鑫：192.168.0.104，线上：www.china-cms.com
-    httpHost: 'https://www.china-cms.com', //'https://192.168.0.144',
+    socketHost: 'wss://192.168.0.56', // 祝天洋 'wss://192.168.0.144', 沈鑫：192.168.0.56，线上：www.china-cms.com
+    httpHost: 'https://192.168.0.56', //'https://192.168.0.144',
     userMsg: {},
     openId: '', //'oc6Hd1BHJF55T1jIWr2eC2AEYoUQ',
     sessionId: '',

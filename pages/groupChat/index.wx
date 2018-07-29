@@ -6,9 +6,7 @@
       <view class="article">
         <view class="groupMsgBtn">
           <button bindtap="groupMsg" wx:if="{{ !transmit.isTransmit }}" class="seeGroupMsg cBtn0"> 群信息 </button>
-          <button bindtap="cancelSelect" wx:if="{{ transmit.isTransmit }}" class="iconfont myWx-houtui3 cancelSelect cBtn0"> </button>
-          <icon class="line_icon" wx:if="{{ transmit.isTransmit }}"></icon>
-          <button bindtap="transMsg" wx:if="{{ transmit.isTransmit }}" class="iconfont myWx-qianjin4 toGroupList cBtn0"> </button>
+          <button bindtap="showModel" wx:if="{{ transmit.isTransmit }}" class="seeGroupMsg cBtn0">转发</button>
         </view>
         <scroll-view scroll-y="true" bindscroll="scrllView" style="height:{{ scrollHeight }};" id="viewport" scroll-into-view="{{toView}}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden"><!-- bindscrolltoupper="bindscrolltoupper"，，，，catch:touchstart="loadTouchstart" catch:touchend="loadTouchend" catch:touchmove="loadTouchmove"-->
           <view class="content" id="content">
@@ -105,12 +103,25 @@
       <!-- 全屏弹窗.... -->
       <ui-popup show="{{ model.show }}" height="100%">
           <view class="popup1">
-              <button bindtap="handleShow3" plain type="primary">关闭</button>
-              <view class="selUser0" style="" wx:for="{{ transmit.isTransmit ? transmit.groupList : theGroupMsg.groupUsers }}" data-index="{{ index }}" data-item="{{ item }}" wx:key="index" catchtap="selUser">
-                <image class="headImg" src="{{ transmit.isTransmit ? item.icon : item.headImgUrl }}"></image>
-                <button type="default" class="selUser0Txt {{ selUser.act == index ? 'btnAct' : ''}}">{{ transmit.isTransmit ? item.groupName : item.username }}</button>
+            <scroll-view scroll-y style="height: {{modelHeight}}">
+              <ui-row height="68" class="sentType0" style="" wx:for="{{ transmit.isTransmit ? transmit.groupList : theGroupMsg.groupUsers }}" data-index="{{ index }}" data-item="{{ item }}" wx:key="index" catchtap="selUser">
+                <ui-col style="display:inline-block;" class="selUser0" width="58" align="left" vertical-align="middle">
+                    <image mode="aspectFit" class="headImg" style="" src="{{ transmit.isTransmit ? (item.icon == null ? defaultImg : item.icon) : (item.headImgUrl == null ? item.headImgUrl : defaultImg) }}"></image>
+                </ui-col>
+                <ui-col style="display:inline-block;text-indent:25rpx;" class="" align="left" vertical-align="middle">
+                    <text class="name">{{ transmit.isTransmit ? item.groupName : item.username }}</text>
+                    <text class="groupDesc" wx:if="{{ transmit.isTransmit }}">{{ item.groupDesc == null ? '' : item.groupDesc }}</text>
+                    <icon class="angleIcon" type="success" wx:if="{{ selUser.act == index ? true : false }}" size="23"></icon>
+                </ui-col>
+              </ui-row>
+              <view class="weui-loadmore weui-loadmore_line" wx:if="{{  transmit.isTransmit && ( transmit.groupList.length == 0 )}}">
+                  <view class="weui-loadmore__tips weui-loadmore__tips_in-line" style="background-color:none;">暂无数据{{transmit.groupList}}</view>
               </view>
-              <text wx:if=" {{ transmit.isTransmit && ( transmit.groupList.length == 0 )}}">请先加入群组</text>
+            </scroll-view>
+            <view class="button-sp-area">
+              <button bindtap="cancelSelect" plain type="default">取消</button>
+              <button bindtap="transMsg" plain type="primary">确定</button>
+            </view>
           </view>
       </ui-popup>
   </view>
@@ -131,6 +142,7 @@ export default {
     }
   },
   data: {
+    defaultImg:"",//默认群头像.....
     toView:'',//要滚动的位置...
     msgType:true, //0-文字，1-语音
     isHidden:true,//图片输入显示隐藏
@@ -143,6 +155,7 @@ export default {
     model:{
       show:false,
     },
+    modelHeight:wx.DEFAULT_CONTENT_HEIGHT - 90 + 'px',
     scrollHeight: wx.DEFAULT_CONTENT_HEIGHT - 48 + 'px',
     sendInputMsg :{
       fromUser:app.globalData.openId,//发送人ID
@@ -227,6 +240,14 @@ export default {
       wx.setNavigationBarTitle({//设置页面标题....
         title: JSON.parse (options.item).groupName,
       })
+      system.http({
+        url:'chat/attach/defaultGroupIcon',
+        method:"get",
+        scb(res){
+          app.globalData.defaultImg = res.data.data.base64Str;
+          that.data.defaultImg = res.data.data.base64Str;
+        }
+      });
       let myMsg = {};
       JSON.parse(options.item).groupUsers.forEach((val,i,arr)=>{
         if(val.openId == JSON.parse(options.item).openId){
@@ -395,30 +416,34 @@ export default {
   cancelSelect(){//取消消息选择......
     this.setData({
       ["transmit.isTransmit"]:false,
-      ['inputIn.isLeft']:false
+      ['inputIn.isLeft']:false,
+      ['model.show']:false
+    })
+  },
+  showModel(){
+    this.setData({
+      ["model.show"]:true,
     })
   },
   transMsg(){//选择完转发消息后跳转到群组列表页面
     let that = this;
-    that.setData({
-      ["model.show"]:true,
+    this.data.chatData.forEach((val,i,arr)=>{
+      this.data.transmit.transData.forEach((value,ii,array)=>{
+        val.groupId = that.data.selUser.selMe.groupId;
+        val.groupName = that.data.selUser.selMe.groupName;
+        val.fromUser = that.data.sendInputMsg.fromUser;
+        val.position = that.data.sendInputMsg.position;
+        val.fromUserName = that.data.sendInputMsg.fromUserName;
+        if( val.msgId == value ){
+          that.sendSocketMessage( JSON.stringify( val ) );
+        }
+      })
     })
-    // this.data.chatData.forEach((val,i,arr)=>{
-    //   this.data.transmit.transData.forEach((value,ii,array)=>{
-    //     val.groupId = that.data.selUser.selMe.groupId;
-    //     val.groupName = that.data.selUser.selMe.groupName;
-    //     val.fromUser = that.data.sendInputMsg.fromUser;
-    //     val.position = that.data.sendInputMsg.position;
-    //     val.fromUserName = that.data.sendInputMsg.fromUserName;
-    //     if( val.msgId == value ){
-    //       that.sendSocketMessage( JSON.stringify( val ) );
-    //     }
-    //   })
-    // })
-    // that.setData({
-    //   ["transmit.isTransmit"]:false,
-    //   ['inputIn.isLeft']:false
-    // })
+    that.setData({
+      ["transmit.isTransmit"]:false,
+      ['inputIn.isLeft']:false,
+      ["model.show"]:false
+    })
   },
   previewImage: function(e){//图片预览.....
     var imgUrl = e.currentTarget.dataset.item.attachUrl;
@@ -975,6 +1000,25 @@ export default {
       }
     }
 }
+.sentType0{
+  padding: 20rpx 0;
+  .mix-1px(0, 0, 1, 0, #ccc);
+  .name{
+    font-family:PingFang-SC-Medium;
+    color:#666666;
+    display:inline-block;
+    font-size: 13px;
+  }
+  .groupDesc{
+    font-size:11px;
+    color:#999;
+  }
+}
+.button-sp-area{
+  button{
+    // display: inline-block;
+  }
+}
 .content{
     padding:0px 8px 0px 8px;
     .talkItem{
@@ -1094,6 +1138,24 @@ export default {
     }
   }
   .popup1{
-      padding: 40px 20px 0 20px;
-    }
+    height: 100%;
+    padding:0 20rpx;
+    overflow: hidden;
+  }
+  .angleIcon{
+    position:absolute;
+    z-index:10000;
+    right:14rpx;
+    top:31rpx;
+    display:inline-block;
+    width:auto;
+    font-size:22rpx;
+    min-width:45rpx;
+    height:45rpx;
+    border-radius:50%;
+    background-color:white;
+    color:white;
+    line-height:45rpx;
+    padding:2rpx;
+  }
 </style>

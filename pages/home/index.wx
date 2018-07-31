@@ -29,6 +29,7 @@
     <view style="z-index:0;">
         <view class="sample_title" style="background-color:white;border-bottom:1px solid #E5E5E5;" wx:if="{{ list1.length != 0 }}">
            <text>已加入</text>
+           <!-- !userMsgReq.canBuildGroup -->
            <icon catchtap="addGroup" class="iconfont myWx-jia1" style="float:right;right:25rpx;position:relative;font-size:55rpx;"></icon>
         </view>
         <ui-accordion bindchange="slide" wx:for="{{ list1 }}" wx:key="{{ index }}" header-height="50">
@@ -61,7 +62,7 @@
                   <ui-col space-left="25" width="80" align="center" vertical-align="middle" bindtap="toChat" data-item="{{ itemChidren }}">
                       <view class="left_icon left_icon1" style="">
                           <image src="{{ itemChidren.icon || defaultHeadImg}}"></image>
-                          <text class="angleIcon" wx:if="{{ itemChidren.unreadCount != 0 }}">{{ itemChidren.unreadCount >= 100 ? '99+' : itemChidren.unreadCount }}</text>
+                          <text class="angleIcon angleIcon2" wx:if="{{ itemChidren.unreadCount != 0 }}">{{ itemChidren.unreadCount >= 100 ? '99+' : itemChidren.unreadCount }}</text>
                       </view>
                   </ui-col>
                   <ui-col space-left="25" class="text" align="left" vertical-align="middle" space="20" bindtap="toChat" data-item="{{ itemChidren }}">
@@ -133,7 +134,8 @@ export default {
     overList:[],
     el: 'undefined',
     showInput:true,
-    defaultHeadImg:''
+    defaultHeadImg:'',
+    userMsgReq:{}
   },
   onLoad(option){
     var that = this;
@@ -149,6 +151,7 @@ export default {
         key:'userMsgReq',
         success(res){
             app.globalData.userMsgReq = res.data;
+            that.data.userMsgReq = res.data;
         }
     })
     this.getDefaultImg();
@@ -324,6 +327,10 @@ export default {
     color:white;
     line-height:45rpx;
     padding:2rpx;
+}
+.angleIcon2{
+    right:-10rpx;
+    top:2rpx;
 }
 .accorContent{
     // padding-right: 35px;

@@ -70,6 +70,7 @@
       this.setData({
         "isEdit":true
       })
+      that.data.groupMsg
       wx.navigateTo({
         url:`/pages/newGroup/index?groupMsg=${JSON.stringify(that.data.groupMsg)}&edit=true`
       })

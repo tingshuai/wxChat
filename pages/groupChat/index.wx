@@ -34,9 +34,9 @@
                             <view class="myProgress" wx:if="{{ item.progress }}" style="height:1px;width:{{ item.progress }}%;background-color: {{ item.progress == 100 && item.readCount >= 0 ? '#49CC8D' : 'rgba(255,100,100,0.8)' }}"></view></view>
                           <!--语音类型-->
                           <view class="talkContent" wx:if="{{ item.msgType == 2 }}" style="width:{{ item.seeWord ? 'auto' : '100px' }};min-width:100px;" catchtap="playVoice" bind:longpress="openActionsheet" data-index="{{ index }}" data-item="{{item}}">
-                              <image mode="aspectFit" catchtap="playVoice" data-item="{{item}}" style="height:20px;width:20px;" src="{{ item.src ? item.src : '../../static/img/voice2.png' }}"></image>
+                              <image mode="aspectFit" catchtap="playVoice" data-item="{{item}}" style="height:20px;width:20px;float:{{ sendInputMsg.fromUser == item.fromUser ? 'left' : 'right'}}" src="{{ item.src ? item.src : '../../static/img/voice2.png' }}"></image>
                               <view style="border-top:1rpx solid #ddd;padding-top:10rpx;margin-top:25rpx;font-size:26rpx;color:#666;" class="voiceContent" wx:if="{{item.content != '' && item.content != null && item.seeWord }}">{{ item.content }}</view>
-                              <view style="border-top:1rpx solid #ddd;padding-top:10rpx;margin-top:25rpx;color:rgba(255,100,100,0.8);font-size:26rpx;" class="voiceContent" wx:elif="{{item.seeWord }}"> 无可识别内容 </view>
+                              <view style="border-top:1rpx solid #ddd;padding-top:10rpx;margin-top:25rpx;color:rgba(255,100,100,0.8);font-size:26rpx;" class="voiceContent" wx:elif="{{ item.seeWord }}"> 无可识别内容 </view>
                               <view class="myProgress" wx:if="{{ item.progress }}" style="height:1px;width:{{ item.progress }}px;background-color: {{ item.progress == 100 ? '#49CC8D' : 'rgba(255,100,100,0.8)' }}"></view>
                           </view>
                           <!--视频类型-->
@@ -58,7 +58,7 @@
                             <view class="myProgress" wx:if="{{ item.progress }}" style="height:1px;width:{{ item.progress }}px;background-color: {{ item.progress == 100 ? '#49CC8D' : 'rgba(255,100,100,0.8)' }}"></view>
                           </view>
                       </view>
-                      <view class="readMe" style="right:{{ sendInputMsg.fromUser == item.fromUser ? '5px' : '' }}">{{ item.readCount || item.readCount == 0 ? theGroupMsg.groupUsers.length - item.readCount : '发送失败' }} {{ item.readCount || item.readCount == 0 ? "人已读" : ''}}</view>
+                      <view class="readMe" wx:if="{{ sendInputMsg.fromUser == item.fromUser }}" style="right:{{ sendInputMsg.fromUser == item.fromUser ? '5px' : '' }}">{{ item.readCount >= 0 ? theGroupMsg.groupUsers.length - item.readCount : '发送失败' }} {{ item.readCount >= 0 ? "人未读" : ''}}</view>
                   </ui-col>
                   <ui-col class="text" align="center" vertical-align="top" space-left="0" space-right="0" wx:if="{{ item.cmd == 1 }}">
                       <view class="historyLine">{{ item.fromUserName }} 撤回了一条消息</view>
@@ -72,6 +72,26 @@
                   <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && transmit.isTransmit }}"><checkbox class="checkbox" value="{{ item.msgId }}"/></view>
               </ui-row>
               </checkbox-group>
+          </view>
+          <!-- <view class="atMsg">
+            <ui-row border-top height="40">
+                <ui-col vertical-align="middle" align="center" width="50">
+                    <image src="http://thirdwx.qlogo.cn/mmopen/zvF140DFedACxRaicyDg73gO7qMiamU9dn7ymic3cviad3sNV9Flg3NYqe9SW0BPyupMyaK4nMiaVX6BFNpa81siclJsjyU5u0wkzE/132"></image>
+                </ui-col>
+                <ui-col vertical-align="middle" align="left">
+                    <text class="atMsgTxtName">来自张三的@信息</text>
+                    <text class="atMsgContent">消息内容消息内容消息内容消息内容消息内容消息内容消息内容消息内容</text>
+                </ui-col>
+            </ui-row>
+            <ui-row border-top height="40">
+                <ui-col vertical-align="middle" align="center" width="50">
+                    <image src="http://thirdwx.qlogo.cn/mmopen/zvF140DFedACxRaicyDg73gO7qMiamU9dn7ymic3cviad3sNV9Flg3NYqe9SW0BPyupMyaK4nMiaVX6BFNpa81siclJsjyU5u0wkzE/132"></image>
+                </ui-col>
+                <ui-col vertical-align="middle" align="left">
+                    <text class="atMsgTxtName">来自张三的@信息</text>
+                    <text class="atMsgContent">消息内容消息内容消息内容消息内容消息内容消息内容消息内容消息内容</text>
+                </ui-col>
+            </ui-row> -->
           </view>
         </scroll-view>
         <ui-fixed-view top="30%" left="{{ voice.plVoice }}" style="z-index:9999;" wx:if="{{ voice.show }}">
@@ -88,7 +108,7 @@
         <view class="fixed_bottom" >
           <ui-row class="rowInputs" height="50" border-top border-bottom>
             <ui-col width="50" style="font-size:14px;" align="center" vertical-align="middle"><text class="iconfont {{ msgType == 0 ? 'myWx-jianpan' : 'myWx-ai01' }}" bindtap="toggleMsgType"></text></ui-col>
-            <ui-col vertical-align="middle" hidden="{{ msgType == 0 }}"><input cursor-spacing="6" class="myInput" focus="{{inputIn.inputFocus}}" bindinput="onInput" value="{{ sendInputMsg.content }}"/></ui-col>
+            <ui-col vertical-align="middle" hidden="{{ msgType == 0 }}"><input cursor-spacing="6" class="myInput" focus="{{inputIn.inputFocus}}" bindinput="onInput" value="{{ inputVal }}"/></ui-col>
             <ui-col vertical-align="middle" hidden="{{ msgType == 1 }}"><button catch:touchstart="touchstart" catch:touchend="touchend" catch:touchmove="touchmove">按住说话</button></ui-col>
             <ui-col width="50" style="font-size:14px;" align="center" vertical-align="middle" hidden="{{ isInputing }}"><text class="iconfont myWx-jia" bindtap="toggleIsHidden"></text></ui-col>
             <ui-col width="55" vertical-align="middle" hidden="{{ !isInputing }}" class="sendBtn" space-left="3" space-right="3"><button type="primary" bindtap="sendMsg">发送</button></ui-col>
@@ -97,24 +117,32 @@
             <ui-col style="display:inline-block;" class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-zhaopian1" bindtap="chooseFile" data-type="1" data-watermark = "false"></text></ui-col>
             <ui-col style="display:inline-block;" class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-tupianshuiyinshezhi" bindtap="chooseFile" data-type="1" data-watermark = "true" style="font-size:"></text></ui-col>
             <ui-col class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-wenjian1" bindtap="chooseFile" data-type="6"></text></ui-col>
+            <ui-col class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-xiazai" bindtap="aite" data-type="6"></text></ui-col>
+          </ui-row>
+          <ui-row height="100" class="sentType" hidden="{{ transmit.isAite }}" style="justify-content:flex-start;overflow:auto;">
+            <ui-col style="display:inline-block;" class="sentType_col" width="58" align="center" vertical-align="middle" data-isaite="true" data-index="{{ index }}" data-item="{{ item }}" wx:key="index" catchtap="selUser" wx:for="{{ theGroupMsg.groupUsers }}">
+              <image mode="aspectFit" src="{{ item.headImgUrl == null ? defaultImg : item.headImgUrl }}"></image>
+              <text style="text-align:center;" class="">{{ item.username }}</text>
+              <icon class="angleIcon angleIcon2" type="success" wx:if="{{ item.act }}" size="23"></icon>
+            </ui-col>
           </ui-row>
         </view>
       </ui-fixed-view>
       <!-- 全屏弹窗.... -->
       <ui-popup show="{{ model.show }}" height="100%">
           <view class="popup1">
-            <scroll-view scroll-y style="height: {{modelHeight}}">
-              <ui-row height="68" class="sentType0" style="" wx:for="{{ transmit.isTransmit ? transmit.groupList : theGroupMsg.groupUsers }}" data-index="{{ index }}" data-item="{{ item }}" wx:key="index" catchtap="selUser">
+            <scroll-view scroll-y style="height:{{modelHeight}}">
+              <ui-row height="68" class="sentType0" style="" wx:for="{{ transmit.groupList }}" data-isaite="false" data-index="{{ index }}" data-item="{{ item }}" wx:key="index" catchtap="selUser">
                 <ui-col style="display:inline-block;" class="selUser0" width="58" align="left" vertical-align="middle">
-                    <image mode="aspectFit" class="headImg" style="" src="{{ transmit.isTransmit ? (item.icon == null ? defaultImg : item.icon) : (item.headImgUrl == null ? item.headImgUrl : defaultImg) }}"></image>
+                    <image mode="aspectFit" class="headImg" style="" src="{{ item.icon == null ? defaultImg : item.icon }}"></image>
                 </ui-col>
                 <ui-col style="display:inline-block;text-indent:25rpx;" class="" align="left" vertical-align="middle">
-                    <text class="name">{{ transmit.isTransmit ? item.groupName : item.username }}</text>
-                    <text class="groupDesc" wx:if="{{ transmit.isTransmit }}">{{ item.groupDesc == null ? '' : item.groupDesc }}</text>
+                    <text class="name">{{ item.groupName }}</text>
+                    <text class="groupDesc">{{ item.groupDesc == null ? '' : item.groupDesc }}</text>
                     <icon class="angleIcon" type="success" wx:if="{{ selUser.act == index ? true : false }}" size="23"></icon>
                 </ui-col>
               </ui-row>
-              <view class="weui-loadmore weui-loadmore_line" wx:if="{{  transmit.isTransmit && ( transmit.groupList.length == 0 )}}">
+              <view class="weui-loadmore weui-loadmore_line" wx:if="{{ transmit.groupList.length == 0 }}">
                   <view class="weui-loadmore__tips weui-loadmore__tips_in-line" style="background-color:none;">暂无数据{{transmit.groupList}}</view>
               </view>
             </scroll-view>
@@ -152,9 +180,12 @@ export default {
       isLeft:false,//判断@成员显示隐藏
       inputFocus:false
     },
+    selUserList:[],
+    unReadList:[],
     model:{
       show:false,
     },
+    inputVal:"",//消息输入框的值......
     modelHeight:wx.DEFAULT_CONTENT_HEIGHT - 90 + 'px',
     scrollHeight: wx.DEFAULT_CONTENT_HEIGHT - 48 + 'px',
     sendInputMsg :{
@@ -190,9 +221,12 @@ export default {
     },
     fileSrc:'',//文件在webview中展示的地址
     transmit:{
-      isTransmit:false,//是否显示转发消息checkbox
+      isAite:true,//是否显示转发消息checkbox
+      isTransmit:false,//是否是转发......
       transData:{},//选中的项目.
-      groupList:[]
+      groupList:[],
+      aiteContent:"",//@成员
+      aiteId:[]
     },
     loadingMsg:{//加载数据的loading
       top:'-100%',
@@ -212,12 +246,18 @@ export default {
     let loadPromise = new Promise((resolve,reject)=>{
       wx.checkSession({
         success: function(res){
-          console.log( "groupChat页面已登录",66 ,options)
+          console.log( "groupChat页面已登录打印options",66 ,options)
           // 直接进群聊中重新设置全局变量....
           wx.getStorage({
               key: 'openId',
               success: function(res) {
-                  app.globalData.openId = res.data;
+                if(res.data == ""){
+                    wx.redirectTo({
+                      url: '/pages/login/index'
+                    })
+                  }else{
+                    app.globalData.openId = res.data;
+                  }
               }
           })
           wx.getStorage({
@@ -226,17 +266,19 @@ export default {
               app.globalData.userMsgReq = res.data;
             }
           })
+          console.log("如果已经登录打印保存本地存储",app.globalData )
           resolve();
         },
         fail: function(res){
           wx.redirectTo({
             url: '/pages/login/index'
           })
+          console.log( "如果没登录跳转到登录页面" )
         }
       })
     })
     loadPromise.then(()=>{
-      console.log( "已登录继续执行",JSON.parse(options.item).groupUsers);
+      console.log( "已登录继续执行promise内容", options.item);
       wx.setNavigationBarTitle({//设置页面标题....
         title: JSON.parse (options.item).groupName,
       })
@@ -265,6 +307,7 @@ export default {
         ['sendInputMsg.headImgUrl']:myMsg.headImgUrl || app.globalData.userMsgReq.headImgUrl,
         ['sendInputMsg.isGroupManager']:JSON.parse(options.item).isGroupManager || app.globalData.userMsgReq.isGroupManager
       })
+      console.log("打印sendInputMsg内容")
       this.data.theGroupMsg.groupUsers.forEach((val,i,arr)=>{
         that.data.selUser.users.push( val.username );
         that.setData({
@@ -295,6 +338,8 @@ export default {
       })
       SocketTask.onMessage(function(res) {
         var data = JSON.parse( res.data );
+        debugger;
+        console.log( "几次" ,data,"ci",that.data.chatData)
         var chatDataMsgId;
         if( onFirst == 1 ){
           that.data.chatData.forEach((val,ii,arr)=>{
@@ -310,13 +355,16 @@ export default {
           if( data.groupId == that.data.sendInputMsg.groupId ){//非转发消息push进消息队列......
             that.data.chatData.push( data );
             that.setData({
-              chatData:that.data.chatData
+              chatData:that.data.chatData,
+              ["sendInputMsg.msgType"]:0,
             })
             that.setData({
               scrollTop:10000
             })
           }else{//转发消息返回的消息，说明转发成功了
+            if(data.msgType == 7){
               system.stateMsg({title:"消息转发成功",icon:"success",time:1000})
+            }
           }
         }
         if( data.cmd == 1 ){//撤回消息...
@@ -333,13 +381,31 @@ export default {
           var isMe = data.fromUser == that.data.sendInputMsg.fromUser ? true : false;
           if(isMe){
             data.headImgUrl= that.data.userMsg.userHeadImg;
-            if( data.msgType == 0 || data.msgType == 7 ){
+            if( data.msgType == 0 ){
+              set();
+            }else if( data.msgType == 7 ){//@消息.....
+              data.content = data.content.split('(@\`-\`@)').join("");
+              set();
+              that.data.theGroupMsg.groupUsers.filter((item)=>{
+                item.act = false;
+              })
+              that.data.theGroupMsg
+              that.setData({
+                ["transmit.isAite"]:true,
+                isHidden:true,
+                theGroupMsg:that.data.theGroupMsg,
+                scrollHeight: wx.DEFAULT_CONTENT_HEIGHT - 48 + 'px',
+              })
+            }else if(data.msgType == 1 || data.msgType == 2){
+              that.data.chatData.pop();
               set();
             }else{
               that.data.chatData[that.data.chatData.length - 1].msgId = data.msgId;
+              set();
             }
             that.setData({
               ['sendInputMsg.content']:'',
+              "inputVal":'',
               'isInputing': false
             })
           }else{
@@ -397,6 +463,7 @@ export default {
   },
   sendReadedReceipt( item ){//发送已读消息回执....
     let that = this;
+    that.data.chatData
     this.data.chatData.forEach((val,i,arr)=>{
       wx.createSelectorQuery().select(`#the${i}`).boundingClientRect(function(rect){
         if( that.data.chatData[i].chatType != 0 && that.data.chatData[i].chatType && rect.top > 0 ){
@@ -415,8 +482,6 @@ export default {
   },
   cancelSelect(){//取消消息选择......
     this.setData({
-      ["transmit.isTransmit"]:false,
-      ['inputIn.isLeft']:false,
       ['model.show']:false
     })
   },
@@ -440,8 +505,6 @@ export default {
       })
     })
     that.setData({
-      ["transmit.isTransmit"]:false,
-      ['inputIn.isLeft']:false,
       ["model.show"]:false
     })
   },
@@ -480,7 +543,7 @@ export default {
     if( item.fromUser == that.data.sendInputMsg.fromUser ){
       toggle();
     }else{
-      typeCode == 2 ? list = ["转发","语音转文字"] : list = ["转发"]  ;
+      typeCode == 2 ? list = ["转发","语音转文字"] : list = ["转发"];
     }
     // 语音转文字后更新内容.....
     function changeData(){
@@ -716,6 +779,11 @@ export default {
       success: function(res) {
         if( res.data.status == 200 ){
           var oldList = that.data.chatData.length;
+          res.data.data.rows.forEach((val,i,arr)=>{//未读@信息......
+            if(val.msgType == 7 && /(@\`-\`@)/.test(val.content) ){
+              val.content = val.content.split('(@\`-\`@)').join('');
+            }
+          })
           that.data.chatData.splice(0,0,...res.data.data.rows);
           that.setData({
             chatData:that.data.chatData,
@@ -723,10 +791,10 @@ export default {
           })
           var newList = that.data.chatData.length;
           if(isFirst){
-            that.setData({scrollTop:10000})
+            that.setData({scrollTop:10000});
             that.sendReadedReceipt();
           }else{
-            that.setData({toView:`the${newList - oldList}`})//回滚到原来查看的位置
+            that.setData({toView:`the${newList - oldList}`});//回滚到原来查看的位置
             that.setData({
               ['loadingMsg.top']:'-100%',
               ['loadingMsg.color']:'#A0E75A'
@@ -768,7 +836,7 @@ export default {
       success: function(res){
         var data = res.data
         that.data.sendInputMsg.attachUrl = JSON.parse(res.data).data;
-        that.sendMsg({upload:true})
+        that.sendSocketMessage( JSON.stringify( that.data.sendInputMsg) ,{upload:true} );
       },
       fail(res){
         system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
@@ -792,9 +860,7 @@ export default {
           var tempFilePaths = res.tempFilePaths;
           that.upload( tempFilePaths[0] , type ,watermark);
         },
-        fail(res){
-          
-        }
+        fail(res){}
       })
     }else if( type == 6 ){//file文件
       wx.navigateTo({
@@ -805,26 +871,42 @@ export default {
   // 发送消息
   sendMsg( obj ){
     var that = this;
+    let isTrue = false;
+    this.data.theGroupMsg.groupUsers.filter((item)=>{
+      if(item.act){
+        isTrue = true;
+        that.data.transmit.aiteContent += `@${item.username}(@\`-\`@)`;
+        that.setData({
+          ['sendInputMsg.toUser']:`${that.data.sendInputMsg.toUser},${item.openId}`
+        })
+      }
+    })
+    if( isTrue ){
+      this.setData({ ['sendInputMsg.msgType']: 7 ,['sendInputMsg.content']: that.data.transmit.aiteContent + that.data.inputVal});
+    }else{
+      this.setData({['sendInputMsg.msgType']: 0,['sendInputMsg.content']: that.data.inputVal});
+    }
     this.sendSocketMessage( JSON.stringify( that.data.sendInputMsg) ,obj );
+  },
+  aite(e){
+    let that = this;
+    this.setData({
+      ['isHidden']:!that.data.isHidden,
+      ['transmit.isAite']:!that.data.transmit.isAite
+    })
   },
   selUser(e){//选择群成员.....
     let item = e.currentTarget.dataset.item;
     let that = this;
-    this.setData({
-      ['selUser.act']:e.currentTarget.dataset.index
-    })
-    if ( that.data.transmit.isTransmit ) {//转发消息...
-      that.setData({
+    if(e.currentTarget.dataset.isaite == "true"){
+      this.data.theGroupMsg.groupUsers[e.currentTarget.dataset.index].act = !this.data.theGroupMsg.groupUsers[e.currentTarget.dataset.index].act;
+      this.setData({
+        ['theGroupMsg.groupUsers']:that.data.theGroupMsg.groupUsers,
+      })
+    }else{
+      this.setData({
+        ['selUser.act']:e.currentTarget.dataset.index,
         ['selUser.selMe']:item
-      })
-    }else{//@群成员......
-      this.setData({
-        ['sendInputMsg.content']:'',
-      })
-      this.setData({
-        ['sendInputMsg.content']:'@' + item.username,
-        ['inputIn.isLeft']:false,
-        ['inputIn.inputFocus']:true
       })
     }
   },
@@ -833,27 +915,22 @@ export default {
     let that = this;
     if( event.detail.value != '' ){
       var key = 'sendInputMsg.content';
-      var val = system.searchUrl( { "str":event.detail.value,"color":'blue' } )
-      let reg = /@$/
-      if ( reg.test(event.detail.value ) ) { //当输入@时
-        that.setData({'inputIn.isLeft':true});
-        that.setData({ isInputing: true, [key]:val, ['sendInputMsg.msgType']:7});
-      }else{
-        that.setData({ isInputing: true, [key]:val, ['sendInputMsg.msgType']:0,'.inputIn.isLeft':false});
-      }
+      that.setData({ isInputing: true, "inputVal":event.detail.value });
     }else{
-       this.setData({ isInputing: false ,'inputIn.isLeft':false });
+       this.setData({ isInputing: false });
     }
   },
   toggleIsHidden(e){//控制底部发送栏的显隐.....
+    let that = this;
     if( e.currentTarget.id == "viewport" ){
       this.setData({
         isHidden:true,
-        scrollHeight: wx.DEFAULT_CONTENT_HEIGHT - 48 + 'px'
+        scrollHeight: wx.DEFAULT_CONTENT_HEIGHT - 48 + 'px',
+        ['transmit.isAite']:true
       })
     }else{
       this.setData({
-        isHidden:!this.data.isHidden
+        isHidden:!this.data.isHidden,
       })
       this.setData({
         scrollHeight: !this.data.isHidden ? wx.DEFAULT_CONTENT_HEIGHT - 148 + 'px' : wx.DEFAULT_CONTENT_HEIGHT - 48 + 'px',
@@ -933,7 +1010,7 @@ export default {
   .sentType{
     justify-content:left;
     .sentType_col{
-      margin-left: 20px;
+      margin:0 10px;
     }
     .iconfont{
       font-size:30px;
@@ -1157,5 +1234,26 @@ export default {
     color:white;
     line-height:45rpx;
     padding:2rpx;
+  }
+  .angleIcon2{
+    right:-17rpx;
+    top:9rpx;
+  }
+  .atMsg {
+    height: 100%;
+    overflow: auto;
+    width: 100px;
+    .atMsgTxtName,.atMsgTxtContent{
+      width: 100%;
+      display: block;
+    }
+    .atMsgTxtName{
+      font-size: 36rpx;
+      color:#333;
+    }
+    .atMsgTxtContent{
+      font-size: 30rpx;
+      color: #666;
+    }
   }
 </style>

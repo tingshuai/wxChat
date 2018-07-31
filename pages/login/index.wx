@@ -49,7 +49,6 @@ export default {
         }
       })
     })
-
     // 登录.....
     promise.then(()=>{
       wx.login({

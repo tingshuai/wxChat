@@ -70,10 +70,10 @@
       <view class="weui-cells weui-cells_after-title">
           <checkbox-group bindchange="checkboxChange" name="{{ formData.selUser }}">
               <view class="weui-cell" wx:for="{{ formData.userList }}" wx:key="index">
-                    <image bindtap="tabHead" data-item="{{ item }}" data-index="{{ index }}" class="headImg" mode="aspectFit" src="{{ item.headImgUrl }}"></image>
-                    <icon type="success" size="15" class="figure" wx:if="{{ item.isAddMember }}"></icon>
-                    <view class="weui-cell__bd userNickName">{{ item.username || item.nickname }}</view>
-                    <checkbox class="weui-check nickCheckbox" value="{{ item.openId }}" checked="{{ item.checked }}"/>
+                 <image bindtap="tabHead" data-item="{{ item }}" data-index="{{ index }}" class="headImg" mode="aspectFit" src="{{ item.headImgUrl }}"></image>
+                 <icon type="success" size="15" class="figure" wx:if="{{ item.isAddMember }}"></icon>
+                 <view class="weui-cell__bd userNickName">{{ item.username || item.nickname }}</view>
+                 <checkbox class="weui-check nickCheckbox" value="{{ item.openId }}" checked="{{ item.checked }}"/>
               </view>
           </checkbox-group>
       </view>
@@ -121,6 +121,7 @@ export default {
       inputVal:'',//搜索框的值
       keywords:'',//搜索群成员的关键字...
       selUserLebal:"",//选中的群主的lebal
+      userListAll:[]//所有群成员
     },
     submitFormData:{
       openIds:[], //选中的群成员ID
@@ -148,18 +149,23 @@ export default {
     this.setData({
       ['formData.startTime']:startTime,
       ['submitFormData.managerId']:app.globalData.openId,
-      "groupMsg":JSON.parse(option.groupMsg),
-      "edit":option.edit
     })
     promise.then((that)=>{
       if(option.edit == "true"){
+        let msg =JSON.parse(option.groupMsg)
         that.setData({
-          "groupMsg":JSON.parse(option.groupMsg),
-          ['formData.groupName']:that.data.groupMsg.groupName,
-          ['formData.deadline']:that.data.groupMsg.deadline,
-          ['formData.date']:that.data.groupMsg.deadline,
-          ['formData.groupDesc']:that.data.groupMsg.groupDesc,
+          "groupMsg":msg,
+          ['formData.groupName']:msg.groupName,
+          ['formData.deadline']:msg.deadline,
+          ['formData.date']:msg.deadline,
+          ['formData.groupDesc']:msg.groupDesc,
+          "edit":option.edit,
+          ["formRuler.deadline.require"]:false,
+          ["formRuler.groupName.require"]:false
         });
+        wx.setNavigationBarTitle({//设置页面标题....
+          title: "编辑群组",
+        })
         let openIds = [];
         that.data.groupMsg.groupUsers.forEach((value,ii,array)=>{
           that.data.formData.userList.filter((val,i,arr)=>{
@@ -215,9 +221,10 @@ export default {
     this.reqUserList( e.detail.value );
   },
   formCancel (e) {
+    let that = this;
     if( this.data.edit == "true" ){
-      wx.navigateTo({
-        url: '/pages/groupMsg/index'
+      wx.navigateBack({
+        delta: 1
       })
     }else{
       wx.navigateTo({
@@ -254,10 +261,17 @@ export default {
   },
   bindGroupChange(e){
     let that = this;
-    this.setData({
-      ['formData.parentGroupValue']:that.data.formData.parentGroupLst[e.detail.value],
-      ['submitFormData.parentId']:that.data.formData.originGroupList[e.detail.value].value,
-    })
+    if(e.detail.value == 0){
+      that.setData({
+        ['formData.userList']:that.data.formData.userListAll
+      })
+    }else{
+      this.setData({
+        ['formData.parentGroupValue']:that.data.formData.parentGroupLst[e.detail.value],
+        ['submitFormData.parentId']:that.data.formData.originGroupList[e.detail.value].groupId,
+        ['formData.userList']:that.data.formData.originGroupList[e.detail.value].groupUsers
+      })
+    }
   },
   bindUpChange(e){//选择群主.....
     let that = this;
@@ -271,18 +285,19 @@ export default {
   reqGroupList(){
     let that = this;
     system.http({
-      url:'chat/groups/selector',
+      url:'chat/groups/tree',
       method:'get',
       param:{
         "openId":app.globalData.openId,
         "pageSize":0
       },
       scb(res){
-        res.data.data.forEach((val,i,arr)=>{
-          that.data.formData.parentGroupLst.push( val.label )
+        that.data.formData.parentGroupLst.push("不填");
+        res.data.data.rows.forEach((val,i,arr)=>{
+          that.data.formData.parentGroupLst.push( val.groupName )
         })
         that.setData({
-          ['formData.originGroupList']:res.data.data,
+          ['formData.originGroupList']:res.data.data.rows,
           ['formData.parentGroupLst']:that.data.formData.parentGroupLst
         })
       },
@@ -303,7 +318,9 @@ export default {
   submitGroupData(e){
     let that = this;
     let promise = new Promise((resolve,reject)=>{
-      if(that.data.formData.groupName != '' && that.data.formRuler.deadline.require != ''){
+      that.data.formRuler.deadline.require
+      that.data.formRuler.groupName.require
+      if( !that.data.formRuler.groupName.require && !that.data.formRuler.deadline.require ){
         resolve();
       }else{
         that.setData({
@@ -335,8 +352,9 @@ export default {
         header:{'content-type': 'application/x-www-form-urlencoded'},
         param: formData,
         scb(res){
+          let tip = that.data.edit == 'true' ? "修改群组成功" : '新增群组成功';
           if(res.data.status == 200){
-            system.stateMsg({title: that.data.edit == 'true' ? "修改群组成功" : '新增群组成功',icon:"success",time:1000})
+            system.stateMsg({title: tip,icon:"success",time:1000});
             setTimeout(function(){
               wx.redirectTo({
                 url: '/pages/home/index'
@@ -369,7 +387,8 @@ export default {
             arr[i].isAddMember = false;
           })
           that.setData({
-            ['formData.userList']:res.data.data.rows
+            ['formData.userList']:res.data.data.rows,
+            ['formData.userListAll']:res.data.data.rows
           })
           resolve(that);
         }else{

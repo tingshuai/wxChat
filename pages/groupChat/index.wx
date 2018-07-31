@@ -338,7 +338,6 @@ export default {
       })
       SocketTask.onMessage(function(res) {
         var data = JSON.parse( res.data );
-        debugger;
         console.log( "几次" ,data,"ci",that.data.chatData)
         var chatDataMsgId;
         if( onFirst == 1 ){

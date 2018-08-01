@@ -3,7 +3,7 @@
   <view style="padding-bottom:200rpx">
     <form catchsubmit="submitGroupData" catchreset="formCancel">
 
-      <view class="weui-cells weui-cells_after-title">
+      <view class="weui-cells weui-cells_after-title" wx:if="{{ addMenu == 'false' }}">
           <view class="weui-cell weui-cell_input">
               <view class="weui-cell__hd">
                   <view class="weui-label label0">群名称<text class="xingxing {{  formData.groupName == '' ? 'warnXing' : 'defaultXing' }}">★</text></view>
@@ -34,8 +34,8 @@
           </view> -->
       </view>
 
-      <view class="weui-cells__title">有效日期</view>
-      <view class="weui-cells weui-cells_after-title">
+      <view class="weui-cells__title" wx:if="{{ addMenu == 'false' }}">有效日期</view>
+      <view class="weui-cells weui-cells_after-title" wx:if="{{ addMenu == 'false' }}">
           <view class="weui-cell weui-cell_select">
               <view class="weui-cell__hd weui-cell__hd_in-select-after">
                   <view class="weui-label label0">日期<text class="xingxing {{  formData.date == '' ? 'warnXing' : 'defaultXing' }}">★</text></view>
@@ -48,8 +48,8 @@
           </view>
       </view>
 
-      <view class="weui-cells__title">群描述</view>
-      <view class="weui-cells weui-cells_after-title">
+      <view class="weui-cells__title" wx:if="{{ addMenu == 'false' }}">群描述</view>
+      <view class="weui-cells weui-cells_after-title" wx:if="{{ addMenu == 'false' }}">
           <view class="weui-cell">
               <view class="weui-cell__bd">
                   <textarea placeholder-class="placeholderClass" value="{{ formData.groupDesc }}" class="weui-textarea fontValue" name="groupDesc" placeholder="请输入群描述" style="height: 3.3em" />
@@ -104,6 +104,7 @@ export default {
       enable:true
     },
     edit:"",//是否是编辑进来的。。。。
+    addMenu:"",///是否是添加成员的....
     groupMsg:{},
     formData:{
       date:'',
@@ -160,6 +161,7 @@ export default {
           ['formData.date']:msg.deadline,
           ['formData.groupDesc']:msg.groupDesc,
           "edit":option.edit,
+          "addMenu":option.addMenu,
           ["formRuler.deadline.require"]:false,
           ["formRuler.groupName.require"]:false
         });
@@ -424,6 +426,7 @@ export default {
   }
   .userNickName{
     font-size: 30rpx;
+    .mix-text-overflow();
   }
   .nickCheckbox{
     left: 37rpx;

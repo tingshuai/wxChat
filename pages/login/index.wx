@@ -37,15 +37,16 @@ export default {
       }
     })
     let promise = new Promise((resolve,reject)=>{
-      wx.checkSession({
-        success: function(res){
-          wx.redirectTo({
-            url: '/pages/home/index'
-          })
+      wx.getStorage({
+        key: 'openId',
+        success: function(res) {
+            wx.redirectTo({
+              url: '/pages/home/index'
+            })
         },
-        fail: function(res){
-          console.log( "login页面未登录",67 )
-          resolve()
+        fail(res){
+            console.log( "login页面未登录",67 )
+            resolve()
         }
       })
     })

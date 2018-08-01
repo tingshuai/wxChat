@@ -27,7 +27,8 @@
           <button type="warn" class="fixed_bottom" bindtap="exitGroup">删除并退群</button>
           <!-- <button type="primary" class="fixed_bottom" bindtap="confirm" wx:if="{{ isEdit }}">确定</button> -->
           <!-- <button type="primary" class="fixed_bottom" bindtap="cancel" wx:if="{{ isEdit }}">取消</button> -->
-          <button type="default" class="fixed_bottom" bindtap="editGroup">编辑</button>
+          <button wx:if="{{ groupMsg.managerId == userMsg.openId }}" type="default" class="fixed_bottom" bindtap="editGroup">编辑</button>
+          <button wx:if="{{ canAddMenuber && groupMsg.managerId != userMsg.openId}}" type="default" class="fixed_bottom" bindtap="addMenuber">添加成员</button>
         </view>
       </view>
     </ui-fixed-view>
@@ -44,7 +45,9 @@
     data: {
       groupMsg:{},
       userList:[],
+      userMsg:{},
       isEdit:false,
+      canAddMenuber:false,
       formData:{
         startTime:"",
         deadline:"",
@@ -58,11 +61,28 @@
       }
     },
     onLoad( option ){
+      let that = this;
       this.setData({
         groupMsg:JSON.parse( option.item ),
         ['submitData.groupId']:JSON.parse( option.item ).groupId,
         ['submitData.groupName']:JSON.parse( option.item ).groupName,
         ['submitData.groupDesc']:JSON.parse( option.item ).groupDesc,
+        "userMsg":app.globalData.userMsgReq
+      })
+      that.data.groupMsg.managerId
+      debugger;
+      this.data.groupMsg.groupUsers.filter((item)=>{
+        if( that.data.userMsg.openId == item.openId){
+          if(item.authAddMember == true){
+            that.setData({
+              "canAddMenuber":true
+            })
+          }else{
+            that.setData({
+              "canAddMenuber":false
+            })
+          }
+        }
       })
     },
     editGroup(e){//编辑群组
@@ -70,9 +90,14 @@
       this.setData({
         "isEdit":true
       })
-      that.data.groupMsg
       wx.navigateTo({
-        url:`/pages/newGroup/index?groupMsg=${JSON.stringify(that.data.groupMsg)}&edit=true`
+        url:`/pages/newGroup/index?groupMsg=${JSON.stringify(that.data.groupMsg)}&edit=true&addMenu=false`
+      })
+    },
+    addMenuber(e){
+      let that = this;
+      wx.navigateTo({
+        url:`/pages/newGroup/index?groupMsg=${JSON.stringify(that.data.groupMsg)}&edit=true&addMenu=true`
       })
     },
     exitGroup(){//退群

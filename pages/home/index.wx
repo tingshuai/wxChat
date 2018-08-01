@@ -30,7 +30,7 @@
         <view class="sample_title" style="background-color:white;border-bottom:1px solid #E5E5E5;" wx:if="{{ list1.length != 0 }}">
            <text>已加入</text>
            <!-- !userMsgReq.canBuildGroup -->
-           <icon catchtap="addGroup" class="iconfont myWx-jia1" style="float:right;right:25rpx;position:relative;font-size:55rpx;"></icon>
+           <icon wx:if="{{ userMsgReq.canBuildGroup }}" catchtap="addGroup" class="iconfont myWx-jia1" style="float:right;right:25rpx;position:relative;font-size:55rpx;"></icon>
         </view>
         <ui-accordion bindchange="slide" wx:for="{{ list1 }}" wx:key="{{ index }}" header-height="50">
             <view slot="header" class="accorHeader">
@@ -135,7 +135,7 @@ export default {
     el: 'undefined',
     showInput:true,
     defaultHeadImg:'',
-    userMsgReq:{}
+    userMsgReq:{},
   },
   onLoad(option){
     var that = this;
@@ -145,20 +145,29 @@ export default {
         success: function(res) {
             app.globalData.openId = res.data;
             that.requestGroupList('/chat/groups/tree','over');
+            console.log( "获取openId成功")
+        },
+        fail(res){
+            console.log("获取openid失败",res)
+            wx.redirectTo({
+              url: '/pages/login/index'
+            })
         }
     })
     wx.getStorage({
         key:'userMsgReq',
         success(res){
             app.globalData.userMsgReq = res.data;
-            that.data.userMsgReq = res.data;
+            that.setData({
+                "userMsgReq":res.data
+            })
         }
     })
     this.getDefaultImg();
   },
   addGroup(e){
       wx.navigateTo({
-          url:'/pages/newGroup/index',success(res){},fail(res){}
+          url:'/pages/newGroup/index?edit=false&addMenu=false',success(res){},fail(res){}
       })
   },
   showInput(){
@@ -194,6 +203,7 @@ export default {
             'content-type': 'application/json' // 默认值
         },
         success: function(res) {
+        console.log( "获取列表",res.data.data )
             if(type == 'over'){
                 that.setData({
                     list1:res.data.data.rows
@@ -207,6 +217,7 @@ export default {
             wx.hideNavigationBarLoading();
         },
         fail(res){
+            console.log( "获取列表失败",res.data.data )
             system.msgTip({title: '提示',content: res.data.message,scb(){},ccb(){}})
         }
     })

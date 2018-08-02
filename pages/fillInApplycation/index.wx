@@ -186,7 +186,7 @@ var app = getApp();
             success: function(res) {
                 if( res.data.status == 200 ){
                     wx.showToast({
-                        title: '加入成功',
+                        title: '申请成功',
                         icon: 'success',
                         duration: 1500,
                         mask:true,

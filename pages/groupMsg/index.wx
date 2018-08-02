@@ -69,8 +69,6 @@
         ['submitData.groupDesc']:JSON.parse( option.item ).groupDesc,
         "userMsg":app.globalData.userMsgReq
       })
-      that.data.groupMsg.managerId
-      debugger;
       this.data.groupMsg.groupUsers.filter((item)=>{
         if( that.data.userMsg.openId == item.openId){
           if(item.authAddMember == true){
@@ -103,26 +101,40 @@
     exitGroup(){//退群
         let that = this;
         // var dataParam =JSON.stringify( {groupId : that.data.groupMsg.groupId,openId:app.globalData.openId,sessionId:app.globalData.sessionId})
-        system.http({ url:'chat/groups/quit', 
-          method:"post",
-          param: {groupId : that.data.groupMsg.groupId,openId:app.globalData.openId,sessionId:app.globalData.sessionId},
-          header: {
-              'content-type': 'application/x-www-form-urlencoded'
-          },
-          scb(res){
-            if ( res.data.status == 200) {
-                system.stateMsg({title:"退群成功",icon:"success",time:1500});
-                setTimeout(() => {
-                    wx.reLaunch({
-                        url: `/pages/home/index`
-                    })
-                }, 1500);
-            }else{
+        let promise = new Promise((resolve,reject)=>{
+          system.msgTip({
+            title:"提示",
+            content:"亲爱的，你确定要退群吗？",
+            scb(res){
+              resolve();
+            },
+            fcb(res){
+              return;
+            }
+          })
+        });
+        promise.then(()=>{
+          system.http({ url:'chat/groups/quit', 
+            method:"post",
+            param: {groupId : that.data.groupMsg.groupId,openId:app.globalData.openId,sessionId:app.globalData.sessionId},
+            header: {
+                'content-type': 'application/x-www-form-urlencoded'
+            },
+            scb(res){
+              if ( res.data.status == 200) {
+                  system.stateMsg({title:"退群成功",icon:"success",time:1500});
+                  setTimeout(() => {
+                      wx.reLaunch({
+                          url: `/pages/home/index`
+                      })
+                  }, 1500);
+              }else{
+                system.msgTip({title: '提示',content: res.data.message,scb(){},ccb(){}})
+              }
+            },fcb(res){
               system.msgTip({title: '提示',content: res.data.message,scb(){},ccb(){}})
             }
-          },fcb(res){
-            system.msgTip({title: '提示',content: res.data.message,scb(){},ccb(){}})
-          }
+          })
         })
     }
   }
@@ -211,12 +223,13 @@
     font-size: 30rpx;
   }
   .figure{
-    position: absolute;
-    font-size: 22rpx;
-    background-color: antiquewhite;
+    position:absolute;
+    font-size:0rpx;
+    background-color:antiquewhite;
     bottom:36px;
-    right:4px;
+    right:1px;
     border-radius:50%;
+    overflow:hidden;
   }
   .label1{
     font-size: 28rpx;

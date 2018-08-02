@@ -12,7 +12,8 @@
                   <input class="weui-input" value="{{ formData.groupName }}" bindinput="inputName" name="groupName" placeholder="请输入群名称" placeholder-class="placeholderClass"/>
               </view>
           </view>
-          <view class="weui-cell weui-cell_select" wx:if="{{ edit == 'true' ? false : true}}">
+          <!-- <view class="weui-cell weui-cell_select" wx:if="{{ edit == 'true' ? false : true}}"> -->
+          <view class="weui-cell weui-cell_select">
               <view class="weui-cell__hd weui-cell__hd_in-select-after">
                   <view class="weui-label label0">父群组名称</view>
               </view>
@@ -69,11 +70,11 @@
       </view>
       <view class="weui-cells weui-cells_after-title">
           <checkbox-group bindchange="checkboxChange" name="{{ formData.selUser }}">
-              <view class="weui-cell" wx:for="{{ formData.userList }}" wx:key="index">
+              <view class="weui-cell" wx:for="{{ formData.userList }}" wx:key="index" wx:if="{{ userMsg.openId != item.openId }}">
                  <image bindtap="tabHead" data-item="{{ item }}" data-index="{{ index }}" class="headImg" mode="aspectFit" src="{{ item.headImgUrl }}"></image>
                  <icon type="success" size="15" class="figure" wx:if="{{ item.isAddMember }}"></icon>
                  <view class="weui-cell__bd userNickName">{{ item.username || item.nickname }}</view>
-                 <checkbox class="weui-check nickCheckbox" value="{{ item.openId }}" checked="{{ item.checked }}"/>
+                 <checkbox class="weui-check nickCheckbox" disabled="{{ submitFormData.managerId == item.openId }}" value="{{ item.openId }}" checked="{{ item.checked }}"/>
               </view>
           </checkbox-group>
       </view>
@@ -95,7 +96,7 @@ import system from '../../static/utils/system'
 var app = getApp();
 export default {
   config: {
-    navigationBarTitleText: '新增群组'
+    navigationBarTitleText: ''
   },
   data: {
     tip:{
@@ -106,6 +107,7 @@ export default {
     edit:"",//是否是编辑进来的。。。。
     addMenu:"",///是否是添加成员的....
     groupMsg:{},
+    userMsg:{},
     formData:{
       date:'',
       groupName:"",
@@ -142,14 +144,17 @@ export default {
   onLoad(option){
     let time = new Date();
     let that = this;
+    time.setDate(time.getDate()+1)
     let startTime = `${time.getFullYear()}-${time.getUTCMonth() + 1}-${time.getUTCDate()}`
     let promise = new Promise((resolve,reject)=>{
       that.reqGroupList();//请求群组列表...
       that.reqUserList( "", resolve );//请求用户列表.....
     })
-    this.setData({
+    that.setData({
+      "edit":option.edit,
+      "addMenu":option.addMenu,
+      "userMsg":app.globalData.userMsgReq,
       ['formData.startTime']:startTime,
-      ['submitFormData.managerId']:app.globalData.openId,
     })
     promise.then((that)=>{
       if(option.edit == "true"){
@@ -160,13 +165,14 @@ export default {
           ['formData.deadline']:msg.deadline,
           ['formData.date']:msg.deadline,
           ['formData.groupDesc']:msg.groupDesc,
-          "edit":option.edit,
-          "addMenu":option.addMenu,
           ["formRuler.deadline.require"]:false,
-          ["formRuler.groupName.require"]:false
+          ["formRuler.groupName.require"]:false,
+          ['submitFormData.managerId']:msg.managerId,
+          ['submitFormData.deadline']:msg.deadline,
+          ['submitFormData.parentId']:msg.parentId
         });
         wx.setNavigationBarTitle({//设置页面标题....
-          title: "编辑群组",
+          title: that.data.addMenu == 'true' ? "添加成员" : "编辑群组",
         })
         let openIds = [];
         that.data.groupMsg.groupUsers.forEach((value,ii,array)=>{
@@ -184,6 +190,11 @@ export default {
           ["formData.userList"]:that.data.formData.userList,
           ['submitFormData.openIds']:openIds
         })
+      }else if(option.addMenu == "false"){
+        that.setData({
+          ['formData.startTime']:startTime,
+          ['submitFormData.managerId']:app.globalData.openId,
+        })
       }
     })
   },
@@ -200,12 +211,22 @@ export default {
   },
   tabHead(e){
     let that = this;
-    let item = e.currentTarget.dataset;
-    that.data.formData.userList[item.index].checked = true;
-    that.data.formData.userList[item.index].isAddMember = !that.data.formData.userList[item.index].isAddMember;
-    this.setData({
-      ['formData.userList']:that.data.formData.userList
-    })
+    let _item = e.currentTarget.dataset;
+    if( that.data.addMenu == "true" ){
+      if( that.data.submitFormData.managerId != _item.item.openId ){
+        that.data.formData.userList[_item.index].checked = true;
+        that.data.formData.userList[_item.index].isAddMember = !that.data.formData.userList[_item.index].isAddMember;
+        this.setData({
+          ['formData.userList']:that.data.formData.userList
+        })
+      }
+    }else{
+      that.data.formData.userList[_item.index].checked = true;
+      that.data.formData.userList[_item.index].isAddMember = !that.data.formData.userList[_item.index].isAddMember;
+      this.setData({
+        ['formData.userList']:that.data.formData.userList
+      })
+    }
   },
   inputBlur(e){//搜索输入框失焦失
     // debugger;
@@ -237,6 +258,7 @@ export default {
   checkboxChange(e){
     let list=[];
     let that = this;
+    // if( that.data.submitFormData.managerId != _item.item.openId )
     that.data.formData.userList.filter((item)=>{
       item.checked = false;
     })

@@ -97,12 +97,12 @@
                   <ui-col align="left">
                     <ui-row height="20">
                         <ui-col vertical-align="bottom" width="100%">
-                            <text>{{item.groupName}}</text>
+                            <text>{{item.groupName || "" }}</text>
                         </ui-col>
                     </ui-row>
                     <ui-row style="width:100%">
                         <ui-col align="left" width="100%">
-                            <text class="article">{{ item.groupDesc }}</text>
+                            <text class="article">{{ item.groupDesc || "" }}</text>
                         </ui-col>
                     </ui-row>
                   </ui-col>
@@ -223,10 +223,11 @@ export default {
     })
   },
   toChat(event){//跳转到群聊页面.....
-    event.currentTarget.dataset.item.openId = '';
-    var item = JSON.stringify( event.currentTarget.dataset.item );
+    let item = {};
+    item.group = event.currentTarget.dataset.item ;
+    item.user = app.globalData.userMsgReq;
     wx.navigateTo({
-      url: `/pages/groupChat/index?item=${item}`
+      url: `/pages/groupChat/index?item=${JSON.stringify(item)}`
     })
   },
   toDetailPage(event){//跳转到群详情页面....

@@ -244,6 +244,7 @@ export default {
   onLoad(options){
     var that = this;
     var onFirst = 1;
+    let _item = JSON.parse(options.item);
     let loadPromise = new Promise((resolve,reject)=>{
       wx.getStorage({
         key: 'openId',
@@ -270,7 +271,7 @@ export default {
     loadPromise.then(()=>{
       console.log( "已登录继续执行promise内容", options.item);
       wx.setNavigationBarTitle({//设置页面标题....
-        title: JSON.parse (options.item).groupName,
+        title: _item.group.groupName,
       })
       system.http({
         url:'chat/attach/defaultGroupIcon',
@@ -280,22 +281,18 @@ export default {
           that.data.defaultImg = res.data.data.base64Str;
         }
       });
-      let myMsg = {};
-      JSON.parse(options.item).groupUsers.forEach((val,i,arr)=>{
-        if(val.openId == JSON.parse(options.item).openId){
-          myMsg = val;
-        }
-      })
       this.setData({
-        theGroupMsg:JSON.parse (options.item),
+        theGroupMsg:_item.group,
         userMsg:app.globalData.userMsgReq,
-        ['sendInputMsg.groupName']:JSON.parse (options.item).groupName,
-        ['sendInputMsg.fromUserName']:myMsg.username || app.globalData.userMsgReq.username,
-        ['sendInputMsg.fromUser']:JSON.parse(options.item).openId || app.globalData.openId,
-        ['sendInputMsg.groupId']:JSON.parse(options.item).groupId,
-        ['sendInputMsg.position']:myMsg.position || app.globalData.userMsgReq.position,
-        ['sendInputMsg.headImgUrl']:myMsg.headImgUrl || app.globalData.userMsgReq.headImgUrl,
-        ['sendInputMsg.isGroupManager']:JSON.parse(options.item).isGroupManager || app.globalData.userMsgReq.isGroupManager
+        ['sendInputMsg.groupName']:_item.group.groupName,
+        ['sendInputMsg.fromUserName']:_item.user.username || app.globalData.userMsgReq.username,
+        ['sendInputMsg.fromUser']:_item.user.openId || app.globalData.openId,
+        ['sendInputMsg.groupId']:_item.group.groupId,
+        ['sendInputMsg.position']:_item.user.position || app.globalData.userMsgReq.position,
+        ['sendInputMsg.headImgUrl']:_item.user.headImgUrl || app.globalData.userMsgReq.headImgUrl,
+      })
+      that.setData({
+        ['sendInputMsg.isGroupManager']: _item.user.openId == _item.group.managerId ? true : false
       })
       console.log("打印sendInputMsg内容")
       this.data.theGroupMsg.groupUsers.forEach((val,i,arr)=>{
@@ -313,8 +310,10 @@ export default {
           'content-type': 'application/json'
         },
         success:function(msg){
-          that.getHistoryMsg(that.data.theGroupMsg.groupId, 10 , that.data.pageNum,true);
           console.log( "socket链接")
+          setTimeout(() => {
+            that.getHistoryMsg(that.data.theGroupMsg.groupId, 10 , that.data.pageNum,true);
+          }, 200);
         },
         fail:function(msg){
           system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
@@ -350,9 +349,11 @@ export default {
             })
             that.data.chatData
           }else{//转发消息返回的消息，说明转发成功了
-            if(data.msgType == 7){
               system.stateMsg({title:"消息转发成功",icon:"success",time:1000})
-            }
+              that.setData({
+                ["model.show"]:false,
+                ["transmit.isTransmit"]:false
+              })
           }
         }
         if( data.cmd == 1 ){//撤回消息...
@@ -491,9 +492,6 @@ export default {
           that.sendSocketMessage( JSON.stringify( val ) );
         }
       })
-    })
-    that.setData({
-      ["model.show"]:false
     })
   },
   previewImage: function(e){//图片预览.....
@@ -1079,6 +1077,7 @@ export default {
   .groupDesc{
     font-size:11px;
     color:#999;
+    .mix-text-overflow();
   }
 }
 .button-sp-area{
@@ -1117,7 +1116,9 @@ export default {
     .name,.job{
       font-family:PingFang-SC-Medium;
       color:rgba(102,102,102,1);
+      max-width: 90px;
       display: inline-block;
+      .mix-text-overflow();
     }
     .name{
       font-size: 13px;

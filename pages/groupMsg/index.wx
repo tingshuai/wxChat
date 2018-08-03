@@ -116,7 +116,7 @@
         promise.then(()=>{
           system.http({ url:'chat/groups/quit', 
             method:"post",
-            param: {groupId : that.data.groupMsg.groupId,openId:app.globalData.openId,sessionId:app.globalData.sessionId},
+            param: {groupId : that.data.groupMsg.groupId,openId:app.globalData.openId,fromUserName:app.globalData.userMsgReq.username},
             header: {
                 'content-type': 'application/x-www-form-urlencoded'
             },
@@ -203,7 +203,7 @@
         background-color: #39CCC5;
     }
     .mycol{
-      width: 60px;
+      width: 20%;
       display: inline-block;
       height: 90px;
       text-align: center;
@@ -227,7 +227,7 @@
     font-size:0rpx;
     background-color:antiquewhite;
     bottom:36px;
-    right:1px;
+    right:3px;
     border-radius:50%;
     overflow:hidden;
   }

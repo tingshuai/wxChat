@@ -197,7 +197,8 @@ export default {
         url: `${app.globalData.httpHost}${search}`, //请求已加入群组或者未加入群组
         data: {
             openId: app.globalData.openId,
-            keywords: that.data.inputVal
+            keywords: that.data.inputVal,
+            pageSize:0
         },
         header: {
             'content-type': 'application/json' // 默认值

@@ -347,14 +347,24 @@ export default {
             that.setData({
               scrollTop:10000
             })
-            that.data.chatData
           }else{//转发消息返回的消息，说明转发成功了
+            if(data.fromUser == app.globalData.openId){
               system.stateMsg({title:"消息转发成功",icon:"success",time:1000})
               that.setData({
                 ["model.show"]:false,
                 ["transmit.isTransmit"]:false
               })
+            }
           }
+        }
+        function set2(){
+           that.data.chatData.push( data );
+            that.setData({
+              chatData:that.data.chatData
+            })
+            that.setData({
+              scrollTop:10000
+            })
         }
         if( data.cmd == 1 ){//撤回消息...
           that.data.chatData.forEach((val,i,arr) => {
@@ -368,28 +378,34 @@ export default {
           })
         }else if( data.cmd == 0 ){//用户发送消息的时候发送 消息回执......
           var isMe = data.fromUser == that.data.sendInputMsg.fromUser ? true : false;
+          if( data.msgType == 7){
+            data.content = data.content.split('(@\`-\`@)').join(" ");
+          }
           if(isMe){
             data.headImgUrl= that.data.userMsg.userHeadImg;
             if( data.msgType == 0 ){
               set();
             }else if( data.msgType == 7 ){//@消息.....
-              data.content = data.content.split('(@\`-\`@)').join("");
               set();
               that.data.theGroupMsg.groupUsers.filter((item)=>{
                 item.act = false;
               })
-              that.data.theGroupMsg
+              that.data.theGroupMsg.groupUsers.forEach((val,i,arr)=>{
+                 val.act = false;
+              })
               that.setData({
                 ["transmit.isAite"]:true,
                 isHidden:true,
                 theGroupMsg:that.data.theGroupMsg,
                 scrollHeight: wx.DEFAULT_CONTENT_HEIGHT - 48 + 'px',
+                ['transmit.aiteContent']:'',
+                ['theGroupMsg.groupUsers']:that.data.theGroupMsg.groupUsers
               })
-            }else if(data.msgType == 1 || data.msgType == 2){
+            }else if(data.msgType == 1 || data.msgType == 2){//图片和语音...
               // that.data.chatData.pop();
               set();
             }else{
-              that.data.chatData[that.data.chatData.length - 1].msgId = data.msgId;
+              // that.data.chatData[that.data.chatData.length - 1].msgId = data.msgId;
               set();
             }
             that.setData({
@@ -402,7 +418,7 @@ export default {
             SocketTask.send({"data": dataMsg ,success(res){},fail(res){}});
           }
         }else if( data.cmd == 2 ){//系统推送消息.
-          set();
+          set2();
           if( onFirst == 1 ){
             SocketTask.send({"data":dataMsg ,success(res){},fail(res){}});
             onFirst ++ ;
@@ -767,7 +783,7 @@ export default {
           var oldList = that.data.chatData.length;
           res.data.data.rows.forEach((val,i,arr)=>{//未读@信息......
             if(val.msgType == 7 && /(@\`-\`@)/.test(val.content) ){
-              val.content = val.content.split('(@\`-\`@)').join('');
+              val.content = val.content.split('(@\`-\`@)').join(' ');
             }
           })
           that.data.chatData.splice(0,0,...res.data.data.rows);
@@ -901,7 +917,7 @@ export default {
   // 输入时
   onInput(event){
     let that = this;
-    if( event.detail.value != '' ){
+    if( event.detail.value != '' && /^(?!(\s+$))/.test(event.detail.value)){
       var key = 'sendInputMsg.content';
       that.setData({ isInputing: true, "inputVal":event.detail.value });
     }else{

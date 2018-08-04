@@ -1,5 +1,17 @@
 <template>
   <view class="content">
+    <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#fff'} }}">
+        <ui-row height="40">
+            <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
+                <icon class="iconfont myWx-iconfontqianjin2" style="font-size:20px;"></icon>
+            </ui-col>
+            <ui-col vertical-align="middle" align="center">
+                群信息
+            </ui-col>
+            <ui-col vertical-align="middle" align="center" width="80">
+            </ui-col>
+        </ui-row>
+    </ui-nav-bar>    
     <!-- 群成员头像 -->
     <view class="talkItem" >
         <view width="60" align="left" vertical-align="top" bindtap="sel" data-index="{{index}}" data-item="{{item}}" class="mycol" wx:for="{{ groupMsg.groupUsers }}" wx:key="{{index}}">
@@ -24,7 +36,8 @@
     <ui-fixed-view bottom="0" left="0" right="0">
       <view class="fixed-view-content" style="padding:0 35rpx;">
         <view class="btn-area">
-          <button type="warn" class="fixed_bottom" bindtap="exitGroup">删除并退群</button>
+          <button type="warn" class="fixed_bottom" wx:if="{{ userMsg.openId == groupMsg.managerId  }}" data-disband="true" bindtap="exitGroup">解散群组</button>
+          <button type="warn" class="fixed_bottom" wx:else data-disband="false" bindtap="exitGroup">退出群组</button>
           <!-- <button type="primary" class="fixed_bottom" bindtap="confirm" wx:if="{{ isEdit }}">确定</button> -->
           <!-- <button type="primary" class="fixed_bottom" bindtap="cancel" wx:if="{{ isEdit }}">取消</button> -->
           <button wx:if="{{ groupMsg.managerId == userMsg.openId }}" type="default" class="fixed_bottom" bindtap="editGroup">编辑</button>
@@ -40,7 +53,7 @@
   var app = getApp();
   export default {
     config: {
-      navigationBarTitleText: '群信息',
+      navigationBarTitleText: '',
     },
     data: {
       groupMsg:{},
@@ -68,6 +81,9 @@
         ['submitData.groupName']:JSON.parse( option.item ).groupName,
         ['submitData.groupDesc']:JSON.parse( option.item ).groupDesc,
         "userMsg":app.globalData.userMsgReq
+      })
+      wx.setNavigationBarTitle({//设置页面标题....
+        title: JSON.parse( option.item ).groupName
       })
       this.data.groupMsg.groupUsers.filter((item)=>{
         if( that.data.userMsg.openId == item.openId){
@@ -98,31 +114,47 @@
         url:`/pages/newGroup/index?groupMsg=${JSON.stringify(that.data.groupMsg)}&edit=true&addMenu=true`
       })
     },
-    exitGroup(){//退群
+    navigateBack () {
+        wx.navigateBack()
+    },
+    exitGroup(e){//退群
         let that = this;
+        let _item = e.currentTarget.dataset
         // var dataParam =JSON.stringify( {groupId : that.data.groupMsg.groupId,openId:app.globalData.openId,sessionId:app.globalData.sessionId})
         let promise = new Promise((resolve,reject)=>{
           system.msgTip({
             title:"提示",
-            content:"亲爱的，你确定要退群吗？",
+            content: that.data.userMsg.openId == that.data.groupMsg.managerId ? "亲爱的，你确定要解散本群吗？" : "亲爱的，你确定要退群吗？",
             scb(res){
-              resolve();
+              let obj={};
+              if( _item.disband == "true" ){
+                obj.myurl = `chat/groups/disband/${that.data.groupMsg.groupId}`;
+                obj._tip = "解散成功";
+                obj.params = {};
+                resolve(obj);
+              }else{
+                obj.myurl = 'chat/groups/quit';
+                obj._tip = "退群成功";
+                obj.params = {groupId : that.data.groupMsg.groupId,openId:app.globalData.openId,fromUserName:app.globalData.userMsgReq.username};
+                resolve(obj);
+              }
             },
             fcb(res){
               return;
             }
           })
         });
-        promise.then(()=>{
-          system.http({ url:'chat/groups/quit', 
+        promise.then((obj)=>{
+          system.http({ url:obj.myurl,
             method:"post",
-            param: {groupId : that.data.groupMsg.groupId,openId:app.globalData.openId,fromUserName:app.globalData.userMsgReq.username},
+            param: obj.params,
             header: {
                 'content-type': 'application/x-www-form-urlencoded'
             },
             scb(res){
               if ( res.data.status == 200) {
-                  system.stateMsg({title:"退群成功",icon:"success",time:1500});
+                  system.stateMsg({title:obj._tip,icon:"success",time:1500});
+                  app.globalData.socketTask.close();
                   setTimeout(() => {
                       wx.reLaunch({
                           url: `/pages/home/index`

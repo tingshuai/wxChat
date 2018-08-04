@@ -21,7 +21,7 @@ export default {
     }
   },
   // 状态提示......
-  stateMsg(options={title:"操作成功",icon:"success",time:1500}){
+  stateMsg(options={title:"操作成功",icon:"",time:1500}){
     wx.showToast({
       title: options.title,
       icon: options.icon,

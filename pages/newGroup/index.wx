@@ -1,4 +1,18 @@
 <template id="page">
+  <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#fff'} }}">
+      <ui-row height="40">
+          <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
+              <icon class="iconfont myWx-iconfontqianjin2" style="font-size:20px;"></icon>
+          </ui-col>
+          <ui-col vertical-align="middle" align="center">
+              {{ title }}
+          </ui-col>
+          <ui-col vertical-align="middle" align="center" width="80">
+          </ui-col>
+      </ui-row>
+  </ui-nav-bar>
+
+
   <view class="weui-toptips weui-toptips_warn" wx:if="{{ tip.showTopTips }}">{{ tip.tipMsg }}</view>
   <view style="padding-bottom:200rpx">
     <form catchsubmit="submitGroupData" catchreset="formCancel">
@@ -145,13 +159,11 @@ export default {
   onLoad(option){
     let time = new Date();
     let that = this,promise, msg;
-    wx.setNavigationBarTitle({//设置页面标题....
-      title: that.data.addMenu == 'true' ? "添加成员" : "编辑群组",
-    })
     time.setDate(time.getDate()+1)
     let startTime = `${time.getFullYear()}-${time.getUTCMonth() + 1}-${time.getUTCDate()}`
     that.setData({
       "addMenu":option.addMenu,
+      "title":option.edit == "true" ? option.addMenu == 'true' ? "添加成员" : "编辑群组" : "新建群组",
       "userMsg":app.globalData.userMsgReq,
       ['formData.startTime']:startTime,
       "edit":option.edit,
@@ -377,10 +389,12 @@ export default {
   submitGroupData(e){
     let that = this;
     let promise = new Promise((resolve,reject)=>{
-      that.data.formRuler.deadline.require
-      that.data.formRuler.groupName.require
       if( !that.data.formRuler.groupName.require && !that.data.formRuler.deadline.require ){
-        resolve();
+        if( that.data.submitFormData.openIds.length < 3 ){
+          system.stateMsg({title:"成员人数不能小于3人",icon:"none",time:1500})
+        }else{
+          resolve();
+        }
       }else{
         that.setData({
           ["tip.showTopTips"]:true,
@@ -414,21 +428,25 @@ export default {
           let tip = that.data.edit == 'true' ? "修改群组成功" : '新增群组成功';
           if(res.data.status == 200){
             system.stateMsg({title: tip,icon:"success",time:1000});
+            app.globalData.socketTask.close();
             setTimeout(function(){
-              wx.redirectTo({
+              wx.reLaunch({
                 url: '/pages/home/index'
               })
             },1000)
           }else{
-            system.stateMsg({title:res.data.message,time:1000})
+            system.stateMsg({title:res.data.message,icon:"none",time:1000})
           }
         },
         fcb(res){
-          system.stateMsg({title:that.data.edit == 'true' ? "修改群组成功" : '新增群组成功',time:1000})
+          system.stateMsg({title:that.data.edit == 'true' ? "修改群组成功" : '新增群组成功',icon:"none",time:1000})
         }
       })
     })
   },
+  navigateBack () {
+        wx.navigateBack()
+    },
   reqUserList(keywords="",resolve){///请求用户列表.
     let that = this;
     system.http({

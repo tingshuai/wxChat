@@ -123,4 +123,16 @@ page {
   background-color: #EFEFF4;
   padding-top:66px;
 }
+.ui-nav-bar{
+  padding-top:28px;
+
+  // .myWx-iconfontqianjin2{
+  //   top:2px;
+  //   position: relative;
+  // }
+  // .title{
+  //   top: 2px;
+  //   position: relative;
+  // }
+}
 </style>

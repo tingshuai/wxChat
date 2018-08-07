@@ -143,6 +143,11 @@ export default {
 
 <style lang="less">
 .top_tip{
+    position:absolute;
+    top:113px;
+    width:100%;
+    bottom:0px;
+    overflow:auto;
     .left_icon{
         width: 50px;
         height: 50px;

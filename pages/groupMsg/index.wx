@@ -31,7 +31,11 @@
       <ui-col vertical-align="middle" space-left="10" align="left" class="txtLeft" span="2">群描述</ui-col>
       <ui-col vertical-align="middle" space-right="10" align="right" span="10" class="txtRight">{{ groupMsg.groupDesc ? groupMsg.groupDesc : '' }}</ui-col>
     </ui-row>
-
+    <view class="weui-cells weui-cells_after-title">
+        <view class="weui-cell weui-cell_link" style="padding-left:10px;line-height:21px;" bindtap="selChatList">
+            <view class="weui-cell__bd" style="color:black;" >查找聊天记录</view>
+        </view>
+    </view>
     <!--退群按钮-->
     <ui-fixed-view bottom="0" left="0" right="0">
       <view class="fixed-view-content" style="padding:0 35rpx;">
@@ -97,6 +101,11 @@
             })
           }
         }
+      })
+    },
+    selChatList(e){
+      wx.navigateTo({
+        url:'/pages/historyMsg/index'
       })
     },
     editGroup(e){//编辑群组

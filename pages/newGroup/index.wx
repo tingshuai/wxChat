@@ -14,7 +14,7 @@
 
 
   <view class="weui-toptips weui-toptips_warn" wx:if="{{ tip.showTopTips }}">{{ tip.tipMsg }}</view>
-  <view style="padding-bottom:200rpx">
+  <view class="pageContainer">
     <form catchsubmit="submitGroupData" catchreset="formCancel">
 
       <view class="weui-cells weui-cells_after-title" wx:if="{{ addMenu == 'false' }}">
@@ -37,16 +37,6 @@
                   </picker>
               </view>
           </view>
-          <!-- <view class="weui-cell weui-cell_select">
-              <view class="weui-cell__hd weui-cell__hd_in-select-after">
-                  <view class="weui-label label0">群主</view>
-              </view>
-              <view class="weui-cell__bd">
-                  <picker bindchange="bindUpChange" value="{{ submitFormData.selUserValue }}" range="{{ submitFormData.openIds }}">
-                      <view class="weui-select weui-select_in-select-after">{{ formData.selUserLebal }}</view>
-                  </picker>
-              </view>
-          </view> -->
       </view>
 
       <view class="weui-cells__title" wx:if="{{ addMenu == 'false' }}">有效日期</view>
@@ -66,8 +56,8 @@
       <view class="weui-cells__title" wx:if="{{ addMenu == 'false' }}">群描述</view>
       <view class="weui-cells weui-cells_after-title" wx:if="{{ addMenu == 'false' }}">
           <view class="weui-cell">
-              <view class="weui-cell__bd">
-                  <textarea placeholder-class="placeholderClass" value="{{ formData.groupDesc }}" class="weui-textarea fontValue" name="groupDesc" placeholder="请输入群描述" style="height: 3.3em" />
+              <view class="weui-cell__bd" style="position:relative;">
+                  <textarea fixed="{{tag}}" placeholder-class="placeholderClass" value="{{ formData.groupDesc }}" class="weui-textarea fontValue" name="groupDesc" placeholder="请输入群描述" style="height: 3.3em;position:relative;" />
               </view>
           </view>
       </view>
@@ -117,7 +107,8 @@ export default {
     tip:{
       showTopTips:false,
       tipMsg:"",
-      enable:true
+      enable:true,
+      tag:true
     },
     edit:"",//是否是编辑进来的。。。。
     addMenu:"",///是否是添加成员的....
@@ -527,6 +518,11 @@ export default {
 </script>
 
 <style lang="less">
+.pageContainer{
+  padding-top:5px;
+  width:100%;
+  padding-bottom:100px;
+}
 .warnXing{
   color: red;
 }
@@ -550,7 +546,7 @@ export default {
     .mix-text-overflow();
   }
   .nickCheckbox{
-    left: 37rpx;
+    left: 14rpx;
   }
   .label0{
     font-size: 30rpx;
@@ -571,5 +567,9 @@ export default {
     font-size:13px;
     height:44px;
     line-height:44px;
+  }
+  page{
+    overflow-y:auto;
+    width:100%;
   }
 </style>

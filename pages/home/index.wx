@@ -38,7 +38,7 @@
         <view class="weui-loadmore__tips weui-loadmore__tips_in-line" style="background-color:none;">暂无数据 可尝试下拉刷新</view>
     </view>
     <!-- //右滑菜单.........  -->
-    <view style="z-index:0;">
+    <view class="listContainer" hidden="{{ overList.length != 0 }}">
         <view class="sample_title" style="background-color:white;border-bottom:1px solid #E5E5E5;" wx:if="{{ list1.length != 0 }}">
            <text>已加入</text>
            <!-- !userMsgReq.canBuildGroup -->
@@ -95,8 +95,8 @@
         </ui-accordion>
     </view>
 
-    <view class="top_tip result_list">
-      <view class="sample_title" wx:if="{{ overList.length != 0 }}" style="border-bottom:1px solid #E5E5E5;">未加入</view>
+    <view class="top_tip result_list {{ overList.length != 0 ? 'listContainer' : '' }}">
+      <view class="sample_title" wx:if="{{ overList.length != 0 }}" style="border-bottom:1px solid #E5E5E5;color:#cc0000">未加入</view>
       <ui-row height="80" border-bottom border-top wx:for="{{ overList }}" wx:key="index" data-item="{{ item }}" bindtap="toDetailPage" class="listRow">
           <ui-col space-right="0" vertical-align="middle">
               <ui-row>
@@ -152,6 +152,7 @@ export default {
   onLoad(option){
     var that = this;
     console.log( "home 页面")
+    system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:8000});
     wx.getStorage({
         key: 'openId',
         success: function(res) {
@@ -216,7 +217,6 @@ export default {
             'content-type': 'application/json' // 默认值
         },
         success: function(res) {
-        console.log( "获取列表",res.data.data )
             if(type == 'over'){
                 that.setData({
                     list1:res.data.data.rows
@@ -228,6 +228,7 @@ export default {
             }
             wx.stopPullDownRefresh();
             wx.hideNavigationBarLoading();
+            wx.hideToast()
         },
         fail(res){
             console.log( "获取列表失败",res.data.data )
@@ -472,5 +473,16 @@ export default {
             .mix-text-overflow();
         }
     }
+}
+.listContainer{
+    z-index:0;
+    overflow:auto;
+    position:absolute;
+    width:100%;
+    top:114px;
+    bottom:0;
+}
+page{
+    overflow: hidden;
 }
 </style>

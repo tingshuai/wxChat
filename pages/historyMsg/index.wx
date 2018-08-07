@@ -1,0 +1,140 @@
+<template>
+  <view>
+    <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#fff'} }}">
+        <ui-row height="40">
+            <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
+                <icon class="iconfont myWx-iconfontqianjin2" style="font-size:20px;"></icon>
+            </ui-col>
+            <ui-col vertical-align="middle" align="center">
+                聊天信息
+            </ui-col>
+            <ui-col vertical-align="middle" align="center" width="80">
+            </ui-col>
+        </ui-row>
+    </ui-nav-bar>
+    <view class="fixed-view-content">
+        <view class="weui-search-bar">
+            <view class="weui-search-bar__form">
+                <view class="weui-search-bar__box">
+                    <icon class="weui-icon-search_in-box" type="search" size="14" wx:if="{{ !search.showInput }}"></icon>
+                    <input type="text" class="weui-search-bar__input" placeholder="{{ search.showInput ? '' :  '搜索'}}" focus="{{ search.inputShowed }}" value="{{ search.inputVal }}" bindinput="inputTyping" />
+                    <view class="weui-icon-clear" wx:if="{{ search.inputVal.length > 0 }}" bindtap="clearInput">
+                        <icon type="clear" size="14"></icon>
+                    </view>
+                </view>
+            </view>
+            <view class="weui-search-bar__cancel-btn" bindtap="clearInput" wx:if="{{ search.inputVal.length > 0 }}">取消</view>
+            <label class="weui-search-bar__label" bindtap="showInput" wx:if="{{ search.showInput }}" style="position:absolute;top:8px;background-color:rgba(0,0,0,0);">
+                <icon class="weui-icon-search" type="search" size="14" style="top:2px;position:relative;"></icon>
+                <view class="weui-search-bar__text">搜索</view>
+            </label>
+        </view>
+    </view>
+    <ui-tags data="{{ search.list00 }}" id="tags0" bindchange="singleTap"></ui-tags>
+  </view>
+</template>
+
+<script>
+const tagStyle00 = `background: #efefef;
+background:#ddd;
+color:#555;
+padding:0 10px;
+border-radius: 10px;
+text-align: center;
+height: 25px;
+display: flex;
+justify-content: center;
+align-items: center;
+line-height: 20px;
+`
+
+const selectStyle = `background: #54d09f;
+color: #fff;
+padding: 0 10px;
+border-radius: 10px;
+text-align: center;
+height: 25px;
+display: flex;
+justify-content: center;
+align-items: center;
+line-height: 20px;
+`
+export default {
+  config: {
+    navigationBarTitleText: '聊天信息'
+  },
+  data: {
+    search:{
+      showInput:true,//是否显示删除按钮..
+      inputVal:"",//输入框的值...
+      inputShowed: false,
+      list00: [{
+            text: '全部',
+            tagStyle: tagStyle00,
+            tagSelectedStyle: selectStyle,
+            checked: true
+        },{
+            text: '文字，语音',
+            tagStyle: tagStyle00,
+            tagSelectedStyle: selectStyle,
+            checked: false
+        },{
+            text: '图片',
+            tagStyle: tagStyle00,
+            tagSelectedStyle: selectStyle,
+            checked: false
+        },{
+            text: '文件',
+            tagStyle: tagStyle00,
+            tagSelectedStyle: selectStyle,
+            checked: false
+        }]
+    }
+  },
+  navigateBack() {
+    wx.navigateBack()
+  },
+  clearInput(e){
+      this.setData({
+          ["search.inputVal"]: "",
+          ["search.showInput"]:true
+      });
+  },
+  inputTyping(e){
+    this.setData({
+        ["search.inputVal"]: e.detail.value
+    });
+    if( e.detail.value == ''){
+
+    }
+  },
+  showInput(){
+      var that = this;
+      this.setData({
+          ['search.showInput']:!that.data.search.showInput,
+          ['search.inputShowed']:true
+      })
+  },
+  singleTap (e) {
+      let that = this;
+      let opt = e.detail.index;
+      wx.showToast({
+          title: that.data.search.list00[opt].text,
+          icon:'none'
+      })
+      this.data.search.list00.forEach((item, index) => {
+          item.checked = (index === opt)
+      })
+      this.setData({
+          ["search.list00"]:that.data.search.list00
+      })
+  }
+}
+</script>
+
+<style lang="less">
+#tags0{
+  margin:5px 10px;
+
+}
+</style>

@@ -1,5 +1,5 @@
-<template>
-  <view>
+<template id="page">
+  <view id="container">
     <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#fff'} }}">
         <ui-row height="40">
             <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
@@ -8,8 +8,7 @@
             <ui-col vertical-align="middle" align="center" class="title">
                 {{ title }}
             </ui-col>
-            <ui-col vertical-align="middle" align="center" width="80">
-            </ui-col>
+            <ui-col vertical-align="middle" align="center" width="80"></ui-col>
         </ui-row>
     </ui-nav-bar>
 
@@ -17,12 +16,12 @@
       <view class="loadingData" style="top:{{ loadingMsg.top }}">
         <icon class="iconfont myWx-unif032" style="color:{{ loadingMsg.color }};font-size:32px;"></icon>
       </view>
-      <view class="article">
+      <view class="article" style="height:{{ scrollHeight }}">
         <view class="groupMsgBtn">
           <button bindtap="groupMsg" wx:if="{{ !transmit.isTransmit }}" class="seeGroupMsg cBtn0"> 群信息 </button>
           <button bindtap="showModel" wx:if="{{ transmit.isTransmit }}" class="seeGroupMsg cBtn0">转发</button>
         </view>
-        <scroll-view scroll-y="true" bindscroll="scrllView" style="height:{{ scrollHeight }};" id="viewport" scroll-into-view="{{toView}}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden"><!-- bindscrolltoupper="bindscrolltoupper"，，，，catch:touchstart="loadTouchstart" catch:touchend="loadTouchend" catch:touchmove="loadTouchmove"-->
+        <scroll-view scroll-y="true" bindscroll="scrllView" id="viewport" style="height: 100%;" scroll-into-view="{{toView}}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden"><!-- bindscrolltoupper="bindscrolltoupper"，，，，catch:touchstart="loadTouchstart" catch:touchend="loadTouchend" catch:touchmove="loadTouchmove"-->
           <view class="content" id="content">
             <checkbox-group bindchange="checkboxChange">
               <ui-row hover-class="touchui-hover" class="talkItem" wx:for="{{ chatData }}" wx:key="index" id="the{{index}}">
@@ -126,7 +125,8 @@
       <!-- 全屏弹窗.... -->
       <ui-popup show="{{ model.show }}" height="100%">
           <view class="popup1">
-            <scroll-view scroll-y style="height:{{modelHeight}}">
+            <text class="title0">选择要转发到的群组</text>
+            <scroll-view scroll-y style="height:{{modelHeight}};border-top:1px solid #ddd;">
               <ui-accordion bindchange="slide" wx:for="{{ transmit.groupList }}" header-height="50" wx:key="index">
                   <view slot="header" class="accorHeader">
                       <ui-row height="80" class="top_tip" border-bottom style="padding-right:35px;" data-parentItem="0" data-isaite="false" data-index="{{ index }}" data-item="{{ item }}" bindtap="selUser">
@@ -215,8 +215,8 @@ export default {
       show:false,
     },
     inputVal:"",//消息输入框的值......
-    modelHeight:wx.DEFAULT_CONTENT_HEIGHT - 90 + 'px',
-    scrollHeight: wx.DEFAULT_CONTENT_HEIGHT - 48 + 'px',
+    modelHeight:wx.DEFAULT_CONTENT_HEIGHT - 128 + 'px',
+    scrollHeight:wx.DEFAULT_CONTENT_HEIGHT - 5 + 'px',
     sendInputMsg :{
       fromUser:app.globalData.openId,//发送人ID
       fromUserName:'',//发送人姓名
@@ -295,6 +295,7 @@ export default {
       })
     })
     loadPromise.then(()=>{
+      system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:8000});
       system.http({
         url:'chat/attach/defaultGroupIcon',
         method:"get",
@@ -332,13 +333,10 @@ export default {
           'content-type': 'application/json'
         },
         success:function(msg){
-          console.log( "socket链接")
-          setTimeout(() => {
-            that.getHistoryMsg(that.data.theGroupMsg.groupId, 10 , that.data.pageNum,true);
-          }, 200);
+          that.getHistoryMsg(that.data.theGroupMsg.groupId, 10 , that.data.pageNum,true);
         },
         fail:function(msg){
-          system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
+          system.stateMsg({title: '提示',content: res.errMsg,icon:"none",scb(){},ccb(){}})
         }
       })
       //连接状态
@@ -422,7 +420,7 @@ export default {
                 ["transmit.isAite"]:true,
                 isHidden:true,
                 theGroupMsg:that.data.theGroupMsg,
-                scrollHeight: wx.DEFAULT_CONTENT_HEIGHT - 48 + 'px',
+                scrollHeight:wx.DEFAULT_CONTENT_HEIGHT - 64 + 'px',
                 ['transmit.aiteContent']:'',
                 ['theGroupMsg.groupUsers']:that.data.theGroupMsg.groupUsers
               })
@@ -469,23 +467,6 @@ export default {
       ['model.show']:false,
       ['transmit.isTransmit']:false
     })
-    let page = getCurrentPages()[0];
-    if(page){//从登录页过来的。。。。
-      page.onLoad();
-    }else{
-      wx.checkSession({//判断是否登录.....
-        success: function(res){
-          wx.redirectTo({
-            url: '/pages/home/index'
-          })
-        },
-        fail: function(res){
-          wx.redirectTo({
-            url: '/pages/login/index'
-          })
-        }
-      })
-    }
   },
   // 发送socket消息
   sendSocketMessage(msg) {
@@ -775,6 +756,7 @@ export default {
       ['loadingMsg.top']:0,
       ['loadingMsg.color']:'#666666'
     })
+    system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:8000});
     this.getHistoryMsg( that.data.theGroupMsg.groupId ,10 , that.data.pageNum ,false,e);
   },
   // 播放语音....
@@ -872,8 +854,10 @@ export default {
               ['loadingMsg.color']:'#A0E75A'
             })
           }
+          wx.hideToast()
         }else{
-          system.msgTip({title: '提示',content: res.data.message,scb(){},ccb(){}})
+          wx.hideToast()
+          system.stateMsg({title: '提示',content: res.data.message,scb(){},ccb(){}})
         }
       }
     })
@@ -970,9 +954,16 @@ export default {
     })
   },
   navigateBack () {
-    wx.redirectTo({
-      url: '/pages/home/index'
-    })
+    let page = getCurrentPages();
+    if(page.length > 1 && page.length < 8){//从登录页过来的。。。。
+      wx.redirectTo({
+        url: '/pages/home/index'
+      })
+    }else{
+      wx.reLaunch({
+        url: '/pages/home/index'
+      })
+    }
   },
   selUser(e){//选择群成员.....
     let _item = e.currentTarget.dataset;
@@ -1013,7 +1004,7 @@ export default {
     if( e.currentTarget.id == "viewport" ){
       this.setData({
         isHidden:true,
-        scrollHeight: wx.DEFAULT_CONTENT_HEIGHT - 48 + 'px',
+        scrollHeight:wx.DEFAULT_CONTENT_HEIGHT - 64 + 'px',
         ['transmit.isAite']:true
       })
     }else{
@@ -1021,7 +1012,7 @@ export default {
         isHidden:!this.data.isHidden,
       })
       this.setData({
-        scrollHeight: !this.data.isHidden ? wx.DEFAULT_CONTENT_HEIGHT - 148 + 'px' : wx.DEFAULT_CONTENT_HEIGHT - 48 + 'px',
+        scrollHeight: !this.data.isHidden ?wx.DEFAULT_CONTENT_HEIGHT - 164 + 'px' : wx.DEFAULT_CONTENT_HEIGHT - 64 + 'px',
       })
       this.setData({
         scrollTop:10000000
@@ -1130,10 +1121,13 @@ export default {
     background: #ffffff;
   }
 .article{
+  position: relative;
+  width:100%;
+  padding-top:66px;
   .groupMsgBtn{
       position: absolute;
       right: 12px;
-      top: 80px;
+      top: 15px;
       z-index: 1;
       font-size: 14px;
       border-radius: 12px;
@@ -1314,13 +1308,20 @@ export default {
   .popup1{
     height: 100%;
     padding:0 20rpx;
+    padding-top:50px;
     overflow: hidden;
+    .title0{
+      color:#333;
+      font-size:14px;
+      padding-left:13px;
+      line-height:50px;
+    }
   }
   .angleIcon{
     position:absolute;
     z-index:10000;
-    right:14rpx;
-    top:31rpx;
+    right:68rpx;
+    top:51rpx;
     display:inline-block;
     width:auto;
     font-size:22rpx;
@@ -1389,5 +1390,16 @@ export default {
           .mix-text-overflow();
         }
     }
+}
+#container{
+  height:100%;
+  overflow:hidden;
+  position:absolute;
+  width:100%;
+  top:0;
+  bottom:0;
+}
+page{
+  overflow: hidden;
 }
 </style>

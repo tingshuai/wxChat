@@ -18,7 +18,8 @@ export default {
       'pages/groupMsg/index',
       'pages/webView/index',
       'pages/newGroup/index',
-      'pages/fileList/index'
+      'pages/fileList/index',
+      'pages/historyMsg/index'
     ],
     plugins: {
       WechatSI: {
@@ -32,7 +33,7 @@ export default {
       navigationBarBackgroundColor: '#ffffff',
       navigationBarTitleText: 'TouchUI',
       navigationBarTextStyle: 'black',
-      "navigationStyle": "custom"
+      navigationStyle: 'custom'
     },
     networkTimeout: {
       request: 10000
@@ -49,8 +50,8 @@ export default {
     sessionId: '',
     userMsgReq: {},
     wxImg: '',
-    defaultImg:"",//默认群头像...
-    socketTask:''
+    defaultImg: '', //默认群头像...
+    socketTask: ''
   },
   onLaunch() {
     system.attachInfo()
@@ -121,12 +122,12 @@ export default {
 @import './static/styles/weui.wxss';
 page {
   background-color: #EFEFF4;
-  padding-top:66px;
+  padding-top: 66px;
+  overflow: hidden;
 }
-.ui-nav-bar{
-  padding-top:28px;
 
-  // .myWx-iconfontqianjin2{
+.ui-nav-bar {
+  padding-top: 28px; // .myWx-iconfontqianjin2{
   //   top:2px;
   //   position: relative;
   // }

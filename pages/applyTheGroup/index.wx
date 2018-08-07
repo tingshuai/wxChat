@@ -1,5 +1,18 @@
 <template>
   <view class="page" style="padding-top:10px;">
+      <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#fff'} }}">
+          <ui-row height="40">
+              <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
+                  <icon class="iconfont myWx-iconfontqianjin2" style="font-size:25px;"></icon>
+              </ui-col>
+              <ui-col vertical-align="middle" align="center" class="title">
+                  {{ title }}
+              </ui-col>
+              <ui-col vertical-align="middle" align="center" width="80"></ui-col>
+          </ui-row>
+      </ui-nav-bar>  
+
+
       <view class="content">
         <!--群标题-->
         <ui-row style="padding:10px 0" height="80" border-top border-bottom>
@@ -7,13 +20,13 @@
               <image mode="aspectFit" src="{{ groupMsg.icon }}" style="background-color:green;"/>
           </ui-col>
           <ui-col align="left" vertical-align="middle" space-left="20">
-            <text style="font-size:18px;font-family:PingFang-SC-Bold;color:rgba(51,51,51,1);">{{ groupMsg.groupName }}</text>
+            <text style="font-size:18px;font-family:PingFang-SC-Bold;color:rgba(51,51,51,1);">{{ groupMsg.groupName || ""}}</text>
           </ui-col>
         </ui-row>
         <!--群介绍-->
         <ui-row class="article">
             <ui-col align="left">
-                <text class="text">{{ groupMsg.groupDesc }}</text>
+                <text class="text">{{ groupMsg.groupDesc || ""}}</text>
             </ui-col>
         </ui-row>
       </view>
@@ -30,7 +43,8 @@
     },
     data: {
       loading:false,
-      disabled:false
+      disabled:false,
+      title:"群信息"
     },
     onLoad(option){
       this.setData({
@@ -42,6 +56,9 @@
       wx.navigateTo({
         url: `/pages/fillInApplycation/index?item=${item}`
       })
+    },
+    navigateBack () {
+        wx.navigateBack()
     }
   }
 </script>
@@ -64,5 +81,8 @@
       line-height:24px;
       // text-indent:10px;
     }
+  }
+  page{
+    overflow:hidden;
   }
 </style>

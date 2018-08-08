@@ -12,6 +12,7 @@
       </ui-row>
   </ui-nav-bar>
 
+  <view style="height:66px;width:100%;"></view>
 
   <view class="weui-toptips weui-toptips_warn" wx:if="{{ tip.showTopTips }}">{{ tip.tipMsg }}</view>
   <view class="pageContainer">
@@ -419,11 +420,14 @@ export default {
           let tip = that.data.edit == 'true' ? "修改群组成功" : '新增群组成功';
           if(res.data.status == 200){
             system.stateMsg({title: tip,icon:"success",time:1000});
-            app.globalData.socketTask.close();
+            if ( app.globalData.socketTask ){
+              app.globalData.socketTask.close();
+            }
             setTimeout(function(){
               wx.reLaunch({
                 url: '/pages/home/index'
               })
+              console.log( "跳转")
             },1000)
           }else{
             system.stateMsg({title:res.data.message,icon:"none",time:1000})

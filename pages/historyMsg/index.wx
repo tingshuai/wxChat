@@ -1,5 +1,5 @@
 <template>
-  <view>
+  <view id="container">
     <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#fff'} }}">
         <ui-row height="40">
             <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
@@ -12,6 +12,8 @@
             </ui-col>
         </ui-row>
     </ui-nav-bar>
+    <view style="height:66px;width:100%;"></view>
+
     <view class="fixed-view-content">
         <view class="weui-search-bar">
             <view class="weui-search-bar__form">
@@ -31,6 +33,158 @@
         </view>
     </view>
     <ui-tags data="{{ search.list00 }}" id="tags0" bindchange="singleTap"></ui-tags>
+    <view>
+        <scroll-view scroll-y="true" id="viewport" style="height: 100%;overflow:hidden;" scroll-into-view="{{ toView }}" upper-threshold="0" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden">
+          <view class="content" id="content">
+            <checkbox-group bindchange="checkboxChange">
+              <ui-row hover-class="touchui-hover" class="talkItem" wx:for="{{ chatData }}" wx:key="index" id="the{{index}}">
+                    <view class="historyLine" wx:if="{{ (item.cmd == 'time' || item.cmd == '2') && item.content }}">{{ item.content }}</view>
+                    <ui-col width="60" align="left" vertical-align="top" wx:if="{{ item.cmd == 0 &&  (sendInputMsg.fromUser != item.fromUser)}}"><!--消息来自别人-->
+                        <view class="left_icon left_icon1">
+                            <image src="{{  item.headImgUrl }}"/>
+                        </view>
+                    </ui-col>
+                    <!-- <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && (sendInputMsg.fromUser == item.fromUser) && transmit.isTransmit }}"><checkbox-group data-item="{{ item }}" bindchange="checkboxChange"><label><checkbox class="checkbox" value="{{item.msgId}}"/></label></checkbox-group></view>消息转发选项框...... -->
+                    <ui-col class="text" align="left" vertical-align="top" space-left="0" space-right="5" wx:if="{{ item.cmd == 0 }}">
+                        <view style="width: 100%; text-align:{{ sendInputMsg.fromUser == item.fromUser ? 'right' : 'left' }};">
+                            <ui-row height="20" wx:if="{{ sendInputMsg.fromUser != item.fromUser }}">
+                                <ui-col align="{{ sendInputMsg.fromUser == item.fromUser ? 'right' : 'left'}}" vertical-align="top">
+                                    <view class="userMsg"><text class="name">{{ item.fromUserName }}</text><text decode="true">&nbsp;&nbsp;</text><text class="job">{{ item.position }}</text></view>
+                                </ui-col>
+                            </ui-row>
+                            <!--文本类型-->
+                            <text selectable='true' class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 0 || item.msgType == 7}}" style="background-color: {{ sendInputMsg.fromUser == item.fromUser ? '#A0E75A' : 'white' }}">{{ item.content }} </text>
+                            <!--图片类型-->
+                            <view class="talkContent" wx:if="{{ item.msgType == 1 }}" style="height:100px;background-color:rgba(0,0,0,0);width:40%;">
+                              <image lazy-load="true" mode="aspectFit" data-item="{{item}}" bindtap="previewImage" catch:longpress="openActionsheet" style="height:100%;width:auto" src="{{ item.attachUrl }}"></image>
+                              <view class="myProgress" wx:if="{{ item.progress >0 && item.progress < 100 }}" style="height:1px;width:{{ item.progress }}%;background-color: {{ item.progress == 100 && item.readCount >= 0 ? '#49CC8D' : 'rgba(255,100,100,0.8)' }}"></view></view>
+                            <!--语音类型-->
+                            <view class="talkContent" wx:if="{{ item.msgType == 2 }}" style="width:{{ item.seeWord ? 'auto' : '100px' }};min-width:100px;" catchtap="playVoice" bind:longpress="openActionsheet" data-index="{{ index }}" data-item="{{item}}">
+                                <image mode="aspectFit" style="height:20px;width:20px;float:{{ sendInputMsg.fromUser == item.fromUser ? 'left' : 'right'}}" src="{{ item.src ? item.src : '../../static/img/voice2.png' }}"></image>
+                                <view style="border-top:1rpx solid #ddd;padding-top:3px;margin-top:28px;font-size:26rpx;color:#666;" class="voiceContent" wx:if="{{item.content != '' && item.content != null && item.seeWord }}">{{ item.content }}</view>
+                                <view style="border-top:1rpx solid #ddd;padding-top:3px;margin-top:28px;color:rgba(255,100,100,0.8);font-size:26rpx;" class="voiceContent" wx:elif="{{ item.seeWord }}"> 无可识别内容 </view>
+                                <!-- <view class="myProgress" wx:if="{{ item.progress }}" style="height:1px;width:{{ item.progress }}px;background-color: {{ item.progress == 100 ? '#49CC8D' : 'rgba(255,100,100,0.8)' }}"></view> -->
+                            </view>
+                            <!--视频类型-->
+                            <view class="talkContent" wx:if="{{ item.msgType == 3 }}" style="width:90%;">
+                                <video style="width:100%;height:117px;" src="{{ item.attachUrl }}" controls></video>
+                                <view class="myProgress" wx:if="{{ item.progress }}" style="height:1px;width:{{ item.progress }}px;background-color: {{ item.progress == 100 ? '#49CC8D' : 'rgba(255,100,100,0.8)' }}"></view>
+                            </view>
+                            <!--文件类型-->
+                            <view class="talkContent" wx:if="{{ item.msgType == 6 }}" data-item="{{item}}" style="width:80%;" catchtap="openFile">
+                              <ui-row>
+                                  <ui-col span="9" align="left" vertical-align="top" data-item="{{item}}" catch:longpress="openActionsheet">
+                                      <view style="font-size:13px;color:#333333;">{{ item.content }}</view>
+                                  </ui-col>
+                                  <ui-col span="3">
+                                    <text class="iconfont myWx-552cd47fba2cc" style="font-size:32px;text-align:center;"></text>
+                                  </ui-col>
+                              </ui-row>
+                              <view style="border-top:1xp solid blue;"></view>
+                              <view class="myProgress" wx:if="{{ item.progress }}" style="height:1px;width:{{ item.progress }}px;background-color: {{ item.progress == 100 ? '#49CC8D' : 'rgba(255,100,100,0.8)' }}"></view>
+                            </view>
+                        </view>
+                        <view class="readMe" wx:if="{{ sendInputMsg.fromUser == item.fromUser }}" style="right:{{ sendInputMsg.fromUser == item.fromUser ? '5px' : '' }}">{{ item.readCount >= 0 ? theGroupMsg.groupUsers.length - item.readCount : item.msgType != 1 && item.msgType != 2 ? '发送失败' : item.progress + '%' }} {{ item.readCount >= 0 ? "人未读" : ''}}</view>
+                    </ui-col>
+                    <ui-col class="text" align="center" vertical-align="top" space-left="0" space-right="0" wx:if="{{ item.cmd == 1 }}">
+                        <view class="historyLine">{{ item.fromUserName }} 撤回了一条消息</view>
+                    </ui-col>
+                    <ui-col width="60" align="left" vertical-align="top" wx:if="{{ item.cmd != 'time' && (sendInputMsg.fromUser == item.fromUser) && item.cmd != 2 && item.cmd != 1 }}"><!--消息来自自己-->
+                        <view class="left_icon left_icon1">
+                            <image src="{{  userMsg.headImgUrl }}"/>
+                        </view>
+                        <!-- 消息转发选项框...... -->
+                    </ui-col>
+                    <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && transmit.isTransmit }}"><checkbox checked="{{ item.checked }}" class="checkbox" value="{{ item.msgId }}"/></view>
+                </ui-row>
+              </checkbox-group>
+          </view>
+        </scroll-view>
+        <!-- 全屏弹窗.... -->
+        <ui-popup show="{{ model.show }}" height="100%">
+            <view class="popup1">
+                <text class="title0">选择要转发到的群组</text>
+                <scroll-view scroll-y style="height:{{modelHeight}};border-top:1px solid #ddd;">
+                <ui-accordion bindchange="slide" wx:for="{{ transmit.groupList }}" header-height="50" wx:key="index">
+                    <view slot="header" class="accorHeader">
+                        <ui-row height="80" class="top_tip" border-bottom style="padding-right:35px;" data-parentItem="0" data-isaite="false" data-index="{{ index }}" data-item="{{ item }}" bindtap="selUser">
+                            <ui-col width="80" align="center" vertical-align="middle" data-item="{{ item }}">
+                                <view class="left_icon left_icon1" style="">
+                                    <image src="{{ item.icon || defaultHeadImg }}"></image>
+                                    <text class="angleIcon" wx:if="{{ item.unreadCount != 0 }}">{{ item.unreadCount >= 100 ? '99+' : item.unreadCount }}</text>
+                                </view>
+                            </ui-col>
+                            <ui-col class="text" align="left" vertical-align="middle" space="20" data-item="{{ item }}">
+                                <view style="width: 100%;">
+                                    <ui-row height="22">
+                                        <ui-col align="left" vertical-align="middle">
+                                            <text>{{ item.groupName }}</text>
+                                        </ui-col>
+                                    </ui-row>
+                                    <view class="txt">{{ item.groupDesc ? item.groupDesc : "" }}</view>
+                                </view>
+                            </ui-col>
+                            <icon class="angleIcon" type="success" wx:if="{{ item.act }}" size="23"></icon>
+                        </ui-row>
+                    </view>
+                    <view slot="content" class="accorContent" v-if="{{ item.children.length != 0 }}">
+                        <ui-row height="70" style="padding-right:0;" class="top_tip" border-bottom wx:key="{{indexTow}}" wx:for="{{item.children}}" bindtap="selUser" data-parentItem="{{ item }}" wx:for-item="itemChidren" data-item="{{itemChidren}}" wx:for-index="indexTow">
+                            <ui-col space-left="25" width="80" align="center" vertical-align="middle" data-item="{{ itemChidren }}">
+                                <view class="left_icon left_icon1" style="">
+                                    <image src="{{ itemChidren.icon || defaultHeadImg}}"></image>
+                                    <text class="angleIcon angleIcon2" wx:if="{{ itemChidren.unreadCount != 0 }}">{{ itemChidren.unreadCount >= 100 ? '99+' : itemChidren.unreadCount }}</text>
+                                </view>
+                            </ui-col>
+                            <ui-col space-left="25" class="text" align="left" vertical-align="middle" space="20" data-item="{{ itemChidren }}">
+                                <view style="width: 100%;">
+                                    <ui-row height="24">
+                                        <ui-col align="left" vertical-align="middle">
+                                            <text>{{ itemChidren.groupName }}</text>
+                                        </ui-col>
+                                    </ui-row>
+                                    <view class="txt">{{ itemChidren.groupDesc ? itemChidren.groupDesc : "" }}</view>
+                                </view>
+                            </ui-col>
+                            <icon class="angleIcon" type="success" wx:if="{{ itemChidren.act }}" size="23"></icon>
+                        </ui-row>
+                    </view>
+                </ui-accordion>
+                </scroll-view>
+                <view class="button-sp-area">
+                <button bindtap="cancelSelect" plain type="default">取消</button>
+                <button bindtap="transMsg" plain type="primary">确定</button>
+                </view>
+            </view>
+        </ui-popup>
+        <ui-popup show="{{ popUp.show2 }}" height="100%">
+            <ui-nav-bar slot="nav-bar" custom-style="{{ {backgroundColor:'#fff'} }}">
+                <ui-row height="46">
+                    <ui-col vertical-align="middle" align="center" width="60" bindtap="selOver">
+                        <text>完成</text>
+                    </ui-col>
+                    <ui-col vertical-align="middle" align="center">
+                        <view>请选择入住离店日期</view>
+                    </ui-col>
+                    <ui-col vertical-align="middle" align="center" width="60"></ui-col>
+                </ui-row>
+            </ui-nav-bar>
+            <view class="popup1" style="height:{{height}}">
+                <scroll-view scroll-y style="height: {{height}}px;overflow:hidden;" bindscroll="scroll" scroll-top="0">
+                    <!-- 双选，默认选中 -->
+                    <ui-v-calendar class="calen"
+                    select-range-mode
+                    disable-fore-days
+                    max-range="{{30}}"
+                    date-range="{{[6,0]}}"
+                    value="{{defaultMonthrange}}"
+                    bindselectedstart="selectedStartHandler2"
+                    bindselectedend="selectedEndHandler2"
+                    bindfailed="failedHandler2($event)"
+                    ></ui-v-calendar>
+                </scroll-view>
+            </view>
+        </ui-popup>
+    </view>
   </view>
 </template>
 
@@ -46,6 +200,7 @@ display: flex;
 justify-content: center;
 align-items: center;
 line-height: 20px;
+margin-left:10px;
 `
 
 const selectStyle = `background: #54d09f;
@@ -58,83 +213,260 @@ display: flex;
 justify-content: center;
 align-items: center;
 line-height: 20px;
+margin-left:10px;
 `
+var app = getApp();
 export default {
-  config: {
-    navigationBarTitleText: '聊天信息'
-  },
-  data: {
-    search:{
-      showInput:true,//是否显示删除按钮..
-      inputVal:"",//输入框的值...
-      inputShowed: false,
-      list00: [{
-            text: '全部',
-            tagStyle: tagStyle00,
-            tagSelectedStyle: selectStyle,
-            checked: true
-        },{
-            text: '文字，语音',
-            tagStyle: tagStyle00,
-            tagSelectedStyle: selectStyle,
-            checked: false
-        },{
-            text: '图片',
-            tagStyle: tagStyle00,
-            tagSelectedStyle: selectStyle,
-            checked: false
-        },{
-            text: '文件',
-            tagStyle: tagStyle00,
-            tagSelectedStyle: selectStyle,
-            checked: false
-        }]
+    config: {
+        navigationBarTitleText: '聊天信息'
+    },
+    data: {
+        scroll:{
+            toView:"",//定位滚动元素
+            pageNum:1,//要查看的页码...
+            scrollTop:1000,//滚动位置
+        },
+        transmit:{
+            transData:[],
+            isTransmit:false,
+        },
+        statusBarHeight: wx.STATUS_BAR_HEIGHT,
+        headerHeight: wx.DEFAULT_HEADER_HEIGHT,
+        height: wx.WIN_HEIGHT,
+        defaultMonthrange: [],
+        defaultHeadImg:"",
+        chatData:[],
+        theGroupMsg:{},
+        popUp:{
+            show:false,
+            show2:false
+        },
+        search:{
+            showInput:true,//是否显示删除按钮..
+            inputVal:"",//输入框的值...
+            inputShowed: false,
+            list00: [{
+                    text: '全部',
+                    tagStyle: tagStyle00,
+                    tagSelectedStyle: selectStyle,
+                    checked: true,
+                    msgType:""
+                },{
+                    text: '文字，语音',
+                    tagStyle: tagStyle00,
+                    tagSelectedStyle: selectStyle,
+                    checked: false,
+                    msgType:"7"
+                },{
+                    text: '图片',
+                    tagStyle: tagStyle00,
+                    tagSelectedStyle: selectStyle,
+                    checked: false,
+                    msgType:"1"
+                },{
+                    text: '文件',
+                    tagStyle: tagStyle00,
+                    tagSelectedStyle: selectStyle,
+                    checked: false,
+                    msgType:"6"
+                },{
+                    text: '日期',
+                    tagStyle: tagStyle00,
+                    tagSelectedStyle: selectStyle,
+                    checked: false,
+                    msgType:"8"
+                }]
+        },
+        searchData:{
+            chatType:1,
+            endAt:"",
+            startAt:"",
+            fromUser:"",
+            groupId:"",
+            keywords:"",
+            msgType:0,
+            openId:"",
+            pageSize:0
+        },
+        dateobj:{},//选择的时间....
+    },
+    onLoad( option ){
+        let _groupMsg = JSON.parse( option.item ) ;
+        this.setData({
+            "theGroupMsg":_groupMsg
+        })
+        this.setData({
+            ["searchData.openId"]:app.globalData.openId,
+            ["searchData.groupId"]:_groupMsg.groupId
+        })
+    },
+    navigateBack() {
+        wx.navigateBack()
+    },
+    selOver(){
+        this.setData({
+            ['popUp.show2']:false
+        })
+    },
+    selectedStartHandler2 (e) {
+        this.data.rangeDate2 = e.detail
+    },
+    selectedEndHandler2 (e) {
+        this.data.dateobj.rangedate2 = e.detail
+        console.log(this.data.dateobj.rangedate2)
+        this.rangeinit2( this.data.dateobj )
+    },
+    rangeinit2 (thisdate) {
+      console.log( 'rangeinit2',thisdate )
+      let start, end
+      this.data.dateobj.rangestart2 = thisdate.rangedate2[0]
+      this.data.dateobj.rangeend2 = thisdate.rangedate2[1]
+      start = this.data.dateobj.rangestart2.split('/')
+      end = this.data.dateobj.rangeend2.split('/')
+      // this.rangestart2 = `${start[1]}月${start[2]}日`
+      // this.rangeend2 = `${end[1]}月${end[2]}日`
+      this.setData({
+        rangestart2:`${start[1]}月${start[2]}日`,
+        rangeend2:`${end[1]}月${end[2]}日`,
+        ["searchData.startAt"]:`${start[0]}-${start[1]}-${start[2]}`,
+        ["searchData.endAt"]:`${start[0]}-${end[1]}-${end[2]}`,
+      })
+    },
+    failedHandler2 (err) {
+        if (err === 1) {
+            wx.showToast({ title: '您选择的时间超过30天,请重新选择' })
+        }
+    },
+    getHistoryMsg(){
+        var that= this;
+        wx.request({
+        url: `${app.globalData.httpHost}/chat/msg`,
+        data: that.data.searchData,
+        success: function(res) {
+            if( res.data.status == 200 ){
+            res.data.data.rows.forEach((val,i,arr)=>{//未读@信息......
+                if(val.msgType == 7 && /(@\`-\`@)/.test(val.content) ){
+                val.content = val.content.split('(@\`-\`@)').join(' ');
+                }
+            })
+            that.data.chatData.splice(0,0,...res.data.data.rows);
+            that.setData({
+                chatData:that.data.chatData,
+            })
+                wx.hideToast()
+            }else{
+                wx.hideToast()
+                system.stateMsg({title: '提示',content: res.data.message,scb(){},ccb(){}})
+            }
+        }
+        })
+    },
+    clearInput(e){
+        this.setData({
+            ["search.inputVal"]: "",
+            ["search.showInput"]:true
+        });
+    },
+    checkboxChange(e){ //消息转发选项框选中事件......
+        this.setData({
+        ['transmit.transData']:e.detail.value
+        })
+    },
+    cancelSelect(){//取消消息选择......
+        this.setData({
+        ['model.show']:false,
+        ['transmit.isTransmit']:false
+        })
+    },
+    showModel(){
+        this.setData({
+        ["model.show"]:true
+        })
+    },
+    transMsg(){ //选择完转发消息后跳转到群组列表页面
+        let that = this;
+        this.data.chatData.forEach((val,i,arr)=>{
+        this.data.transmit.transData.forEach((value,ii,array)=>{
+            val.groupId = that.data.selUser.selMe.groupId;
+            val.groupName = that.data.selUser.selMe.groupName;
+            val.fromUser = that.data.sendInputMsg.fromUser;
+            val.position = that.data.sendInputMsg.position;
+            val.fromUserName = that.data.sendInputMsg.fromUserName;
+            if( val.msgId == value ){
+            delete val.readCount;
+            delete val.status;
+            delete val.readStatus;
+            delete val.msgId;
+            val.toUser = "";
+            val.content == null ? val.content = "" : null;
+            let a = JSON.stringify( val );
+            app.globalData.socketTask.sendSocketMessage( JSON.stringify( val ) );
+            }
+        })
+        })
+    },
+    inputTyping(e){
+        this.setData({
+            ["search.inputVal"]: e.detail.value,
+            ["searchData.keywords"]: e.detail.value
+        });
+        this.getHistoryMsg();
+    },
+    showInput(){
+        var that = this;
+        this.setData({
+            ['search.showInput']:!that.data.search.showInput,
+            ['search.inputShowed']:true
+        })
+    },
+    singleTap (e) {
+        let that = this;
+        let opt = e.detail.index;
+        wx.showToast({
+            title: that.data.search.list00[opt].text,
+            icon:'none'
+        })
+        this.data.search.list00.forEach((item, index) => {
+            item.checked = (index === opt)
+        })
+        this.setData({
+            ["search.list00"]:that.data.search.list00,
+        })
+        if( opt != 4 ){
+            this.setData({
+                ["searchData.msgType"]:that.data.search.list00[opt].msgType
+            })
+        }else{
+            this.setData({
+                ["popUp.show2"]:true
+            })
+        }
+        this.getHistoryMsg();
     }
-  },
-  navigateBack() {
-    wx.navigateBack()
-  },
-  clearInput(e){
-      this.setData({
-          ["search.inputVal"]: "",
-          ["search.showInput"]:true
-      });
-  },
-  inputTyping(e){
-    this.setData({
-        ["search.inputVal"]: e.detail.value
-    });
-    if( e.detail.value == ''){
-
-    }
-  },
-  showInput(){
-      var that = this;
-      this.setData({
-          ['search.showInput']:!that.data.search.showInput,
-          ['search.inputShowed']:true
-      })
-  },
-  singleTap (e) {
-      let that = this;
-      let opt = e.detail.index;
-      wx.showToast({
-          title: that.data.search.list00[opt].text,
-          icon:'none'
-      })
-      this.data.search.list00.forEach((item, index) => {
-          item.checked = (index === opt)
-      })
-      this.setData({
-          ["search.list00"]:that.data.search.list00
-      })
-  }
 }
 </script>
 
 <style lang="less">
 #tags0{
   margin:5px 10px;
-
 }
+.fixed-view-content{
+  
+}
+  .popup1{
+    height: 100%;
+    padding:0 20rpx;
+    padding-top:66px;
+    overflow: hidden;
+    .title0{
+      color:#333;
+      font-size:14px;
+      padding-left:13px;
+      line-height:50px;
+    }
+  }
+  #container{
+      height: 100%;
+      width: 100%;
+  }
 </style>

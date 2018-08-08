@@ -12,6 +12,7 @@
             </ui-col>
         </ui-row>
     </ui-nav-bar>
+    <view style="height:66px;width:100%;"></view>
     <!-- <ui-fixed-view top="0" left="0" right="0" style="position:relative;"> -->
       <view class="fixed-view-content">
           <view class="weui-search-bar">
@@ -39,12 +40,12 @@
     </view>
     <!-- //右滑菜单.........  -->
     <view class="listContainer" hidden="{{ overList.length != 0 }}">
-        <view class="sample_title" style="background-color:white;border-bottom:1px solid #E5E5E5;" wx:if="{{ list1.length != 0 }}">
+        <view class="sample_title" style="background-color:white;border-bottom:1px solid #E5E5E5;">
            <text>已加入</text>
            <!-- !userMsgReq.canBuildGroup -->
            <icon wx:if="{{ userMsgReq.canBuildGroup }}" catchtap="addGroup" class="iconfont myWx-jia1" style="float:right;right:25rpx;position:relative;font-size:55rpx;"></icon>
         </view>
-        <ui-accordion bindchange="slide" wx:for="{{ list1 }}" wx:key="{{ index }}" header-height="50">
+        <ui-accordion bindchange="slide" wx:for="{{ list1 }}" wx:key="{{ index }}" header-height="50" wx:if="{{ list1.length != 0 }}">
             <view slot="header" class="accorHeader">
                 <ui-row height="80" class="top_tip" border-bottom style="padding-right:35px;">
                   <ui-col width="80" align="center" vertical-align="middle" bindtap="toChat" data-item="{{ item }}">
@@ -479,8 +480,12 @@ export default {
     overflow:auto;
     position:absolute;
     width:100%;
-    top:114px;
+    top:113px;
     bottom:0;
+}
+.container{
+    height: 100%;
+    overflow: hidden;
 }
 page{
     overflow: hidden;

@@ -12,7 +12,9 @@
             <ui-col vertical-align="middle" align="center" width="80">
             </ui-col>
         </ui-row>
-    </ui-nav-bar>           
+    </ui-nav-bar> 
+    <view style="height:66px;width:100%;"></view>
+
     <view class="weui-search-bar">
       <view class="weui-search-bar__form">
         <view class="weui-search-bar__box">

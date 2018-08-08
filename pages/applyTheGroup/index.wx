@@ -11,7 +11,7 @@
               <ui-col vertical-align="middle" align="center" width="80"></ui-col>
           </ui-row>
       </ui-nav-bar>  
-
+      <view style="height:66px;width:100%;"></view>
 
       <view class="content">
         <!--群标题-->

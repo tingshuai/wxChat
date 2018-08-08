@@ -11,7 +11,7 @@
             <ui-col vertical-align="middle" align="center" width="80"></ui-col>
         </ui-row>
     </ui-nav-bar>
-
+  
 
       <view class="loadingData" style="top:{{ loadingMsg.top }}">
         <icon class="iconfont myWx-unif032" style="color:{{ loadingMsg.color }};font-size:32px;"></icon>
@@ -21,7 +21,7 @@
           <button bindtap="groupMsg" wx:if="{{ !transmit.isTransmit }}" class="seeGroupMsg cBtn0"> 群信息 </button>
           <button bindtap="showModel" wx:if="{{ transmit.isTransmit }}" class="seeGroupMsg cBtn0">转发</button>
         </view>
-        <scroll-view scroll-y="true" bindscroll="scrllView" id="viewport" style="height: 100%;" scroll-into-view="{{toView}}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden"><!-- bindscrolltoupper="bindscrolltoupper"，，，，catch:touchstart="loadTouchstart" catch:touchend="loadTouchend" catch:touchmove="loadTouchmove"-->
+        <scroll-view scroll-y="true" bindscroll="scrllView" id="viewport" style="height: 100%;overflow:hidden;" scroll-into-view="{{toView}}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden"><!-- bindscrolltoupper="bindscrolltoupper"，，，，catch:touchstart="loadTouchstart" catch:touchend="loadTouchend" catch:touchmove="loadTouchmove"-->
           <view class="content" id="content">
             <checkbox-group bindchange="checkboxChange">
               <ui-row hover-class="touchui-hover" class="talkItem" wx:for="{{ chatData }}" wx:key="index" id="the{{index}}">
@@ -114,7 +114,7 @@
           </ui-row>
           <ui-row height="100" class="sentType" hidden="{{ transmit.isAite }}" style="overflow:auto;justify-content:left;flex-flow:nowrap;">
             <ui-col class="sentType_col" width="58" align="center" vertical-align="middle" data-isaite="true" data-index="{{ index }}" data-item="{{ item }}" wx:key="index" catchtap="selUser" wx:for="{{ theGroupMsg.groupUsers }}">
-              <image mode="aspectFit" src="{{ item.headImgUrl == null ? defaultImg : item.headImgUrl }}"></image>
+              <image mode="aspectFit" style="height:72px;" src="{{ item.headImgUrl == null ? defaultImg : item.headImgUrl }}"></image>
               <text style="text-align:center;" class="txt9">{{ item.username }}</text>
               <icon class="angleIcon angleIcon2" type="success" wx:if="{{ item.act }}" size="23"></icon>
             </ui-col>
@@ -216,7 +216,7 @@ export default {
     },
     inputVal:"",//消息输入框的值......
     modelHeight:wx.DEFAULT_CONTENT_HEIGHT - 128 + 'px',
-    scrollHeight:wx.DEFAULT_CONTENT_HEIGHT - 5 + 'px',
+    scrollHeight:wx.DEFAULT_CONTENT_HEIGHT + 15 + 'px',
     sendInputMsg :{
       fromUser:app.globalData.openId,//发送人ID
       fromUserName:'',//发送人姓名
@@ -340,7 +340,7 @@ export default {
         }
       })
       //连接状态
-      app.globalData.socketTask.onOpen(function(res) { console.log( 'socket open') })
+      app.globalData.socketTask.onOpen(function(res) { console.log( 'socket open');})
       //监听WebSocket错误。
       app.globalData.socketTask.onError(function(res){
         system.msgTip({title: '提示',content: "会话连接失败。请重新连接。",icon:"none",scb(){},ccb(){}})
@@ -420,7 +420,7 @@ export default {
                 ["transmit.isAite"]:true,
                 isHidden:true,
                 theGroupMsg:that.data.theGroupMsg,
-                scrollHeight:wx.DEFAULT_CONTENT_HEIGHT - 64 + 'px',
+                scrollHeight:wx.DEFAULT_CONTENT_HEIGHT + 15 + 'px',
                 ['transmit.aiteContent']:'',
                 ['theGroupMsg.groupUsers']:that.data.theGroupMsg.groupUsers
               })
@@ -1004,15 +1004,16 @@ export default {
     if( e.currentTarget.id == "viewport" ){
       this.setData({
         isHidden:true,
-        scrollHeight:wx.DEFAULT_CONTENT_HEIGHT - 64 + 'px',
+        scrollHeight:wx.DEFAULT_CONTENT_HEIGHT + 15 + 'px',
         ['transmit.isAite']:true
       })
     }else{
       this.setData({
         isHidden:!this.data.isHidden,
+        ['transmit.isAite']:true
       })
       this.setData({
-        scrollHeight: !this.data.isHidden ?wx.DEFAULT_CONTENT_HEIGHT - 164 + 'px' : wx.DEFAULT_CONTENT_HEIGHT - 64 + 'px',
+        scrollHeight: !this.data.isHidden ?wx.DEFAULT_CONTENT_HEIGHT - 85 + 'px' : wx.DEFAULT_CONTENT_HEIGHT + 15 + 'px',
       })
       this.setData({
         scrollTop:10000000
@@ -1124,10 +1125,11 @@ export default {
   position: relative;
   width:100%;
   padding-top:66px;
+  overflow: hidden;
   .groupMsgBtn{
       position: absolute;
       right: 12px;
-      top: 15px;
+      top: 80px;
       z-index: 1;
       font-size: 14px;
       border-radius: 12px;
@@ -1400,6 +1402,7 @@ export default {
   bottom:0;
 }
 page{
-  overflow: hidden;
+  // overflow: hidden;
+  // height: 100%;
 }
 </style>

@@ -11,7 +11,9 @@
             <ui-col vertical-align="middle" align="center" width="80">
             </ui-col>
         </ui-row>
-    </ui-nav-bar>      
+    </ui-nav-bar>
+    <view style="height:66px;width:100%;"></view>
+
     <form bindsubmit="formSubmit">
       <!-- <view class="weui-cells__title"></view> -->
       <!-- <view class="weui-cells weui-cells_after-title applyForm">

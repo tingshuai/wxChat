@@ -12,6 +12,8 @@
             </ui-col>
         </ui-row>
     </ui-nav-bar>    
+    <view style="height:66px;width:100%;"></view>
+
     <!-- 群成员头像 -->
     <view class="talkItem" >
         <view width="60" align="left" vertical-align="top" bindtap="sel" data-index="{{index}}" data-item="{{item}}" class="mycol" wx:for="{{ groupMsg.groupUsers }}" wx:key="{{index}}">
@@ -104,8 +106,9 @@
       })
     },
     selChatList(e){
+      let that = this;
       wx.navigateTo({
-        url:'/pages/historyMsg/index'
+        url:`/pages/historyMsg/index?item=${ JSON.stringify( that.data.groupMsg ) }`
       })
     },
     editGroup(e){//编辑群组

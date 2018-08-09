@@ -98,7 +98,7 @@
       <!-- <ccGroupChat></ccGroupChat> -->
       <!--底部输入工具-->
       <ui-fixed-view bottom="0" left="0" right="0">
-        <view class="fixed_bottom" >
+        <view class="fixed_bottom">
           <ui-row class="rowInputs" height="50" border-top border-bottom>
             <ui-col width="50" style="font-size:14px;" align="center" vertical-align="middle"><text class="iconfont {{ msgType == 0 ? 'myWx-jianpan' : 'myWx-ai01' }}" bindtap="toggleMsgType"></text></ui-col>
             <ui-col vertical-align="middle" hidden="{{ msgType == 0 }}"><input cursor-spacing="6" class="myInput" focus="{{inputIn.inputFocus}}" bindinput="onInput" value="{{ inputVal }}"/></ui-col>
@@ -295,7 +295,7 @@ export default {
       })
     })
     loadPromise.then(()=>{
-      system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:8000});
+      // system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:8000});
       system.http({
         url:'chat/attach/defaultGroupIcon',
         method:"get",
@@ -343,7 +343,7 @@ export default {
       app.globalData.socketTask.onOpen(function(res) { console.log( 'socket open');})
       //监听WebSocket错误。
       app.globalData.socketTask.onError(function(res){
-        system.msgTip({title: '提示',content: "会话连接失败。请重新连接。",icon:"none",scb(){},ccb(){}})
+        system.msgTip({title: '提示',content: "会话连接失败。请重新连接。",scb(){},ccb(){}})
       })
       app.globalData.socketTask.onMessage(function(res) {
         var data = JSON.parse( res.data );
@@ -461,12 +461,7 @@ export default {
     })//resolve函数结束....
   },
   onUnload(e){
-    app.globalData.socketTask.close({success(res){},fail(res){}});
-    backgroundAudioManager.stop();
-    this.setData({
-      ['model.show']:false,
-      ['transmit.isTransmit']:false
-    })
+    
   },
   // 发送socket消息
   sendSocketMessage(msg) {
@@ -601,7 +596,7 @@ export default {
                     system.stateMsg({title:"提醒成功",icon:"success",time:1000})
                   },
                   fcb(res){
-                    system.stateMsg({title:"提醒失败",icon:"fail",time:1000})
+                    system.stateMsg({title:"提醒失败",icon:"none",time:1000})
                   }
                 })
               }else if( res.tapIndex == 1 ){//转发
@@ -857,7 +852,7 @@ export default {
           wx.hideToast()
         }else{
           wx.hideToast()
-          system.stateMsg({title: '提示',content: res.data.message,scb(){},ccb(){}})
+          system.stateMsg({title: res.data.message,time:1500,icon:"none",scb(){},ccb(){}})
         }
       }
     })
@@ -955,6 +950,11 @@ export default {
   },
   navigateBack () {
     let page = getCurrentPages();
+    backgroundAudioManager.stop();
+    this.setData({
+      ['model.show']:false,
+      ['transmit.isTransmit']:false
+    })    
     if(page.length > 1 && page.length < 8){//从登录页过来的。。。。
       wx.redirectTo({
         url: '/pages/home/index'
@@ -968,22 +968,24 @@ export default {
   selUser(e){//选择群成员.....
     let _item = e.currentTarget.dataset;
     let that = this;
-    this.data.transmit.groupList.forEach((val,i,arr)=>{
-      if(val.groupId == _item.item.groupId){
-        val.act = true;
-      }else{
-        val.act = false;
-      }
-      if( val.children.length > 0 ){
-        val.children.forEach((value,ii,array)=>{
-          if( value.groupId == _item.item.groupId ){
-            value.act = true;
-          }else{
-            value.act = false;
-          }
-        })
-      }
-    })
+    if( that.data.theGroupMsg.groupId != _item.item.groupId ){
+      this.data.transmit.groupList.forEach((val,i,arr)=>{
+        if(val.groupId == _item.item.groupId){
+          val.act = true;
+        }else{
+          val.act = false;
+        }
+        if( val.children.length > 0 ){
+          val.children.forEach((value,ii,array)=>{
+            if( value.groupId == _item.item.groupId ){
+              value.act = true;
+            }else{
+              value.act = false;
+            }
+          })
+        }
+      })
+    }
     this.setData({
       ['transmit.groupList']:that.data.transmit.groupList,
       ['selUser.selMe']:_item.item
@@ -1201,14 +1203,6 @@ export default {
     .left_icon3{
         background-color: #39CCC5;
     }
-    // .text{
-    //     view{
-    //         color: #9C9FA4;
-    //         font-size: 12px;
-    //         .mix-text-overflow();
-    //     }
-    // }
-    
     .name,.job{
       font-family:PingFang-SC-Medium;
       color:rgba(102,102,102,1);

@@ -1,0 +1,267 @@
+<template>
+  <view>
+    <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#fff'} }}">
+        <ui-row height="40">
+            <ui-col vertical-align="middle" align="center" width="60">
+                <!-- <icon class="iconfont myWx-iconfontqianjin2" style="font-size:20px;"></icon> -->
+            </ui-col>
+            <ui-col vertical-align="middle" align="center">
+                {{ title }}
+            </ui-col>
+            <ui-col vertical-align="middle" align="center" width="80">
+            </ui-col>
+        </ui-row>
+    </ui-nav-bar>
+    <view style="height:66px;width:100%;"></view>
+
+    <form bindsubmit="formSubmit" wx:if="{{ !show }}">
+      <view class="weui-cells__title"></view>
+      <view class="weui-cells weui-cells_after-title applyForm">
+          <view class="weui-cell weui-cell_input">
+              <view class="weui-cell__hd">
+                  <view class="weui-label">姓名<text class="star" style="color:{{ validate.username.color }}">★</text></view>
+              </view>
+              <view class="weui-cell__bd">
+                  <input name="username" id="username" style="color:{{ validate.username.isLegal == true ? 'green' : 'red' }}" value="{{ form.username }}" bindblur="blur" data-item="{{ validate.username }}" class="weui-input" type="text" bindinput="inputing" placeholder="{{ validate.username.placeholder }}" />
+              </view>
+          </view>
+          <view class="weui-cell weui-cell_input">
+              <view class="weui-cell__hd">
+                  <view class="weui-label">联系电话<text class="star"style="color:{{ validate.phone.color }}">★</text></view>
+              </view>
+              <view class="weui-cell__bd">
+                  <input name="phone" id="phone" type="number" style="color:{{ validate.phone.isLegal == true ? 'green' : 'red' }}" value="{{ form.phone }}" data-item="{{ validate.phone }}" bindblur="blur" class="weui-input" type="number" bindinput="inputing" placeholder="{{ validate.phone.placeholder }}" />
+              </view>
+          </view>
+      </view>
+
+      <view class="weui-cells__title"></view>
+      <view class="weui-cells weui-cells_after-title applyForm">
+          <view class="weui-cell weui-cell_input">
+              <view class="weui-cell__hd">
+                  <view class="weui-label">邮箱<text class="star" style="color:{{ validate.email.color }}">★</text></view>
+              </view>
+              <view class="weui-cell__bd">
+                  <input name="email" id="email" style="color:{{ validate.email.isLegal == true ? 'green' : 'red' }}" value="{{ form.email }}" data-item="{{ validate.email }}" bindblur="blur" class="weui-input" type="text" bindinput="inputing" placeholder="{{ validate.email.placeholder }}" />
+              </view>
+          </view>
+          <view class="weui-cell weui-cell_input">
+              <view class="weui-cell__hd">
+                  <view class="weui-label">企业名称</view>
+              </view>
+              <view class="weui-cell__bd">
+                  <input name="company" style="color: {{ validate.company.isLegal == true ? 'green' : 'red' }}" id="company" value="{{ form.company }}" class="weui-input" data-item="{{ validate.company }}" bindinput="inputing" type="string" placeholder="{{ validate.company.placeholder }}"/>
+              </view>
+          </view>
+      </view>
+
+      <!-- <view class="weui-cells__title"></view>
+      <view class="weui-cells weui-cells_after-title">
+          <view class="weui-cell">
+              <view class="weui-cell__bd">
+                  <text class="star" style="color:{{ validate.reqMsg.color }}">★</text>
+                  <textarea id="reqMsg" style="color:{{ validate.reqMsg.isLegal == true ? 'green' : 'red' }}" name="textarea" bindblur="blur" value="{{ form.reqMsg }}" class="weui-textarea" data-item="{{ validate.reqMsg }}" bindinput="inputing" placeholder="{{ validate.reqMsg.placeholder }}" style="height: 5em" />
+              </view>
+          </view>
+      </view> -->
+      <view class="btn-area">
+        <button formType="submit" type="primary" disabled="{{ disabled }}">提交</button>
+      </view>
+    </form>
+    <view id="successMsg" wx:if="{{ show }}">提交成功，请等待审核通过。</view>
+  </view>
+</template>
+
+<script>
+var app = getApp();
+  export default {
+    config: {
+      navigationBarTitleText: '申请填写'
+    },
+    data: {
+      disabled:true,
+      title:"注册",
+      show:false,
+      form:{
+        openId :"",
+        username:"",
+        phone:"",
+        email:"",
+        company:"",
+        unionid:""
+      },
+      validate:{
+          username:{
+              placeholder:"请输入姓名",
+              required:true,
+              color:'#F21B1B',
+              name:"姓名",
+              isLegal:false
+          },
+          phone:{
+              placeholder:"请输入手机号",
+              required:true,
+              color:'#F21B1B',
+              name:"手机号",
+              isLegal:false,
+              RegExp:"^(13[0-9]|15[0-9]|17[0-9]|18[0-9]|14[0-9])[0-9]{8}$"
+          },
+          email:{
+              placeholder:"请输入邮箱",
+              required:true,
+              name:"邮箱",
+              color:'#F21B1B',
+              isLegal:false,
+              RegExp:"^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$"
+          },
+          company:{
+              placeholder:"请输入公司名称",
+              required:false,
+              name:"公司名称",
+              isLegal:true
+          }
+      },
+    },
+    navigateBack () {
+        wx.navigateBack()
+    },
+    onLoad(option){
+      this.setData({
+        ['form.openId']:app.globalData.openId,
+        ['form.unionid']:app.globalData.userMsgReq.unionId,
+      });
+      if( option.register == 0){
+        this.setData({
+          "show":true,
+          "title":"注册成功"
+        });
+      }else{
+        this.setData({
+          "show":false
+        });
+      }
+    },
+    initValidate(){
+      var that = this;
+      var dis = false;
+      var obj = that.data.validate;
+        var promise = new Promise(function(resolve){
+            Object.keys(obj).forEach(function(key){
+                if(obj[key].isLegal == false){
+                    dis = true;
+                }
+            });
+            resolve(dis);
+        });
+        promise.then(function(value){
+            that.setData({
+                disabled:dis
+            })
+        }).catch(function(error){
+            console.error(error);
+        });
+    },
+    inputing(e){
+        let _item = e.currentTarget.dataset.item;
+        this.setData({
+            [`form.${e.currentTarget.id}`]:e.detail.value
+        })
+        if ( e.detail.value == '' && _item.required ) {
+            this.setData({
+                [`validate.${e.currentTarget.id}.color`]:'#F21B1B',
+                [`validate.${e.currentTarget.id}.placeholder`]:`${_item.name}不能为空`,
+                [`validate.${e.currentTarget.id}.isLegal`]:false
+            })
+        }else{
+          if( e.currentTarget.id == 'email' || e.currentTarget.id == "phone" ){
+            if ( !(new RegExp( _item.RegExp ).test( e.detail.value )) ){
+                this.setData({
+                    [`validate.${e.currentTarget.id}.isLegal`]:false,
+                    [`validate.${e.currentTarget.id}.color`]:'#F21B1B'
+                })
+              }else{
+                this.setData({
+                  [`validate.${e.currentTarget.id}.color`]:'green',
+                  [`validate.${e.currentTarget.id}.isLegal`]:true
+                })
+              }
+          }else{
+             this.setData({
+                [`validate.${e.currentTarget.id}.color`]:'green',
+                 [`validate.${e.currentTarget.id}.isLegal`]:true
+            })
+          }
+        }
+        this.initValidate();
+    },
+    blur(e){
+    
+    },
+    formSubmit: function(e) {
+      // 创建实例对象
+      var that = this;
+      that.data.form
+      debugger;
+        wx.request({
+            url: `${app.globalData.httpHost}/wx/mp/users`,
+            data: that.data.form,
+            method:'post',
+            header: {
+                 'content-type': 'application/x-www-form-urlencoded'
+            },
+            success: function(res) {
+              debugger
+                if( res.data.status == 200 ){
+                    wx.showToast({
+                        title: '提交成功',
+                        icon: 'success',
+                        duration: 1500,
+                        mask:true,
+                        success:function(){
+                            that.setData({
+                              "show":true,
+                              "title":"注册成功"
+                            })
+                        }
+                    })
+                }else{
+                    wx.showToast({
+                        title: res.data.message,
+                        icon: 'none',
+                        duration: 2000,
+                        mask:true
+                    })
+                }
+            }
+        })
+    },
+    formReset: function() {}
+  }
+</script>
+
+<style lang="less">
+  #successMsg{
+    height: 200px;
+    line-height: 200px;
+    font-size: 13px;
+    text-align: center;
+  }
+    .star{
+        // color: #F21B1B;
+        font-size: 10px;
+    }
+    .btn-area{
+        padding:20px;
+    }
+    .applyForm{
+        .weui-input{
+            font-size: 14px;
+            height: 44px;
+        }
+        .weui-label{
+            font-size:16px;
+            font-family:PingFang-SC-Medium;
+            color:rgba(51,51,51,1);
+        }
+    }
+</style>

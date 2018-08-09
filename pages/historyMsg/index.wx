@@ -33,8 +33,33 @@
         </view>
     </view>
     <ui-tags data="{{ search.list00 }}" id="tags0" bindchange="singleTap"></ui-tags>
-    <view>
-        <scroll-view scroll-y="true" id="viewport" style="height: 100%;overflow:hidden;" scroll-into-view="{{ toView }}" upper-threshold="0" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden">
+    <view class="weui-cells weui-cells_after-title">
+        <view class="weui-cell weui-cell_input">
+            <view class="weui-cell__hd">
+                <view class="weui-label fontMini">开始日期</view>
+            </view>
+            <view class="weui-cell__bd">
+                <picker mode="date" value="{{ dater.date}}" start="{{ dater.start }}" end="{{ dater.end }}" bindchange="bindDateChange">
+                    <view class="weui-input">{{ dater.date }}</view>
+                </picker>
+            </view>
+        </view>
+        <view class="weui-cell weui-cell_input">
+            <view class="weui-cell__hd">
+                <view class="weui-label fontMini">结束日期</view>
+            </view>
+            <view class="weui-cell__bd">
+                <picker mode="date" value="{{ dater.date1 }}" start="{{ dater.start1 }}" end="{{ dater.end1 }}" bindchange="bindDateChange1">
+                    <view class="weui-input">{{ dater.date1 }}</view>
+                </picker>
+            </view>
+        </view> 
+    </view>   
+    <view style="position:relative;">
+        <view class="groupMsgBtn">
+            <button bindtap="showModel" wx:if="{{ transmit.isTransmit }}" class="seeGroupMsg cBtn0">转发</button>
+        </view>
+        <scroll-view scroll-y="true" id="viewport" style="height:{{ scrollHeight }}px;" style="overflow:hidden;" scroll-into-view="{{ toView }}" upper-threshold="0" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden">
           <view class="content" id="content">
             <checkbox-group bindchange="checkboxChange">
               <ui-row hover-class="touchui-hover" class="talkItem" wx:for="{{ chatData }}" wx:key="index" id="the{{index}}">
@@ -95,9 +120,10 @@
                         </view>
                         <!-- 消息转发选项框...... -->
                     </ui-col>
-                    <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && transmit.isTransmit }}"><checkbox checked="{{ item.checked }}" class="checkbox" value="{{ item.msgId }}"/></view>
+                    <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 }}"><checkbox checked="{{ item.checked }}" class="checkbox" value="{{ item.msgId }}"/></view>
                 </ui-row>
               </checkbox-group>
+              <view wx:if="{{ chatData.length == 0 }}" class="historyLine">无匹配内容</view>
           </view>
         </scroll-view>
         <!-- 全屏弹窗.... -->
@@ -156,34 +182,6 @@
                 </view>
             </view>
         </ui-popup>
-        <ui-popup show="{{ popUp.show2 }}" height="100%">
-            <ui-nav-bar slot="nav-bar" custom-style="{{ {backgroundColor:'#fff'} }}">
-                <ui-row height="46">
-                    <ui-col vertical-align="middle" align="center" width="60" bindtap="selOver">
-                        <text>完成</text>
-                    </ui-col>
-                    <ui-col vertical-align="middle" align="center">
-                        <view>请选择入住离店日期</view>
-                    </ui-col>
-                    <ui-col vertical-align="middle" align="center" width="60"></ui-col>
-                </ui-row>
-            </ui-nav-bar>
-            <view class="popup1" style="height:{{height}}">
-                <scroll-view scroll-y style="height: {{height}}px;overflow:hidden;" bindscroll="scroll" scroll-top="0">
-                    <!-- 双选，默认选中 -->
-                    <ui-v-calendar class="calen"
-                    select-range-mode
-                    disable-fore-days
-                    max-range="{{30}}"
-                    date-range="{{[6,0]}}"
-                    value="{{defaultMonthrange}}"
-                    bindselectedstart="selectedStartHandler2"
-                    bindselectedend="selectedEndHandler2"
-                    bindfailed="failedHandler2($event)"
-                    ></ui-v-calendar>
-                </scroll-view>
-            </view>
-        </ui-popup>
     </view>
   </view>
 </template>
@@ -200,7 +198,7 @@ display: flex;
 justify-content: center;
 align-items: center;
 line-height: 20px;
-margin-left:10px;
+margin:10px;
 `
 
 const selectStyle = `background: #54d09f;
@@ -213,8 +211,9 @@ display: flex;
 justify-content: center;
 align-items: center;
 line-height: 20px;
-margin-left:10px;
+margin:10px;
 `
+import system from '../../static/utils/system'
 var app = getApp();
 export default {
     config: {
@@ -229,12 +228,13 @@ export default {
         transmit:{
             transData:[],
             isTransmit:false,
+            groupList:[]
         },
+        modelHeight:wx.DEFAULT_CONTENT_HEIGHT - 148 + 'px',
         statusBarHeight: wx.STATUS_BAR_HEIGHT,
         headerHeight: wx.DEFAULT_HEADER_HEIGHT,
-        height: wx.WIN_HEIGHT,
+        scrollHeight: wx.WIN_HEIGHT - 254,
         defaultMonthrange: [],
-        defaultHeadImg:"",
         chatData:[],
         theGroupMsg:{},
         popUp:{
@@ -269,75 +269,112 @@ export default {
                     tagSelectedStyle: selectStyle,
                     checked: false,
                     msgType:"6"
-                },{
-                    text: '日期',
-                    tagStyle: tagStyle00,
-                    tagSelectedStyle: selectStyle,
-                    checked: false,
-                    msgType:"8"
                 }]
         },
         searchData:{
-            chatType:1,
             endAt:"",
             startAt:"",
-            fromUser:"",
             groupId:"",
             keywords:"",
             msgType:0,
             openId:"",
-            pageSize:0
+            pageSize:"10",
+            pageNum:"1"
         },
-        dateobj:{},//选择的时间....
+        dater:{
+            start:"2015-09-01",
+            end:"2018-08-01",
+            date:"",
+            start1:"",
+            end1:"",
+            date1:"",
+            timer:0,//选中的开始时间的毫秒数.....
+            timer1:Infinity,//选中的结束时间的毫秒数....
+        },
+        selUser:{
+            selMe:'',
+            users:[],
+            act:''
+        },
+        defaultHeadImg:""
     },
     onLoad( option ){
-        let _groupMsg = JSON.parse( option.item ) ;
+        let _groupMsg = JSON.parse( option.item );
+        let time = new Date(),that = this;
+        let endTime = `${time.getFullYear()}-${time.getUTCMonth() + 1}-${time.getUTCDate()}`;
         this.setData({
-            "theGroupMsg":_groupMsg
+            "theGroupMsg":_groupMsg,
+            ['dater.end']:endTime,
+            ['dater.end1']:endTime
         })
         this.setData({
             ["searchData.openId"]:app.globalData.openId,
-            ["searchData.groupId"]:_groupMsg.groupId
+            ["searchData.groupId"]:_groupMsg.groupId,
+            "defaultHeadImg":app.globalData.defaultImg
         })
+        this.reqGroupList();
+        this.getHistoryMsg(1);
+    },
+    reqGroupList(e){
+        let that = this;
+        system.http({ url:`chat/groups/tree`, method:"get",param:{openId:app.globalData.openId} ,header:{'content-type': 'application/x-www-form-urlencoded'},scb(res){
+            that.setData({
+                ['transmit.groupList']:res.data.data.rows,
+                ['selUser.selMe']:res.data.data.rows[0]
+            })
+        }})
+    },
+    bindDateChange1(e){
+        let that = this;
+        if( that.data.dater.timer <= new Date( e.detail.value ).getTime() ){
+            this.setData({
+                ["dater.date1"]:e.detail.value,
+                ["dater.timer1"]:new Date( e.detail.value ),
+                ["searchData.endAt"]:e.detail.value,
+                "chatData":[],
+                ["searchData.pageNum"]:1
+            })
+            that.getHistoryMsg(1);
+        }else{
+            system.stateMsg({
+                title:"结束时间必须晚于开始时间",
+                icon:"none",
+                time:1500
+            })
+        }
+    },
+    bindscrolltoupper(e){
+        var that = this;
+        this.setData({
+            ['searchData.pageNum']:++that.data.searchData.pageNum,
+        })
+        that.data.searchData.pageNum
+        debugger;
+        this.getHistoryMsg( that.data.searchData.pageNum );
+    },
+    bindDateChange(e){
+        let that = this;
+        if( new Date( e.detail.value ).getTime() <= that.data.dater.timer1 ){
+            this.setData({
+                ["dater.date"]:e.detail.value,
+                ["dater.timer"]:new Date( e.detail.value ).getTime(),
+                ["searchData.startAt"]:e.detail.value,
+                "chatData":[],
+                ["searchData.pageNum"]:1
+            })
+            that.getHistoryMsg(1);
+        }else{
+            system.stateMsg({
+                title:"开始时间必须早于结束时间",
+                icon:"none",
+                time:1500
+            })
+        }
     },
     navigateBack() {
         wx.navigateBack()
     },
-    selOver(){
-        this.setData({
-            ['popUp.show2']:false
-        })
-    },
-    selectedStartHandler2 (e) {
-        this.data.rangeDate2 = e.detail
-    },
-    selectedEndHandler2 (e) {
-        this.data.dateobj.rangedate2 = e.detail
-        console.log(this.data.dateobj.rangedate2)
-        this.rangeinit2( this.data.dateobj )
-    },
-    rangeinit2 (thisdate) {
-      console.log( 'rangeinit2',thisdate )
-      let start, end
-      this.data.dateobj.rangestart2 = thisdate.rangedate2[0]
-      this.data.dateobj.rangeend2 = thisdate.rangedate2[1]
-      start = this.data.dateobj.rangestart2.split('/')
-      end = this.data.dateobj.rangeend2.split('/')
-      // this.rangestart2 = `${start[1]}月${start[2]}日`
-      // this.rangeend2 = `${end[1]}月${end[2]}日`
-      this.setData({
-        rangestart2:`${start[1]}月${start[2]}日`,
-        rangeend2:`${end[1]}月${end[2]}日`,
-        ["searchData.startAt"]:`${start[0]}-${start[1]}-${start[2]}`,
-        ["searchData.endAt"]:`${start[0]}-${end[1]}-${end[2]}`,
-      })
-    },
-    failedHandler2 (err) {
-        if (err === 1) {
-            wx.showToast({ title: '您选择的时间超过30天,请重新选择' })
-        }
-    },
-    getHistoryMsg(){
+    getHistoryMsg(pageNumber){
         var that= this;
         wx.request({
         url: `${app.globalData.httpHost}/chat/msg`,
@@ -352,8 +389,9 @@ export default {
             that.data.chatData.splice(0,0,...res.data.data.rows);
             that.setData({
                 chatData:that.data.chatData,
+                ['searchData.pageNum']: pageNumber
             })
-                wx.hideToast()
+            wx.hideToast()
             }else{
                 wx.hideToast()
                 system.stateMsg({title: '提示',content: res.data.message,scb(){},ccb(){}})
@@ -368,19 +406,27 @@ export default {
         });
     },
     checkboxChange(e){ //消息转发选项框选中事件......
+        if( e.detail.value.length == 0 ){
+            this.setData({
+                ['transmit.isTransmit']:false
+            })
+        }else{
+            this.setData({
+                ['transmit.isTransmit']:true
+            })
+        }
         this.setData({
-        ['transmit.transData']:e.detail.value
+            ['transmit.transData']:e.detail.value
         })
     },
     cancelSelect(){//取消消息选择......
         this.setData({
-        ['model.show']:false,
-        ['transmit.isTransmit']:false
+            ['model.show']:false,
         })
     },
     showModel(){
         this.setData({
-        ["model.show"]:true
+            ["model.show"]:true
         })
     },
     transMsg(){ //选择完转发消息后跳转到群组列表页面
@@ -389,18 +435,27 @@ export default {
         this.data.transmit.transData.forEach((value,ii,array)=>{
             val.groupId = that.data.selUser.selMe.groupId;
             val.groupName = that.data.selUser.selMe.groupName;
-            val.fromUser = that.data.sendInputMsg.fromUser;
-            val.position = that.data.sendInputMsg.position;
-            val.fromUserName = that.data.sendInputMsg.fromUserName;
+            val.fromUser = app.globalData.openId;
+            val.position = app.globalData.userMsgReq.position;
+            val.fromUserName = app.globalData.userMsgReq.username;
             if( val.msgId == value ){
-            delete val.readCount;
-            delete val.status;
-            delete val.readStatus;
-            delete val.msgId;
-            val.toUser = "";
-            val.content == null ? val.content = "" : null;
-            let a = JSON.stringify( val );
-            app.globalData.socketTask.sendSocketMessage( JSON.stringify( val ) );
+                delete val.readCount;
+                delete val.status;
+                delete val.readStatus;
+                delete val.msgId;
+                val.toUser = "";
+                val.content == null ? val.content = "" : null;
+                let a = JSON.stringify( val );
+                app.globalData.socketTask.send({ data: JSON.stringify( val ) ,success(res){
+                    that.setData({
+                        ["model.show"]:false
+                    })
+                },fail(res){
+                    that.stateMsg({
+                        title:"转发失败",
+                        icon:"none"
+                    })
+                }})
             }
         })
         })
@@ -408,9 +463,11 @@ export default {
     inputTyping(e){
         this.setData({
             ["search.inputVal"]: e.detail.value,
-            ["searchData.keywords"]: e.detail.value
+            ["searchData.keywords"]: e.detail.value,
+            "chatData":[],
+            ["searchData.pageNum"]:1
         });
-        this.getHistoryMsg();
+        this.getHistoryMsg(1);
     },
     showInput(){
         var that = this;
@@ -431,6 +488,8 @@ export default {
         })
         this.setData({
             ["search.list00"]:that.data.search.list00,
+            "chatData":[],
+            ["searchData.pageNum"]:1
         })
         if( opt != 4 ){
             this.setData({
@@ -441,18 +500,51 @@ export default {
                 ["popUp.show2"]:true
             })
         }
-        this.getHistoryMsg();
+        this.getHistoryMsg(1);
+    },
+    selUser(e){//选择群组.....
+        let _item = e.currentTarget.dataset;
+        let that = this;
+        if( that.data.theGroupMsg.groupId != _item.item.groupId ){
+            this.data.transmit.groupList.forEach((val,i,arr)=>{
+                if(val.groupId == _item.item.groupId){
+                    val.act = true;
+                }else{
+                    val.act = false;
+                }
+                if( val.children.length > 0 ){
+                    val.children.forEach((value,ii,array)=>{
+                    if( value.groupId == _item.item.groupId ){
+                        value.act = true;
+                    }else{
+                        value.act = false;
+                    }
+                    })
+                }
+            })
+        }else{
+            system.stateMsg({
+                title:"不能选择本群",
+                icon:"none",
+                content:"",
+                time:1500
+            })
+        }
+        this.setData({
+            ['transmit.groupList']:that.data.transmit.groupList,
+            ['selUser.selMe']:_item.item
+        })
     }
 }
 </script>
 
 <style lang="less">
-#tags0{
-  margin:5px 10px;
-}
-.fixed-view-content{
-  
-}
+    #tags0{
+    //   margin:5px 10px;
+    }
+    .fixed-view-content{
+    
+    }
   .popup1{
     height: 100%;
     padding:0 20rpx;
@@ -469,4 +561,151 @@ export default {
       height: 100%;
       width: 100%;
   }
+  .content{
+    padding:0px 8px 0px 8px;
+    .talkItem{
+      padding:15px 0;
+      margin-bottom:6px;
+    }
+    .left_icon{
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color:#FCB300; 
+        text-align: center;
+        line-height: 50px;
+    }
+    .left_icon2{
+        background-color: #FF7360;
+    }
+    .left_icon3{
+        background-color: #39CCC5;
+    }
+    .name,.job{
+      font-family:PingFang-SC-Medium;
+      color:rgba(102,102,102,1);
+      max-width: 90px;
+      display: inline-block;
+      .mix-text-overflow();
+    }
+    .name{
+      font-size: 13px;
+    }
+    .job{
+      font-size: 11px;
+    }
+    .userMsg{
+      vertical-align: top;
+      line-height: 13px;
+    }
+    .talkContent{
+      font-size: 15px;
+      font-family:PingFang-SC-Medium;
+      color:rgba(51,51,51,1);
+      background-color: white;
+      padding: 5px;
+      border-radius: 5px;
+      display: inline-block;
+      max-width:90%;
+      white-space: pre-line;
+      overflow-wrap:break-word;
+      text-align: left;
+      min-height: 20px;
+      position: relative;
+    }
+}
+.fontMini{
+    font-size: 12px;
+}
+.historyLine{
+    font-size:12px;
+    color:#333;
+    text-align:center;
+    height:60px;
+    line-height: 60px;
+    padding-top: 40px;
+}
+  .groupMsgBtn{
+      position: absolute;
+      right: 56px;
+      top: 13px;
+      z-index: 1;
+      font-size: 14px;
+      border-radius: 12px;
+      background-color: #FFF7F7FA;
+      line-height: 24px;
+      overflow: hidden;
+      height:60rpx;
+      .cBtn0{
+        padding:0 30rpx;
+        height:60rpx;
+        line-height:60rpx;
+        font-size:24rpx;
+        margin:0;
+        background-color:#FFF7F7FA!important;
+        display:inline-block;
+        border-radius:0;
+        &::after{
+          border: none;
+        }
+      }
+      .line_icon{
+        border-right:0.5px solid #DBD9D9;
+        height:40rpx;
+        position:relative;
+        top:-20rpx;
+      }
+      .cancelSelect,.toGroupList{
+        font-size: 34rpx;
+      }
+    }
+.angleIcon{
+    position:absolute;
+    z-index:10000;
+    right:68rpx;
+    top:51rpx;
+    display:inline-block;
+    width:auto;
+    font-size:22rpx;
+    min-width:45rpx;
+    height:45rpx;
+    border-radius:50%;
+    background-color:white;
+    color:white;
+    line-height:45rpx;
+    padding:2rpx;
+  }
+  .angleIcon2{
+    right:-17rpx;
+    top:9rpx;
+  }
+.top_tip{
+    background-color: #fff;
+    .left_icon{
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color:#FCB300; 
+        text-align: center;
+        line-height: 50px;
+    }
+    .text{
+        .ui-text{
+            font-size: 16px;
+            color: #313338;
+        }
+        .ui-view{
+            color: #9C9FA4;
+            font-size: 12px;
+            .mix-text-overflow();
+        }
+        .txt{
+          font-size:12px;
+          font-family:PingFang-SC-Medium;
+          color:rgba(102,102,102,1);
+          text-align: left;
+          .mix-text-overflow();
+        }
+    }
+}
 </style>

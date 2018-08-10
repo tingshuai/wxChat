@@ -19,7 +19,8 @@ export default {
       'pages/webView/index',
       'pages/newGroup/index',
       'pages/fileList/index',
-      'pages/historyMsg/index'
+      'pages/historyMsg/index',
+      'pages/CreateRequirement/index'
     ],
     plugins: {
       WechatSI: {
@@ -43,15 +44,16 @@ export default {
     }
   },
   globalData: {
-    socketHost: 'wss://192.168.0.56', // 祝天洋 'wss://192.168.0.49', 沈鑫：192.168.0.56，线上：www.china-cms.com
-    httpHost: 'https://192.168.0.56', //'https://192.168.0.144',
+    socketHost: 'wss://192.168.0.49', // 祝天洋 'wss://192.168.0.49', 沈鑫：192.168.0.56，线上：www.china-cms.com
+    httpHost: 'https://192.168.0.49', //'https://192.168.0.144',
     userMsg: {},
     openId: '', //'oc6Hd1BHJF55T1jIWr2eC2AEYoUQ',
     sessionId: '',
     userMsgReq: {},
     wxImg: '',
     defaultImg: '', //默认群头像...
-    socketTask: ''
+    socketTask: '',
+    registerState: ''
   },
   onLaunch() {
     system.attachInfo()
@@ -121,8 +123,7 @@ export default {
 @import './static/styles/index.less';
 @import './static/styles/weui.wxss';
 page {
-  background-color: #EFEFF4;
-  // padding-top: 66px;
+  background-color: #EFEFF4; // padding-top: 66px;
   overflow: hidden;
 }
 

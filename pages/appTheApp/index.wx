@@ -126,6 +126,8 @@ var app = getApp();
         wx.navigateBack()
     },
     onLoad(option){
+        app.globalData.openId
+        debugger;
       this.setData({
         ['form.openId']:app.globalData.openId,
         ['form.unionid']:app.globalData.userMsgReq.unionId,

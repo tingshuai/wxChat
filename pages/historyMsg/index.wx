@@ -59,7 +59,7 @@
         <view class="groupMsgBtn">
             <button bindtap="showModel" wx:if="{{ transmit.isTransmit }}" class="seeGroupMsg cBtn0">转发</button>
         </view>
-        <scroll-view scroll-y="true" id="viewport" style="height:{{ scrollHeight }}px;" style="overflow:hidden;" scroll-into-view="{{ toView }}" upper-threshold="0" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden">
+        <scroll-view scroll-y="true" id="viewport" style="height:{{ scrollHeight }}px;" bindscrolltolower="bindscrolltoupper" style="overflow:hidden;" scroll-into-view="{{ toView }}" upper-threshold="0" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden">
           <view class="content" id="content">
             <checkbox-group bindchange="checkboxChange">
               <ui-row hover-class="touchui-hover" class="talkItem" wx:for="{{ chatData }}" wx:key="index" id="the{{index}}">
@@ -276,7 +276,7 @@ export default {
             startAt:"",
             groupId:"",
             keywords:"",
-            msgType:0,
+            msgType:"",
             openId:"",
             pageSize:"10",
             pageNum:"1"
@@ -348,8 +348,6 @@ export default {
         this.setData({
             ['searchData.pageNum']:++that.data.searchData.pageNum,
         })
-        that.data.searchData.pageNum
-        debugger;
         this.getHistoryMsg( that.data.searchData.pageNum );
     },
     bindDateChange(e){
@@ -386,7 +384,7 @@ export default {
                 val.content = val.content.split('(@\`-\`@)').join(' ');
                 }
             })
-            that.data.chatData.splice(0,0,...res.data.data.rows);
+            that.data.chatData.splice(that.data.chatData.length,0,...res.data.data.rows);
             that.setData({
                 chatData:that.data.chatData,
                 ['searchData.pageNum']: pageNumber

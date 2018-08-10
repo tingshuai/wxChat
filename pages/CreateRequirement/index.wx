@@ -1,0 +1,193 @@
+<template>
+  <view>
+    <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#fff'} }}">
+        <ui-row height="40">
+            <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
+                <icon class="iconfont myWx-iconfontqianjin2" style="font-size:20px;"></icon>
+            </ui-col>
+            <ui-col vertical-align="middle" align="center">
+                需求创建
+            </ui-col>
+            <ui-col vertical-align="middle" align="center" width="80"></ui-col>
+        </ui-row>
+    </ui-nav-bar>
+    <view style="height:66px;width:100%;"></view>
+    <form bindsubmit="formSubmit" class="formSubmit" style="height:{{ contentHeight }};border:1px solid red;display:block;">
+        <ui-row style="width:100%;background-color:white;min-height:40px;padding:5px;">
+          <ui-col vertical-align="middle" align="center" width="30">
+              <text>1</text>
+          </ui-col>
+          <ui-col vertical-align="middle" align="left">
+              <textarea id="reqMsg" auto-height style="min-height:30px;border:1px solid #ddd;color:{{ validate.reqMsg.isLegal == true ? 'green' : 'red' }}" value="{{ form.reqMsg }}" class="weui-textarea" data-item="{{ validate.reqMsg }}" bindinput="inputing"/>
+          </ui-col>
+        </ui-row>
+    </form>
+    <view class="btn-area">
+      <button formType="submit" type="primary" disabled="{{ disabled }}">增加项目</button>
+      <button formType="submit" type="primary" disabled="{{ disabled }}">提交申请</button>
+    </view>
+  </view>
+</template>
+
+<script>
+var app = getApp();
+  export default {
+    config: {
+      navigationBarTitleText: '申请填写'
+    },
+    data: {
+      disabled:true,
+      contentHeight: wx.WIN_HEIGHT - 180 + "px",
+      form:{
+        confirmUser :"",//需求确认人
+        demandText :"",//需求内容
+        fromUser :"",//发送人openId
+        fromUserName :"",//发送人名称
+        groupId:"",//
+        groupName :"",//
+        headImgUrl :"",//
+        position :""//
+      },
+      validate:{
+          reqMsg:{
+              placeholder:"请输入申请留言",
+              color:'#F21B1B',
+              required:true,
+              name:"留言",
+              isLegal:false
+          }
+      },
+      groupMsg:{}
+    },
+    navigateBack () {
+        wx.navigateBack()
+    },
+    onLoad(option){
+      let _item = JSON.parse (option.groupMsg);
+      this.setData({
+        groupMsg:_item,
+        ['form.fromUser']:app.globalData.openId,
+        ['form.groupId']:_item.groupId
+      });
+    },
+    addRequirement(e){
+
+    },
+    initValidate(){
+      var that = this;
+      var dis = false;
+      var obj = that.data.validate;
+        var promise = new Promise(function(resolve){
+            Object.keys(obj).forEach(function(key){
+                if(obj[key].isLegal == false){
+                    dis = true;
+                }
+            });
+            resolve(dis);
+        });
+        promise.then(function(value){
+            that.setData({
+                disabled:dis
+            })
+        }).catch(function(error){
+            console.error(error);
+        });
+    },
+    inputing(e){
+        this.setData({
+            [`form.${e.target.id}`]:e.detail.value
+        })
+        var reg = new RegExp("^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$");
+        if ( e.detail.value == '' && e.currentTarget.dataset.item.required ) {
+            this.setData({
+                [`validate.${e.target.id}.color`]:'#F21B1B',
+                [`validate.${e.target.id}.placeholder`]:`${e.currentTarget.dataset.item.name}不能为空`,
+                [`validate.${e.target.id}.isLegal`]:false
+            })
+        }else{
+            this.setData({
+                [`validate.${e.target.id}.color`]:'green',
+                [`validate.${e.target.id}.isLegal`]:true
+            })
+            if( e.target.id == 'email' ){
+                if ( !reg.test( e.detail.value )){
+                    this.setData({
+                        [`validate.${e.target.id}.placeholder`]:`${e.currentTarget.dataset.item.name}格式不正确`,
+                        [`validate.${e.target.id}.isLegal`]:false
+                    })
+                }else{
+                    this.setData({
+                        [`validate.${e.target.id}.color`]:'green',
+                        [`validate.${e.target.id}.isLegal`]:true
+                    })
+                }
+            }
+        }
+        this.initValidate();
+    },
+    blur(e){
+    
+    },
+    formSubmit: function(e) {
+      // 创建实例对象
+      var that = this;
+        wx.request({
+            url: `${app.globalData.httpHost}/chat/group/req`, //仅为示例，并非真实的接口地址
+            data: that.data.form,
+            method:'post',
+            header: {
+                 'content-type': 'application/x-www-form-urlencoded'
+            },
+            success: function(res) {
+                if( res.data.status == 200 ){
+                    wx.showToast({
+                        title: '提交成功',
+                        icon: 'success',
+                        duration: 1500,
+                        mask:true,
+                        success:function(){
+                            setTimeout(() => {
+                                wx.navigateBack({
+                                    url: '/pages/home/index'
+                                })
+                            }, 1500);
+                        }
+                    })
+                }else{
+                    wx.showToast({
+                        title: res.data.message,
+                        icon: 'none',
+                        duration: 2000,
+                        mask:true
+                    })
+                }
+            }
+        })
+    },
+    formReset: function() {}
+  }
+</script>
+
+<style lang="less">
+    .star{
+        // color: #F21B1B;
+        font-size: 10px;
+    }
+    .btn-area{
+        padding:20px;
+    }
+    .applyForm{
+        .weui-input{
+            font-size: 14px;
+            height: 44px;
+        }
+        .weui-label{
+            font-size:16px;
+            font-family:PingFang-SC-Medium;
+            color:rgba(51,51,51,1);
+        }
+    }
+    .formSubmit{
+      height: auto;
+    }
+</style>

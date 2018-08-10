@@ -111,6 +111,7 @@
             <ui-col style="display:inline-block;" class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-tupianshuiyinshezhi" bindtap="chooseFile" data-type="1" data-watermark = "true" style="font-size:"></text></ui-col>
             <ui-col class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-wenjian1" bindtap="chooseFile" data-type="6"></text></ui-col>
             <ui-col class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-xiazai" bindtap="aite" data-type="6"></text></ui-col>
+            <ui-col class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-xiazai" bindtap="creatRequirement" data-type="6"></text></ui-col>
           </ui-row>
           <ui-row height="100" class="sentType" hidden="{{ transmit.isAite }}" style="overflow:auto;justify-content:left;flex-flow:nowrap;">
             <ui-col class="sentType_col" width="58" align="center" vertical-align="middle" data-isaite="true" data-index="{{ index }}" data-item="{{ item }}" wx:key="index" catchtap="selUser" wx:for="{{ theGroupMsg.groupUsers }}">
@@ -495,6 +496,12 @@ export default {
     this.setData({
       ['model.show']:false,
       ['transmit.isTransmit']:false
+    })
+  },
+  creatRequirement(e){//新增需求......
+    let that = this;
+    wx.navigateTo({
+      url:`/pages/CreateRequirement/index?groupMsg=${JSON.stringify(that.data.theGroupMsg)}`
     })
   },
   showModel(){
@@ -968,27 +975,13 @@ export default {
   selUser(e){//选择群成员.....
     let _item = e.currentTarget.dataset;
     let that = this;
-    if( that.data.theGroupMsg.groupId != _item.item.groupId ){
-      this.data.transmit.groupList.forEach((val,i,arr)=>{
-        if(val.groupId == _item.item.groupId){
-          val.act = true;
-        }else{
-          val.act = false;
-        }
-        if( val.children.length > 0 ){
-          val.children.forEach((value,ii,array)=>{
-            if( value.groupId == _item.item.groupId ){
-              value.act = true;
-            }else{
-              value.act = false;
-            }
-          })
-        }
-      })
-    }
+    this.data.theGroupMsg.groupUsers.filter((val)=>{
+      if( val.openId == _item.item.openId){
+        val.act = !val.act;
+      }
+    })
     this.setData({
-      ['transmit.groupList']:that.data.transmit.groupList,
-      ['selUser.selMe']:_item.item
+      ['theGroupMsg.groupUsers']:that.data.theGroupMsg.groupUsers
     })
   },
   // 输入时

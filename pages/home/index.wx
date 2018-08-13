@@ -155,22 +155,23 @@ export default {
     console.log( "home 页面")
     if(app.globalData.socketTask){
       app.globalData.socketTask.close({success(res){},fail(res){}});
-    }    
+    }
     system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:8000});
-    wx.getStorage({
-        key: 'openId',
-        success: function(res) {
-            app.globalData.openId = res.data;
-            that.requestGroupList('/chat/groups/tree','over');
-            console.log( "获取openId成功")
-        },
-        fail(res){
-            console.log("获取openid失败",res)
-            wx.redirectTo({
-              url: '/pages/login/index'
-            })
-        }
-    })
+    that.requestGroupList('/chat/groups/tree','over');//********************************** */
+    // wx.getStorage({
+    //     key: 'openId',
+    //     success: function(res) {
+    //         app.globalData.openId = res.data;
+    //         that.requestGroupList('/chat/groups/tree','over');
+    //         console.log( "获取openId成功")
+    //     },
+    //     fail(res){
+    //         console.log("获取openid失败",res)
+    //         wx.redirectTo({
+    //           url: '/pages/login/index'
+    //         })
+    //     }
+    // })
     wx.getStorage({
         key:'userMsgReq',
         success(res){

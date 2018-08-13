@@ -12,35 +12,73 @@
         </ui-row>
     </ui-nav-bar>
     <view style="height:66px;width:100%;"></view>
-    <form bindsubmit="formSubmit" class="formSubmit" style="height:{{ contentHeight }};border:1px solid red;display:block;">
-        <ui-row style="width:100%;background-color:white;min-height:40px;padding:5px;">
-          <ui-col vertical-align="middle" align="center" width="30">
-              <text>1</text>
-          </ui-col>
-          <ui-col vertical-align="middle" align="left">
-              <textarea id="reqMsg" auto-height style="min-height:30px;border:1px solid #ddd;color:{{ validate.reqMsg.isLegal == true ? 'green' : 'red' }}" value="{{ form.reqMsg }}" class="weui-textarea" data-item="{{ validate.reqMsg }}" bindinput="inputing"/>
-          </ui-col>
+    <view class="formSubmit" style="height:{{ contentHeight }};display:block;">
+        <ui-row style="width:100%;background-color:white;min-height:40px;padding:5px 0;" wx:for="{{ requireList }}" wx:key="{{ index }}">
+            <ui-col vertical-align="middle" align="center" width="30">
+                <text>{{ index + 1}}</text>
+            </ui-col>
+            <ui-col vertical-align="middle" align="left" style="position:relative;">
+                <textarea fixed="{{ true }}" show-confirm-bar="{{ false }}" id="reqMsg" auto-height="{{ true }}" style="min-height:30px;border:1px solid #ddd;padding:0 5px;box-sizing:border-box;position:relative;" value="{{ item.value }}" data-index="{{ index }}" class="weui-textarea" bindinput="inputing"/>
+            </ui-col>
+            <ui-col vertical-align="middle" align="center" width="30">
+                <icon type="cancel" catchtap="removeItem" data-index="{{ index }}" data-item="{{ item }}" size="24"></icon>
+            </ui-col>
         </ui-row>
-    </form>
-    <view class="btn-area">
-      <button formType="submit" type="primary" disabled="{{ disabled }}">增加项目</button>
-      <button formType="submit" type="primary" disabled="{{ disabled }}">提交申请</button>
     </view>
+    <view class="btn-area">
+      <button catchtap="addItem" type="primary">增加项目</button>
+      <button catchtap="sendTo" type="primary">发送到</button>
+    </view>
+    <ui-popup show="{{ model.show }}" height="100%">
+        <view style="height:100%;width:100%;overflow:hidden;">
+            <view style="height:70px;"></view>
+            <scroll-view scroll-y style="height:{{ modelHeight }};border-top:1px solid #ddd;">
+                <ui-row height="55" wx:for="{{ groupMsg.groupUsers }}" wx:key="{{ index }}" class="top_tip" border-bottom style="padding-right:35px;" data-parentItem="0" data-isaite="false" data-index="{{ index }}" data-item="{{ item }}" bindtap="selUser">
+                    <ui-col width="55" align="center" vertical-align="middle" data-item="{{ item }}" style="padding:4px;">
+                        <image mode="aspectFit" src="{{ item.headImgUrl }}" style="height:100%;"></image>
+                    </ui-col>
+                    <ui-col class="text" align="left" vertical-align="middle" space="20" data-item="{{ item }}">
+                        <view style="width: 100%;">
+                            <ui-row height="22">
+                                <ui-col align="left" vertical-align="middle">
+                                    <text>{{ item.username || "" }}</text>
+                                </ui-col>
+                            </ui-row>
+                            <view class="txt">{{ item.position ? item.position : "" }}</view>
+                        </view>
+                    </ui-col>
+                    <icon class="angleIcon" type="success" wx:if="{{ item.act }}" size="23"></icon>
+                </ui-row>
+            </scroll-view>
+            <view class="btn-area">
+                <button catchtap="cancle" type="primary">取消</button>
+                <button catchtap="submit" type="primary">确定</button>
+            </view>                          
+        </view>
+    </ui-popup>
   </view>
 </template>
 
 <script>
 var app = getApp();
+import system from '../../static/utils/system'
+
+let _promise;
   export default {
     config: {
       navigationBarTitleText: '申请填写'
     },
     data: {
+      tag:true,
       disabled:true,
       contentHeight: wx.WIN_HEIGHT - 180 + "px",
+      model:{
+          show:false
+      },
+      modelHeight:wx.WIN_HEIGHT - 180 + 'px',
       form:{
         confirmUser :"",//需求确认人
-        demandText :"",//需求内容
+        demandText :[],//需求内容
         fromUser :"",//发送人openId
         fromUserName :"",//发送人名称
         groupId:"",//
@@ -48,6 +86,7 @@ var app = getApp();
         headImgUrl :"",//
         position :""//
       },
+      requireList:[{value:""}],
       validate:{
           reqMsg:{
               placeholder:"请输入申请留言",
@@ -67,108 +106,128 @@ var app = getApp();
       this.setData({
         groupMsg:_item,
         ['form.fromUser']:app.globalData.openId,
-        ['form.groupId']:_item.groupId
+        ['form.fromUserName']:"秦琼",
+        ['form.groupName']:_item.groupName,
+        ['form.groupId']:_item.groupId,
+        ['form.headImgUrl']:app.globalData.userMsgReq.headImgUrl,
+        ['form.position']:app.globalData.userMsgReq.position
       });
     },
     addRequirement(e){
 
     },
-    initValidate(){
-      var that = this;
-      var dis = false;
-      var obj = that.data.validate;
-        var promise = new Promise(function(resolve){
-            Object.keys(obj).forEach(function(key){
-                if(obj[key].isLegal == false){
-                    dis = true;
-                }
-            });
-            resolve(dis);
-        });
-        promise.then(function(value){
-            that.setData({
-                disabled:dis
-            })
-        }).catch(function(error){
-            console.error(error);
-        });
-    },
-    inputing(e){
+    cancle(e){
         this.setData({
-            [`form.${e.target.id}`]:e.detail.value
+            ['model.show']:false
         })
-        var reg = new RegExp("^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$");
-        if ( e.detail.value == '' && e.currentTarget.dataset.item.required ) {
+    },
+    submit(e){
+        let that = this;
+        this.data.requireList.filter((item)=>{
+            that.data.form.demandText.push(item.value);
+        })
+        this.setData({
+            ["form.demandText"]:that.data.form.demandText
+        })
+        system.http({
+            url:'demand/add',
+            param:that.data.form,
+            method:"post",
+            header:{'content-type': 'application/x-www-form-urlencoded'},
+            scb(res){
+                if( res.data.status == 200 ){
+                    system.stateMsg({
+                        title:"发送成功",
+                        icon:"success",
+                        time:1500
+                    })
+                    setTimeout(() => {
+                        wx.navigateBack()
+                    }, 1500);
+                }
+            },
+            fcb(res){
+
+            }
+        })
+    },
+    sendTo(e){
+        let _list = this.data.requireList.filter((item)=>{
+            return item.value == ""
+        })
+        if( _list.length == 0 ){
             this.setData({
-                [`validate.${e.target.id}.color`]:'#F21B1B',
-                [`validate.${e.target.id}.placeholder`]:`${e.currentTarget.dataset.item.name}不能为空`,
-                [`validate.${e.target.id}.isLegal`]:false
+                ['model.show']:true
             })
         }else{
-            this.setData({
-                [`validate.${e.target.id}.color`]:'green',
-                [`validate.${e.target.id}.isLegal`]:true
+            system.stateMsg({
+                title:"条目内容不能为空",
+                icon:"none",
+                time:2000
             })
-            if( e.target.id == 'email' ){
-                if ( !reg.test( e.detail.value )){
-                    this.setData({
-                        [`validate.${e.target.id}.placeholder`]:`${e.currentTarget.dataset.item.name}格式不正确`,
-                        [`validate.${e.target.id}.isLegal`]:false
-                    })
-                }else{
-                    this.setData({
-                        [`validate.${e.target.id}.color`]:'green',
-                        [`validate.${e.target.id}.isLegal`]:true
-                    })
-                }
-            }
         }
-        this.initValidate();
     },
-    blur(e){
-    
+    addItem(){
+        let that = this;
+        let _list = this.data.requireList.filter((item)=>{
+            return item.value == ""
+        })
+        if( _list.length == 0 ){
+            this.data.requireList.push( {value:""} )
+            this.setData({
+                "requireList": that.data.requireList
+            })
+        }else{
+            system.stateMsg({
+                title:"条目不能为空",
+                icon:"none",
+                time:2000
+            })
+        }
+        
     },
-    formSubmit: function(e) {
-      // 创建实例对象
-      var that = this;
-        wx.request({
-            url: `${app.globalData.httpHost}/chat/group/req`, //仅为示例，并非真实的接口地址
-            data: that.data.form,
-            method:'post',
-            header: {
-                 'content-type': 'application/x-www-form-urlencoded'
-            },
-            success: function(res) {
-                if( res.data.status == 200 ){
-                    wx.showToast({
-                        title: '提交成功',
-                        icon: 'success',
-                        duration: 1500,
-                        mask:true,
-                        success:function(){
-                            setTimeout(() => {
-                                wx.navigateBack({
-                                    url: '/pages/home/index'
-                                })
-                            }, 1500);
-                        }
-                    })
-                }else{
-                    wx.showToast({
-                        title: res.data.message,
-                        icon: 'none',
-                        duration: 2000,
-                        mask:true
-                    })
-                }
+    selUser(e){//选择群成员.....
+        let _item = e.currentTarget.dataset;
+        let that = this;
+        this.data.groupMsg.groupUsers.filter((val)=>{
+            if( val.openId == _item.item.openId){
+                val.act = !val.act;
+                that.setData({
+                    ["form.confirmUser"]:val.openId
+                })
+            }else{
+                val.act = false;
             }
         })
+        this.setData({
+            ['groupMsg.groupUsers']:that.data.groupMsg.groupUsers
+        })
     },
-    formReset: function() {}
+    removeItem(e){
+        let that = this;
+        let _item = e.currentTarget.dataset;
+        if( this.data.requireList.length > 1 ){
+            this.data.requireList.splice(_item.index,1);
+            this.setData({
+                'requireList': that.data.requireList
+            })
+        }
+    },
+    inputing(e){
+        let that = this;
+        let _item = e.currentTarget.dataset;
+        this.data.requireList[_item.index].value = e.detail.value;
+        this.setData({
+            'requireList': that.data.requireList
+        })
+    }
   }
 </script>
 
 <style lang="less">
+    .top_tip{
+        // margin: 10px 0;
+    }
     .star{
         // color: #F21B1B;
         font-size: 10px;
@@ -189,5 +248,22 @@ var app = getApp();
     }
     .formSubmit{
       height: auto;
+      overflow: auto;
     }
+.angleIcon{
+    position:absolute;
+    z-index:10000;
+    right:18rpx;
+    top:27rpx;
+    display:inline-block;
+    width:auto;
+    font-size:22rpx;
+    min-width:45rpx;
+    height:45rpx;
+    border-radius:50%;
+    background-color:white;
+    color:white;
+    line-height:45rpx;
+    padding:2rpx;
+}
 </style>

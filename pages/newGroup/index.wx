@@ -58,7 +58,7 @@
       <view class="weui-cells weui-cells_after-title" wx:if="{{ addMenu == 'false' }}">
           <view class="weui-cell">
               <view class="weui-cell__bd" style="position:relative;">
-                  <textarea fixed="{{tag}}" placeholder-class="placeholderClass" value="{{ formData.groupDesc }}" class="weui-textarea fontValue" name="groupDesc" placeholder="请输入群描述" style="height: 3.3em;position:relative;" />
+                  <textarea fixed="{{ tag }}" placeholder-class="placeholderClass" value="{{ formData.groupDesc }}" class="weui-textarea fontValue" name="groupDesc" placeholder="请输入群描述" style="height: 3.3em;position:relative;" />
               </view>
           </view>
       </view>

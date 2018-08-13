@@ -41,6 +41,17 @@
                             </ui-row>
                             <!--文本类型-->
                             <text selectable='true' class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 0 || item.msgType == 7}}" style="background-color: {{ sendInputMsg.fromUser == item.fromUser ? '#A0E75A' : 'white' }}">{{ item.content }} </text>
+                            <!--需求类型-->
+                            <view class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 20}}" style="background-color: {{ sendInputMsg.fromUser == item.fromUser ? '#A0E75A' : 'white' }};width:100%;">
+                              <ui-row wx:for="{{ item.content }}" wx:key="indexTow" wx:for-item="itemChildren" wx:for-index="indexTow">
+                                  <ui-col width="20" style="text-align:center;">{{ indexTow }}.</ui-col>
+                                  <ui-col>{{ itemChildren.demandText }}</ui-col>
+                                  <ui-col width="{{ sendInputMsg.fromUser == item.fromUser ? 40 : 80 }}">
+                                    <button wx:if="{{ sendInputMsg.fromUser != item.fromUser }}" type="{{ itemChildren.demandState ? 'default' : 'primary' }}" data-item="{{ itemChildren }}" catchtap="retOrConfirm">{{ itemChildren.demandState ? '驳回' : '确认' }}</button>
+                                    <button wx:else type="primary" data-item="{{ itemChildren }}" catchtap="retOrConfirm">修改</button>
+                                  </ui-col>
+                              </ui-row>
+                            </view>
                             <!--图片类型-->
                             <view class="talkContent" wx:if="{{ item.msgType == 1 }}" style="height:100px;background-color:rgba(0,0,0,0);width:40%;">
                               <image lazy-load="true" mode="aspectFit" data-item="{{item}}" bindtap="previewImage" catch:longpress="openActionsheet" style="height:100%;width:auto" src="{{ item.attachUrl }}"></image>
@@ -107,11 +118,11 @@
             <ui-col width="55" vertical-align="middle" hidden="{{ !isInputing }}" class="sendBtn" space-left="3" space-right="3"><button type="primary" bindtap="sendMsg">发送</button></ui-col>
           </ui-row>
           <ui-row height="100" class="sentType" hidden="{{ isHidden }}" style="justify-content:flex-start;">
-            <ui-col style="display:inline-block;" class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-zhaopian1" bindtap="chooseFile" data-type="1" data-watermark = "false"></text></ui-col>
-            <ui-col style="display:inline-block;" class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-tupianshuiyinshezhi" bindtap="chooseFile" data-type="1" data-watermark = "true" style="font-size:"></text></ui-col>
-            <ui-col class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-wenjian1" bindtap="chooseFile" data-type="6"></text></ui-col>
-            <ui-col class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-xiazai" bindtap="aite" data-type="6"></text></ui-col>
-            <ui-col class="sentType_col" width="58" align="left" vertical-align="middle"><text class="iconfont myWx-xiazai" bindtap="creatRequirement" data-type="6"></text></ui-col>
+            <ui-col style="display:inline-block;" class="sentType_col" width="58" align="center" vertical-align="middle"><text class="iconfont myWx-zhaopian1" bindtap="chooseFile" data-type="1" data-watermark = "false"></text></ui-col>
+            <ui-col style="display:inline-block;" class="sentType_col" width="58" align="center" vertical-align="middle"><text class="iconfont myWx-tupianshuiyinshezhi" bindtap="chooseFile" data-type="1" data-watermark = "true" style="font-size:"></text></ui-col>
+            <ui-col class="sentType_col" width="58" align="center" vertical-align="middle"><text class="iconfont myWx-wenjian1" bindtap="chooseFile" data-type="6"></text></ui-col>
+            <ui-col class="sentType_col" width="58" align="center" vertical-align="middle"><text class="iconfont myWx-xiazai" bindtap="aite" data-type="6"></text></ui-col>
+            <ui-col class="sentType_col" width="58" align="center" vertical-align="middle"><text class="iconfont myWx-bianji" bindtap="creatRequirement" data-type="6"></text></ui-col>
           </ui-row>
           <ui-row height="100" class="sentType" hidden="{{ transmit.isAite }}" style="overflow:auto;justify-content:left;flex-flow:nowrap;">
             <ui-col class="sentType_col" width="58" align="center" vertical-align="middle" data-isaite="true" data-index="{{ index }}" data-item="{{ item }}" wx:key="index" catchtap="selUser" wx:for="{{ theGroupMsg.groupUsers }}">
@@ -289,9 +300,13 @@ export default {
             resolve();
         },
         fail(res){
-          wx.redirectTo({
-            url: '/pages/login/index'
-          })
+          // ********可登录之后恢复*****************************
+            resolve();
+
+          // wx.redirectTo({
+          //   url: '/pages/login/index'
+          // })
+          // ****************************
         }
       })
     })
@@ -349,6 +364,7 @@ export default {
       app.globalData.socketTask.onMessage(function(res) {
         var data = JSON.parse( res.data );
         console.log("接收消息" , data )
+        debugger;
         var chatDataMsgId;
         if( onFirst == 1 ){
           that.data.chatData.forEach((val,ii,arr)=>{
@@ -402,8 +418,10 @@ export default {
           })
         }else if( data.cmd == 0 ){//用户发送消息的时候发送 消息回执......
           var isMe = data.fromUser == that.data.sendInputMsg.fromUser ? true : false;
-          if( data.msgType == 7){
+          if( data.msgType == 7){//@消息改写格式
             data.content = data.content.split('(@\`-\`@)').join(" ");
+          }else if( data.msgType == 20 ){//需求消息改写格式
+            val.content = JSON.parse( val.content )
           }
           if(isMe){
             data.headImgUrl= that.data.userMsg.userHeadImg;
@@ -463,6 +481,9 @@ export default {
   },
   onUnload(e){
     
+  },
+  retOrConfirm(e){
+    debugger;
   },
   // 发送socket消息
   sendSocketMessage(msg) {
@@ -838,6 +859,8 @@ export default {
           res.data.data.rows.forEach((val,i,arr)=>{//未读@信息......
             if(val.msgType == 7 && /(@\`-\`@)/.test(val.content) ){
               val.content = val.content.split('(@\`-\`@)').join(' ');
+            }else if( val.msgType == 20 ){
+              val.content = JSON.parse( val.content )
             }
           })
           that.data.chatData.splice(0,0,...res.data.data.rows);
@@ -1084,8 +1107,9 @@ export default {
   }
   .sentType{
     justify-content:left;
+    overflow: auto;
     .sentType_col{
-      margin:0 10px;
+      margin:0 5px;
     }
     .iconfont{
       font-size:30px;

@@ -43,12 +43,12 @@
                             <text selectable='true' class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 0 || item.msgType == 7}}" style="background-color: {{ sendInputMsg.fromUser == item.fromUser ? '#A0E75A' : 'white' }}">{{ item.content }} </text>
                             <!--需求类型-->
                             <view class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 20}}" style="background-color: {{ sendInputMsg.fromUser == item.fromUser ? '#A0E75A' : 'white' }};width:100%;">
-                              <ui-row wx:for="{{ item.content }}" wx:key="indexTow" wx:for-item="itemChildren" wx:for-index="indexTow">
-                                  <ui-col width="20" style="text-align:center;">{{ indexTow }}.</ui-col>
+                              <ui-row wx:for="{{ item.content }}" wx:key="indexTow" wx:for-item="itemChildren" wx:for-index="indexTow" style="border-bottom:1px solid rgba(0,0,0,0.1);">
+                                  <ui-col width="20" style="text-align:center;">{{ indexTow + 1 }}.</ui-col>
                                   <ui-col>{{ itemChildren.demandText }}</ui-col>
-                                  <ui-col width="{{ sendInputMsg.fromUser == item.fromUser ? 40 : 80 }}">
-                                    <button wx:if="{{ sendInputMsg.fromUser != item.fromUser }}" type="{{ itemChildren.demandState ? 'default' : 'primary' }}" data-item="{{ itemChildren }}" catchtap="retOrConfirm">{{ itemChildren.demandState ? '驳回' : '确认' }}</button>
-                                    <button wx:else type="primary" data-item="{{ itemChildren }}" catchtap="retOrConfirm">修改</button>
+                                  <ui-col width="{{ sendInputMsg.fromUser == item.fromUser ? 50 : 100 }}">
+                                    <button style="font-size:10px;" wx:if="{{ sendInputMsg.fromUser != item.fromUser }}" data-itemcontent="{{ item.content }}" data-parentitem="{{ item }}" data-index="{{ index }}" data-childIndex="{{ indexTow }}" type="{{ itemChildren.demandState ? 'default' : 'primary' }}" data-item="{{ itemChildren }}" catchtap="retOrConfirm">{{ itemChildren.demandState ? '已确认' : '确认' }}</button>
+                                    <button style="font-size:10px;" wx:else type="primary" data-item="{{ itemChildren }}" data-itemcontent="{{ item.content }}" data-parentitem="{{ item }}" data-index="{{ index }}" data-childIndex="{{ indexTow }}" catchtap="retOrConfirm" data-type="0">修改</button>
                                   </ui-col>
                               </ui-row>
                             </view>
@@ -190,6 +190,13 @@
             </view>
           </view>
       </ui-popup>
+      <ui-mask show="{{ model.showMask }}" hide-on-tap="{{ false }}">
+        <view class="content">
+          <textarea fixed="{{ true }}" show-confirm-bar="{{ false }}" style="background-color:white;margin-top:73px;min-height:200px;border:1px solid #ddd;padding:0 5px;box-sizing:border-box;position:relative;" value="{{ model.value }}" class="weui-textarea" bindinput="requireTextareaInputing"/>
+          <button class="btn1 btn" type="success" data-show="{{ false }}" data-type="0" bindtap="handleShowMask">取消</button>
+          <button class="btn2 btn" type="success" data-show="{{ false }}" data-type="1" bindtap="handleShowMask">确定</button>
+        </view>
+      </ui-mask>
   </view>
 </template>
 
@@ -198,7 +205,7 @@ import system from '../../static/utils/system'
 var app = getApp();
 var plugin = requirePlugin("WechatSI");
 let wx_manager = plugin.getRecordRecognitionManager();
-var recorderManager,wx_timer,wx_timer2,wx_n1=0,wx_n2=1;
+var recorderManager,wx_timer,wx_timer2,wx_n1=0,wx_n2=1,wx_promiseSubmitRequire;
 var backgroundAudioManager=wx.getBackgroundAudioManager();
 export default {
   config: {
@@ -225,6 +232,8 @@ export default {
     unReadList:[],
     model:{
       show:false,
+      showMask:false,//修改需求的textare的弹出框
+      value:""
     },
     inputVal:"",//消息输入框的值......
     modelHeight:wx.DEFAULT_CONTENT_HEIGHT - 128 + 'px',
@@ -417,12 +426,15 @@ export default {
             chatData:that.data.chatData
           })
         }else if( data.cmd == 0 ){//用户发送消息的时候发送 消息回执......
-          var isMe = data.fromUser == that.data.sendInputMsg.fromUser ? true : false;
+          data.msgType
+          debugger;
           if( data.msgType == 7){//@消息改写格式
             data.content = data.content.split('(@\`-\`@)').join(" ");
           }else if( data.msgType == 20 ){//需求消息改写格式
-            val.content = JSON.parse( val.content )
+            data.content = JSON.parse( data.content )
+            debugger;
           }
+          var isMe = data.fromUser == that.data.sendInputMsg.fromUser ? true : false;
           if(isMe){
             data.headImgUrl= that.data.userMsg.userHeadImg;
             if( data.msgType == 0 ){
@@ -483,8 +495,34 @@ export default {
     
   },
   retOrConfirm(e){
-    debugger;
+    let _item  = e.currentTarget.dataset;
+    let that = this;
+    if( _item.type == 0 ){//修改需求......
+      wx.navigateTo({
+        url:`/pages/CreateRequirement/index?groupMsg=${JSON.stringify(that.data.theGroupMsg)}&item=${JSON.stringify(_item)}&edit=${true}`
+      })
+    }else if( _item.item.demandState == true ){ //已确认
+      
+    }else{//未确认....
+
+    }
   },
+  handleShowMask (e) {
+    let _item = e.currentTarget.dataset;
+    let that = this;
+    if( _item.type == 1 ){//点击确定
+        wx_promiseSubmitRequire.then((obj)=>{
+          debugger;
+          
+          // that.setData({
+          //   [`chatData[${obj.index}].content[${obj.childindex}].demandText`]:that.data.model.value
+          // })
+        })
+    }
+    this.setData({
+      ['model.showMask']: false
+    })
+  },  
   // 发送socket消息
   sendSocketMessage(msg) {
     var that = this;
@@ -493,6 +531,12 @@ export default {
         success(res){},
         fail(res){}
       })
+  },
+  requireTextareaInputing(e){
+    let that = this;
+    this.setData({
+      ["model.value"]:e.detail.value
+    })
   },
   sendReadedReceipt( item ){//发送已读消息回执....
     let that = this;
@@ -522,7 +566,7 @@ export default {
   creatRequirement(e){//新增需求......
     let that = this;
     wx.navigateTo({
-      url:`/pages/CreateRequirement/index?groupMsg=${JSON.stringify(that.data.theGroupMsg)}`
+      url:`/pages/CreateRequirement/index?groupMsg=${JSON.stringify(that.data.theGroupMsg)}&edit=${false}`
     })
   },
   showModel(){
@@ -1415,5 +1459,30 @@ export default {
 page{
   // overflow: hidden;
   // height: 100%;
+}
+view {
+  &.content {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top:0;
+    width: 100%;
+    button.btn{
+      position:absolute;
+      width:90%;
+      left:5%;
+    }
+    button.btn1{
+      bottom: 43px;
+    }
+    button.btn2{
+      bottom: 0px;
+    }
+  }
+  &.content2{
+    height: 100%;
+    .mix-flex-center();
+  }
 }
 </style>

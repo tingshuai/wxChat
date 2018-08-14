@@ -88,6 +88,10 @@
         ['submitData.groupDesc']:JSON.parse( option.item ).groupDesc,
         "userMsg":app.globalData.userMsgReq
       })
+      this.data.userMsg
+      this.data.groupMsg;
+      app.globalData.userMsgReq
+      debugger;
       wx.setNavigationBarTitle({//设置页面标题....
         title: JSON.parse( option.item ).groupName
       })

@@ -13,12 +13,12 @@
     </ui-nav-bar>
     <view style="height:66px;width:100%;"></view>
     <view class="formSubmit" style="height:{{ contentHeight }};display:block;">
-        <ui-row style="width:100%;background-color:white;min-height:40px;padding:5px 0;" wx:for="{{ requireList }}" wx:key="{{ index }}">
+        <ui-row style="width:100%;background-color:white;min-height:40px;padding:5px 0;" wx:for="{{ come_msg.edit == 'true' ? come_msg.item : requireList }}" wx:key="{{ index }}">
             <ui-col vertical-align="middle" align="center" width="30">
-                <text>{{ index + 1}}</text>
+                <text>{{ index + 1 }}</text>
             </ui-col>
             <ui-col vertical-align="middle" align="left" style="position:relative;">
-                <textarea fixed="{{ true }}" show-confirm-bar="{{ false }}" id="reqMsg" auto-height="{{ true }}" style="min-height:30px;border:1px solid #ddd;padding:0 5px;box-sizing:border-box;position:relative;" value="{{ item.value }}" data-index="{{ index }}" class="weui-textarea" bindinput="inputing"/>
+                <textarea fixed="{{ true }}" show-confirm-bar="{{ false }}" id="reqMsg" auto-height="{{ true }}" style="min-height:30px;border:1px solid #ddd;padding:0 5px;box-sizing:border-box;position:relative;" value="{{ come_msg.edit == 'true' ? item.demandText : item.value }}" data-index="{{ index }}" class="weui-textarea" bindinput="inputing"/>
             </ui-col>
             <ui-col vertical-align="middle" align="center" width="30">
                 <icon type="cancel" catchtap="removeItem" data-index="{{ index }}" data-item="{{ item }}" size="24"></icon>
@@ -73,7 +73,7 @@ let _promise;
       disabled:true,
       contentHeight: wx.WIN_HEIGHT - 180 + "px",
       model:{
-          show:false
+        show:false
       },
       modelHeight:wx.WIN_HEIGHT - 180 + 'px',
       form:{
@@ -86,15 +86,20 @@ let _promise;
         headImgUrl :"",//
         position :""//
       },
+      come_msg:{
+        edit:"",
+        item:{},
+        itemAllMsg:{}
+      },
       requireList:[{value:""}],
       validate:{
-          reqMsg:{
-              placeholder:"请输入申请留言",
-              color:'#F21B1B',
-              required:true,
-              name:"留言",
-              isLegal:false
-          }
+        reqMsg:{
+            placeholder:"请输入申请留言",
+            color:'#F21B1B',
+            required:true,
+            name:"留言",
+            isLegal:false
+        }
       },
       groupMsg:{}
     },
@@ -102,7 +107,8 @@ let _promise;
         wx.navigateBack()
     },
     onLoad(option){
-      let _item = JSON.parse (option.groupMsg);
+      let _item = JSON.parse( option.groupMsg );
+      let that = this;
       this.setData({
         groupMsg:_item,
         ['form.fromUser']:app.globalData.openId,
@@ -112,6 +118,24 @@ let _promise;
         ['form.headImgUrl']:app.globalData.userMsgReq.headImgUrl,
         ['form.position']:app.globalData.userMsgReq.position
       });
+      if( option.edit == "true" ){//编辑进来.....
+        this.setData({
+            ['come_msg.edit']:option.edit,
+            ['come_msg.item']:JSON.parse( option.item ).itemcontent,
+            ["come_msg.itemAllMsg"]:JSON.parse( option.item )
+        })
+        this.data.groupMsg.groupUsers.filter((val)=>{//重置确认人
+            if( val.openId == JSON.parse( option.item ).parentitem.toUser ){
+                val.act = true;
+                that.setData({
+                    ["form.confirmUser"]:val.openId,
+                    ["groupMsg.groupUsers"]:that.data.groupMsg.groupUsers
+                })
+            }else{
+                val.act = false;
+            }
+        })      
+      }
     },
     addRequirement(e){
 
@@ -122,15 +146,25 @@ let _promise;
         })
     },
     submit(e){
-        let that = this;
-        this.data.requireList.filter((item)=>{
-            that.data.form.demandText.push(item.value);
-        })
-        this.setData({
-            ["form.demandText"]:that.data.form.demandText
-        })
+        let that = this, _url;
+        if( this.data.come_msg.edit == "true" ){
+            this.setData({
+                ["form.demands"]:JSON.stringify(that.data.come_msg.item),
+                ["form.msgId"]:that.data.come_msg.itemAllMsg.parentitem.msgId
+            })
+            delete this.data.form.demandText;
+            _url = 'demand/edit';
+        }else{
+            _url = 'demand/add'
+            this.data.requireList.filter((item)=>{
+                that.data.form.demandText.push( item.value );
+            })
+            this.setData({
+                ["form.demandText"]:that.data.form.demandText
+            })
+        }
         system.http({
-            url:'demand/add',
+            url:_url,
             param:that.data.form,
             method:"post",
             header:{'content-type': 'application/x-www-form-urlencoded'},
@@ -147,14 +181,21 @@ let _promise;
                 }
             },
             fcb(res){
-
+                debugger;
             }
         })
     },
     sendTo(e){
-        let _list = this.data.requireList.filter((item)=>{
-            return item.value == ""
-        })
+        let that = this,_list;
+        if( this.data.come_msg.edit == "true" ){
+            _list = this.data.come_msg.item.filter((item)=>{
+                return item.demandText == ""
+            })
+        }else{
+            _list = this.data.requireList.filter((item)=>{
+                return item.value == ""
+            })
+        }
         if( _list.length == 0 ){
             this.setData({
                 ['model.show']:true
@@ -168,18 +209,31 @@ let _promise;
         }
     },
     addItem(){
-        let that = this;
-        let _list = this.data.requireList.filter((item)=>{
-            return item.value == ""
-        })
-        if( _list.length == 0 ){
-            this.data.requireList.push( {value:""} )
-            this.setData({
-                "requireList": that.data.requireList
+        let that = this,_list;
+        if( this.data.come_msg.edit == "true" ){
+            _list = this.data.come_msg.item.filter((item)=>{
+                return item.demandText == ""
             })
         }else{
+            _list = this.data.requireList.filter((item)=>{
+                return item.value == ""
+            })
+        }
+        if( _list.length == 0 ){
+            if( this.data.come_msg.edit == "true" ){
+                this.data.come_msg.item.push( { demandText:""} )
+                this.setData({
+                    ["come_msg.item"]: that.data.come_msg.item
+                })                
+            }else{
+                this.data.requireList.push( {value:""} )
+                this.setData({
+                    "requireList": that.data.requireList
+                })                
+            }
+        }else{
             system.stateMsg({
-                title:"条目不能为空",
+                title:"新增条目不能为空",
                 icon:"none",
                 time:2000
             })
@@ -206,20 +260,36 @@ let _promise;
     removeItem(e){
         let that = this;
         let _item = e.currentTarget.dataset;
-        if( this.data.requireList.length > 1 ){
-            this.data.requireList.splice(_item.index,1);
-            this.setData({
-                'requireList': that.data.requireList
-            })
+        if( this.data.come_msg.edit == "true" ){
+            if( this.data.come_msg.item.length > 1 ){
+                this.data.come_msg.item.splice(_item.index,1);
+                this.setData({
+                    ['come_msg.item']: that.data.come_msg.item
+                })
+            }
+        }else{
+            if( this.data.requireList.length > 1 ){
+                this.data.requireList.splice(_item.index,1);
+                this.setData({
+                    'requireList': that.data.requireList
+                })
+            }
         }
     },
     inputing(e){
         let that = this;
         let _item = e.currentTarget.dataset;
-        this.data.requireList[_item.index].value = e.detail.value;
-        this.setData({
-            'requireList': that.data.requireList
-        })
+        if( this.data.come_msg.edit == "true" ){
+            this.data.come_msg.item[_item.index].demandText = e.detail.value;
+            this.setData({
+                "come_msg": that.data.come_msg
+            })
+        }else{
+            this.data.requireList[_item.index].value = e.detail.value;
+            this.setData({
+                'requireList': that.data.requireList
+            })
+        }
     }
   }
 </script>

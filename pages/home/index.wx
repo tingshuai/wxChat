@@ -153,8 +153,10 @@ export default {
   onLoad(option){
     var that = this;
     console.log( "home 页面")
-    if(app.globalData.socketTask){
-      app.globalData.socketTask.close({success(res){},fail(res){}});
+    if( app.globalData.socketTask.openType == true ){
+      app.globalData.socketTask.close({success(res){
+          app.globalData.socketTask.openType = false;
+      },fail(res){}});
     }
     system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:8000});
     that.requestGroupList('/chat/groups/tree','over');//********************************** */

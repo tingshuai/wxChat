@@ -52,7 +52,9 @@ export default {
     userMsgReq: {},
     wxImg: '',
     defaultImg: '', //默认群头像...
-    socketTask: '',
+    socketTask: {
+      openType:false
+    },
     registerState: ''
   },
   onLaunch() {

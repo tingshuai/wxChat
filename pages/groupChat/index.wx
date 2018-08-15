@@ -42,13 +42,21 @@
                             <!--文本类型-->
                             <text selectable='true' class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 0 || item.msgType == 7}}" style="background-color: {{ sendInputMsg.fromUser == item.fromUser ? '#A0E75A' : 'white' }}">{{ item.content }} </text>
                             <!--需求类型-->
-                            <view class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 20}}" style="background-color: {{ sendInputMsg.fromUser == item.fromUser ? '#A0E75A' : 'white' }};width:100%;">
+                            <view class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 20 || item.msgType == 22 }}" style="background-color: {{ sendInputMsg.fromUser == item.fromUser ? '#A0E75A' : 'white' }};width:100%;">
                               <ui-row wx:for="{{ item.content }}" wx:key="indexTow" wx:for-item="itemChildren" wx:for-index="indexTow" style="border-bottom:1px solid rgba(0,0,0,0.1);">
                                   <ui-col width="20" style="text-align:center;">{{ indexTow + 1 }}.</ui-col>
                                   <ui-col>{{ itemChildren.demandText }}</ui-col>
-                                  <ui-col width="{{ sendInputMsg.fromUser == item.fromUser ? 50 : 100 }}">
-                                    <button style="font-size:10px;" wx:if="{{ sendInputMsg.fromUser != item.fromUser }}" data-itemcontent="{{ item.content }}" data-parentitem="{{ item }}" data-index="{{ index }}" data-childIndex="{{ indexTow }}" type="{{ itemChildren.demandState ? 'default' : 'primary' }}" data-item="{{ itemChildren }}" catchtap="retOrConfirm">{{ itemChildren.demandState ? '已确认' : '确认' }}</button>
-                                    <button style="font-size:10px;" wx:else type="primary" data-item="{{ itemChildren }}" data-itemcontent="{{ item.content }}" data-parentitem="{{ item }}" data-index="{{ index }}" data-childIndex="{{ indexTow }}" catchtap="retOrConfirm" data-type="0">修改</button>
+                                  <ui-col width="60" wx:if="{{ sendInputMsg.fromUser == item.toUser }}">
+                                    <button disabled="{{ itemChildren.demandState ? true : false }}" style="font-size:10px;" data-itemcontent="{{ item.content }}" data-parentitem="{{ item }}" data-index="{{ index }}" data-childIndex="{{ indexTow }}" type="{{ itemChildren.demandState ? 'default' : 'primary' }}" data-item="{{ itemChildren }}" catchtap="retOrConfirm">{{ itemChildren.demandState ? '已确认' : '确认' }}</button>
+                                  </ui-col>
+                                  <ui-col width="60" wx:elif="{{ sendInputMsg.fromUser != item.fromUser}}">                        
+                                    <text style="font-size:11px;text-align:center;color:{{ itemChildren.demandState ? 'rgba(0,200,0,0.8)' : 'rgba(200,0,0,0.8)' }};">{{ itemChildren.demandState ? "已确认" : "未确认" }}</text>
+                                  </ui-col>
+                              </ui-row>
+                              <ui-row>
+                                  <ui-col></ui-col>
+                                  <ui-col width="50">
+                                    <button style="font-size:10px;" wx:if="{{ sendInputMsg.fromUser == item.fromUser }}" type="primary" data-item="{{ itemChildren }}" data-itemcontent="{{ item.content }}" data-parentitem="{{ item }}" data-index="{{ index }}" data-childIndex="{{ indexTow }}" catchtap="retOrConfirm" data-type="0">修改</button>
                                   </ui-col>
                               </ui-row>
                             </view>
@@ -190,13 +198,13 @@
             </view>
           </view>
       </ui-popup>
-      <ui-mask show="{{ model.showMask }}" hide-on-tap="{{ false }}">
+      <!-- <ui-mask show="{{ model.showMask }}" hide-on-tap="{{ false }}">
         <view class="content">
           <textarea fixed="{{ true }}" show-confirm-bar="{{ false }}" style="background-color:white;margin-top:73px;min-height:200px;border:1px solid #ddd;padding:0 5px;box-sizing:border-box;position:relative;" value="{{ model.value }}" class="weui-textarea" bindinput="requireTextareaInputing"/>
           <button class="btn1 btn" type="success" data-show="{{ false }}" data-type="0" bindtap="handleShowMask">取消</button>
           <button class="btn2 btn" type="success" data-show="{{ false }}" data-type="1" bindtap="handleShowMask">确定</button>
         </view>
-      </ui-mask>
+      </ui-mask> -->
   </view>
 </template>
 
@@ -365,7 +373,7 @@ export default {
         }
       })
       //连接状态
-      app.globalData.socketTask.onOpen(function(res) { console.log( 'socket open');})
+      app.globalData.socketTask.onOpen(function(res) { app.globalData.socketTask.openType=true ;console.log( 'socket open');})
       //监听WebSocket错误。
       app.globalData.socketTask.onError(function(res){
         system.msgTip({title: '提示',content: "会话连接失败。请重新连接。",scb(){},ccb(){}})
@@ -373,7 +381,6 @@ export default {
       app.globalData.socketTask.onMessage(function(res) {
         var data = JSON.parse( res.data );
         console.log("接收消息" , data )
-        debugger;
         var chatDataMsgId;
         if( onFirst == 1 ){
           that.data.chatData.forEach((val,ii,arr)=>{
@@ -426,13 +433,19 @@ export default {
             chatData:that.data.chatData
           })
         }else if( data.cmd == 0 ){//用户发送消息的时候发送 消息回执......
-          data.msgType
-          debugger;
           if( data.msgType == 7){//@消息改写格式
             data.content = data.content.split('(@\`-\`@)').join(" ");
           }else if( data.msgType == 20 ){//需求消息改写格式
             data.content = JSON.parse( data.content )
-            debugger;
+          }else if( data.msgType == 22 || data.msgType == 21 ){//编辑信息....
+            that.data.chatData.filter((val)=>{
+              if ( val.msgId == data.msgId ) {
+                val.content = JSON.parse(data.content);
+              }
+            })
+            that.setData({
+              "chatData":that.data.chatData
+            })
           }
           var isMe = data.fromUser == that.data.sendInputMsg.fromUser ? true : false;
           if(isMe){
@@ -455,11 +468,8 @@ export default {
                 ['transmit.aiteContent']:'',
                 ['theGroupMsg.groupUsers']:that.data.theGroupMsg.groupUsers
               })
-            }else if(data.msgType == 1 || data.msgType == 2){//图片和语音...
+            }else if(data.msgType == 1 || data.msgType == 2 || data.msgType == 20){//图片和语音...
               // that.data.chatData.pop();
-              set();
-            }else{
-              // that.data.chatData[that.data.chatData.length - 1].msgId = data.msgId;
               set();
             }
             that.setData({
@@ -501,24 +511,38 @@ export default {
       wx.navigateTo({
         url:`/pages/CreateRequirement/index?groupMsg=${JSON.stringify(that.data.theGroupMsg)}&item=${JSON.stringify(_item)}&edit=${true}`
       })
-    }else if( _item.item.demandState == true ){ //已确认
-      
-    }else{//未确认....
+    }else if( _item.item.demandState != true ){ //未确认
+      let _params = {
+        "demandId":_item.item.demandId,
+        "fromUser":app.globalData.openId,
+        "fromUserName":app.globalData.userMsgReq.username,
+        "groupId":_item.parentitem.groupId,
+        "groupName":that.data.theGroupMsg.groupName,
+        "headImgUrl":_item.parentitem.headImgUrl,
+        "msgId":_item.parentitem.msgId,
+        "position":_item.parentitem.position
+      }
+      system.http({
+        url:'demand/confirm',
+        param:_params,
+        method:"post",
+        header:{'content-type': 'application/x-www-form-urlencoded'},
+        scb(res){
+          if( res.data.status == 200 ){
+            system.stateMsg({title:"确认成功",icon:"success"})
+          }
+        },
+        fcb(res){
+            system.stateMsg({title:"操作失败",icon:"none"})
+        }
+      })
+    }else{//已确认....
 
     }
   },
   handleShowMask (e) {
     let _item = e.currentTarget.dataset;
     let that = this;
-    if( _item.type == 1 ){//点击确定
-        wx_promiseSubmitRequire.then((obj)=>{
-          debugger;
-          
-          // that.setData({
-          //   [`chatData[${obj.index}].content[${obj.childindex}].demandText`]:that.data.model.value
-          // })
-        })
-    }
     this.setData({
       ['model.showMask']: false
     })

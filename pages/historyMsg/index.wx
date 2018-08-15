@@ -79,6 +79,25 @@
                             </ui-row>
                             <!--文本类型-->
                             <text selectable='true' class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 0 || item.msgType == 7}}" style="background-color: {{ sendInputMsg.fromUser == item.fromUser ? '#A0E75A' : 'white' }}">{{ item.content }} </text>
+                            <!--需求类型-->
+                            <view class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 20 || item.msgType == 22 }}" style="background-color: {{ sendInputMsg.fromUser == item.fromUser ? '#A0E75A' : 'white' }};width:100%;">
+                              <ui-row wx:for="{{ item.content }}" wx:key="indexTow" wx:for-item="itemChildren" wx:for-index="indexTow" style="border-bottom:1px solid rgba(0,0,0,0.1);">
+                                  <ui-col width="20" style="text-align:center;">{{ indexTow + 1 }}.</ui-col>
+                                  <ui-col>{{ itemChildren.demandText }}</ui-col>
+                                  <ui-col width="60" wx:if="{{ sendInputMsg.fromUser == item.toUser }}">
+                                    <button disabled="{{ itemChildren.demandState ? true : false }}" style="font-size:10px;" data-itemcontent="{{ item.content }}" data-parentitem="{{ item }}" data-index="{{ index }}" data-childIndex="{{ indexTow }}" type="{{ itemChildren.demandState ? 'default' : 'primary' }}" data-item="{{ itemChildren }}" catchtap="retOrConfirm">{{ itemChildren.demandState ? '已确认' : '确认' }}</button>
+                                  </ui-col>
+                                  <ui-col width="60" wx:elif="{{ sendInputMsg.fromUser != item.fromUser}}">                        
+                                    <text style="font-size:11px;text-align:center;color:{{ itemChildren.demandState ? 'rgba(0,200,0,0.8)' : 'rgba(200,0,0,0.8)' }};">{{ itemChildren.demandState ? "已确认" : "未确认" }}</text>
+                                  </ui-col>
+                              </ui-row>
+                              <ui-row>
+                                  <ui-col></ui-col>
+                                  <ui-col width="50">
+                                    <button style="font-size:10px;" wx:if="{{ sendInputMsg.fromUser == item.fromUser }}" type="primary" data-item="{{ itemChildren }}" data-itemcontent="{{ item.content }}" data-parentitem="{{ item }}" data-index="{{ index }}" data-childIndex="{{ indexTow }}" catchtap="retOrConfirm" data-type="0">修改</button>
+                                  </ui-col>
+                              </ui-row>
+                            </view>
                             <!--图片类型-->
                             <view class="talkContent" wx:if="{{ item.msgType == 1 }}" style="height:100px;background-color:rgba(0,0,0,0);width:40%;">
                               <image lazy-load="true" mode="aspectFit" data-item="{{item}}" bindtap="previewImage" catch:longpress="openActionsheet" style="height:100%;width:auto" src="{{ item.attachUrl }}"></image>
@@ -120,7 +139,7 @@
                         </view>
                         <!-- 消息转发选项框...... -->
                     </ui-col>
-                    <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 }}"><checkbox checked="{{ item.checked }}" class="checkbox" value="{{ item.msgId }}"/></view>
+                    <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && item.msgType != 20 && item.msgType != 21 && item.msgType != 22 }}"><checkbox checked="{{ item.checked }}" class="checkbox" value="{{ item.msgId }}"/></view>
                 </ui-row>
               </checkbox-group>
               <view wx:if="{{ chatData.length == 0 }}" class="historyLine">无匹配内容</view>
@@ -233,7 +252,7 @@ export default {
         modelHeight:wx.DEFAULT_CONTENT_HEIGHT - 148 + 'px',
         statusBarHeight: wx.STATUS_BAR_HEIGHT,
         headerHeight: wx.DEFAULT_HEADER_HEIGHT,
-        scrollHeight: wx.WIN_HEIGHT - 254,
+        scrollHeight: wx.WIN_HEIGHT - 296,
         defaultMonthrange: [],
         chatData:[],
         theGroupMsg:{},
@@ -269,6 +288,12 @@ export default {
                     tagSelectedStyle: selectStyle,
                     checked: false,
                     msgType:"6"
+                },{
+                    text: '需求',
+                    tagStyle: tagStyle00,
+                    tagSelectedStyle: selectStyle,
+                    checked: false,
+                    msgType:"20"
                 }]
         },
         searchData:{
@@ -381,7 +406,9 @@ export default {
             if( res.data.status == 200 ){
             res.data.data.rows.forEach((val,i,arr)=>{//未读@信息......
                 if(val.msgType == 7 && /(@\`-\`@)/.test(val.content) ){
-                val.content = val.content.split('(@\`-\`@)').join(' ');
+                    val.content = val.content.split('(@\`-\`@)').join(' ');
+                }else if( val.msgType == 20 || val.msgType == 21 || val.msgType == 22 ){
+                    val.content = JSON.parse( val.content );
                 }
             })
             that.data.chatData.splice(that.data.chatData.length,0,...res.data.data.rows);

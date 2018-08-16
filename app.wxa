@@ -20,7 +20,8 @@ export default {
       'pages/newGroup/index',
       'pages/fileList/index',
       'pages/historyMsg/index',
-      'pages/CreateRequirement/index'
+      'pages/CreateRequirement/index',
+      'pages/evaluate/index'
     ],
     plugins: {
       WechatSI: {
@@ -53,7 +54,7 @@ export default {
     wxImg: '',
     defaultImg: '', //默认群头像...
     socketTask: {
-      openType:false
+      openType: false
     },
     registerState: ''
   },

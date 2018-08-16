@@ -1,0 +1,159 @@
+<template>
+  <view style="padding-top:66px;">
+      <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#fff'} }}">
+          <ui-row height="40">
+              <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
+                  <icon class="iconfont myWx-iconfontqianjin2" style="font-size:25px;"></icon>
+              </ui-col>
+              <ui-col vertical-align="middle" align="center" class="title">
+                  {{ title }}
+              </ui-col>
+              <ui-col vertical-align="middle" align="center" width="80"></ui-col>
+          </ui-row>
+      </ui-nav-bar>    
+      <ui-row style="margin:30px 0 10px 0">
+        <ui-col align="{{ item.align }}" wx:for="{{ face.list }}" wx:key="{{ index }}">
+          <icon class="iconfont {{ item.icon }}" data-facecolor="{{ index }}" style="font-size:60px;color:{{ item.faceColor ? 'rgba(200,200,0,1)' : 'black'}};" catchtap="tapFace"></icon>
+          <text style="padding:0px 9px;">{{ item.name }}</text>
+        </ui-col>
+      </ui-row>
+      <ui-row>
+           <text wx:for="{{ face.evaluateList }}" wx:key="{{ index }}" style="background-color:{{ item.bgColor ? '#267AFC' : 'white' }};background-color:white;padding:0px 9px;border-radius:7px;margin:0 10px;" data-item="{{ item }}" bindtap="selEvaluate">{{ item.labelName }}</text>
+      </ui-row>
+      <ui-tags data="{{ search.list00 }}" id="tags0" bindchange="singleTap"></ui-tags>
+      <textarea fixed="{{ true }}" show-confirm-bar="{{ false }}" style="background-color:white;margin-top:20px;min-height:200px;border:1px solid #ddd;padding:0 5px;box-sizing:border-box;position:relative;" value="{{ face.value }}" class="weui-textarea" bindinput="requireTextareaInputing"/>
+      <button class="btn1 btn" data-show="{{ false }}" data-type="0" bindtap="handleShowMask">取消</button>
+      <button class="btn2 btn" data-show="{{ false }}" data-type="1" bindtap="submit">确定</button>
+  </view>
+</template>
+
+<script>
+const tagStyle00 = `background: #efefef;
+background:#ddd;
+color:#555;
+padding:0 10px;
+border-radius: 10px;
+text-align: center;
+height: 25px;
+display: flex;
+justify-content: center;
+align-items: center;
+line-height: 20px;
+margin:10px;
+`
+
+const selectStyle = `background: #54d09f;
+color: #fff;
+padding: 0 10px;
+border-radius: 10px;
+text-align: center;
+height: 25px;
+display: flex;
+justify-content: center;
+align-items: center;
+line-height: 20px;
+margin:10px;
+`
+import system from '../../static/utils/system'
+var app = getApp();
+export default {
+  config: {
+    navigationBarTitleText: ''
+  },
+  data: {
+    face:{
+      faceColor:3,
+      list:[
+        {
+          "name": "非常差",
+          "id": -1,
+          "icon":"myWx-pingjiacha",
+          "align":"right",
+          "faceColor":false
+        },
+        {
+          "name": "一般",
+          "id": 0,
+          "icon":"myWx-pingjia-zhongpingx",
+          "align":"center",
+          "faceColor":false
+        },
+        {
+          "name": "超赞",
+          "id": 1,
+          "align":"left",
+          "faceColor":false,
+          "icon":"myWx-pingjiahao"
+        }
+      ],
+      evaluateList:[],//标签列表....
+      selLebal:{},//选中的标签...
+    }
+  },
+  onLoad(option){
+
+  },
+  tapFace(e){
+    let _item = e.currentTarget.dataset;
+    let that = this;
+    this.data.face.list.forEach((val,i,arr)=>{
+      if( _item.facecolor == i ){
+        val.faceColor = true;
+        that.httpEvaluateItem( val );
+      }else{
+        val.faceColor = false;
+      }
+    })
+    this.setData({
+      [`face.list`]:that.data.face.list
+    })
+  },
+  selEvaluate(e){
+    let _item = e.currentTarget.dataset;
+    this.setData({
+      ["face.selLebal"]:_item.item
+    })
+  },
+  httpEvaluateItem(_val){
+    let that = this;
+    system.http({
+      url:`evaluateLabel`,
+      method:"get",
+      param:{
+        "labelName":_val.name,
+        "labelType":_val.id
+      },
+      scb(res){
+        if( res.data.status == 200 ){
+          res.data.data.rows.forEach((val,i,arr)=>{
+            val.faceColor = false
+          })
+          that.setData({
+            ['face.evaluateList']:res.data.data.rows
+          })
+        }
+      },
+      fcb(res){}
+    })
+  },
+  submit(e){
+    system.http({
+      url:'evaluateLabel',
+      method:"get",
+      param:{
+
+      },
+      scb(res){
+        debugger;
+      },
+      fcb(res){}
+    })
+  },
+  handleShowMask(e){
+    wx.navigateBack()
+  }
+}
+</script>
+
+<style lang="less">
+</style>

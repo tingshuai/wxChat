@@ -40,9 +40,9 @@
                                 </ui-col>
                             </ui-row>
                             <!--文本类型-->
-                            <text selectable='true' class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 0 || item.msgType == 7}}" style="background-color: {{ sendInputMsg.fromUser == item.fromUser ? '#A0E75A' : 'white' }}">{{ item.content }} </text>
+                            <text selectable='true' class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 0 || item.msgType == 7}}" style="background-color: white;">{{ item.content }} </text>
                             <!--需求类型-->
-                            <view class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 20 || item.msgType == 22 }}" style="background-color: {{ sendInputMsg.fromUser == item.fromUser ? '#A0E75A' : 'white' }};width:100%;">
+                            <view class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 20 || item.msgType == 22 }}" style="background-color: white;width:100%;">
                               <ui-row wx:for="{{ item.content }}" wx:key="indexTow" wx:for-item="itemChildren" wx:for-index="indexTow" style="border-bottom:1px solid rgba(0,0,0,0.1);">
                                   <ui-col width="20" style="text-align:center;">{{ indexTow + 1 }}.</ui-col>
                                   <ui-col>{{ itemChildren.demandText }}</ui-col>
@@ -89,6 +89,24 @@
                               <view style="border-top:1xp solid blue;"></view>
                               <view class="myProgress" wx:if="{{ item.progress }}" style="height:1px;width:{{ item.progress }}px;background-color: {{ item.progress == 100 ? '#49CC8D' : 'rgba(255,100,100,0.8)' }}"></view>
                             </view>
+                            <!-- 评价 -->
+                            <view class="talkContent" wx:if="{{ item.msgType == 30 }}" style="width:80%;">
+                              <ui-row space-bottom="" style="height:30px;line-height:26px;">
+                                  <ui-col align="left" vertical-align="top">
+                                      <text style="font-size:13px;color:#333333;">服务评价</text>
+                                  </ui-col>
+                              </ui-row>
+                              <ui-row style="border-top:1px solid #ddd;border-bottom:1px solid #ddd;padding:10px 0 20px 0;">
+                                  <ui-col align="left" vertical-align="top">
+                                      <text style="font-size:13px;color:#333333;text-align:right;display:block;width:100%;font-size:13px;">{{ item.fromUserName }}邀请你对本次服务进行评价。</text>
+                                  </ui-col>
+                              </ui-row>   
+                              <ui-row>
+                                  <ui-col align="right" vertical-align="top">
+                                      <button style="color:white;font-size:15px;" class="myBtnSuccess" data-item="{{item}}" type="primary" size="mini" catchtap="evaluateMe">点击评价</button>
+                                  </ui-col>
+                              </ui-row>                           
+                            </view>
                         </view>
                         <view class="readMe" wx:if="{{ sendInputMsg.fromUser == item.fromUser }}" style="right:{{ sendInputMsg.fromUser == item.fromUser ? '5px' : '' }}">{{ item.readCount >= 0 ? theGroupMsg.groupUsers.length - item.readCount : item.msgType != 1 && item.msgType != 2 ? '发送失败' : item.progress + '%' }} {{ item.readCount >= 0 ? "人未读" : ''}}</view>
                     </ui-col>
@@ -129,14 +147,17 @@
             <ui-col style="display:inline-block;" class="sentType_col" width="58" align="center" vertical-align="middle"><text class="iconfont myWx-zhaopian1" bindtap="chooseFile" data-type="1" data-watermark = "false"></text></ui-col>
             <ui-col style="display:inline-block;" class="sentType_col" width="58" align="center" vertical-align="middle"><text class="iconfont myWx-tupianshuiyinshezhi" bindtap="chooseFile" data-type="1" data-watermark = "true" style="font-size:"></text></ui-col>
             <ui-col class="sentType_col" width="58" align="center" vertical-align="middle"><text class="iconfont myWx-wenjian1" bindtap="chooseFile" data-type="6"></text></ui-col>
-            <ui-col class="sentType_col" width="58" align="center" vertical-align="middle"><text class="iconfont myWx-xiazai" bindtap="aite" data-type="6"></text></ui-col>
-            <ui-col class="sentType_col" width="58" align="center" vertical-align="middle"><text class="iconfont myWx-bianji" bindtap="creatRequirement" data-type="6"></text></ui-col>
+            <ui-col class="sentType_col" width="58" align="center" vertical-align="middle"><text class="iconfont myWx-xiazai" bindtap="aite" data-type="9"></text></ui-col>
+            <ui-col class="sentType_col" width="58" align="center" vertical-align="middle"><text class="iconfont myWx-bianji" bindtap="creatRequirement" data-type="7"></text></ui-col>
+            <ui-col class="sentType_col" width="58" align="center" vertical-align="middle"><text class="iconfont myWx-banjie2" bindtap="aite" data-type="8"></text></ui-col>
           </ui-row>
           <ui-row height="100" class="sentType" hidden="{{ transmit.isAite }}" style="overflow:auto;justify-content:left;flex-flow:nowrap;">
+             <!-- hidden="{{ item.openId == theGroupMsg.managerId }}" -->
             <ui-col class="sentType_col" width="58" align="center" vertical-align="middle" data-isaite="true" data-index="{{ index }}" data-item="{{ item }}" wx:key="index" catchtap="selUser" wx:for="{{ theGroupMsg.groupUsers }}">
               <image mode="aspectFit" style="height:72px;" src="{{ item.headImgUrl == null ? defaultImg : item.headImgUrl }}"></image>
               <text style="text-align:center;" class="txt9">{{ item.username }}</text>
               <icon class="angleIcon angleIcon2" type="success" wx:if="{{ item.act }}" size="23"></icon>
+              <icon class="iconfont myWx-fenxiang-copy" catchtap="comeOver" style="position:absolute;background-color:white;top:10px;font-size:37px;width:42px;border:none;border-radius:0px;" wx:if="{{ item.act }}" size="23"></icon>
             </ui-col>
             <ui-col width="10rpx" style="opacity:0;">s</ui-col>
           </ui-row>
@@ -198,13 +219,6 @@
             </view>
           </view>
       </ui-popup>
-      <!-- <ui-mask show="{{ model.showMask }}" hide-on-tap="{{ false }}">
-        <view class="content">
-          <textarea fixed="{{ true }}" show-confirm-bar="{{ false }}" style="background-color:white;margin-top:73px;min-height:200px;border:1px solid #ddd;padding:0 5px;box-sizing:border-box;position:relative;" value="{{ model.value }}" class="weui-textarea" bindinput="requireTextareaInputing"/>
-          <button class="btn1 btn" type="success" data-show="{{ false }}" data-type="0" bindtap="handleShowMask">取消</button>
-          <button class="btn2 btn" type="success" data-show="{{ false }}" data-type="1" bindtap="handleShowMask">确定</button>
-        </view>
-      </ui-mask> -->
   </view>
 </template>
 
@@ -240,8 +254,9 @@ export default {
     unReadList:[],
     model:{
       show:false,
-      showMask:false,//修改需求的textare的弹出框
-      value:""
+      showMask:true,//修改需求的textare的弹出框
+      value:"",
+      faceColor:3
     },
     inputVal:"",//消息输入框的值......
     modelHeight:wx.DEFAULT_CONTENT_HEIGHT - 128 + 'px',
@@ -296,7 +311,8 @@ export default {
     selUser:{
       selMe:'',
       users:[],
-      act:''
+      act:'',
+      actType:""
     }
   },
   onLoad(options){
@@ -468,7 +484,7 @@ export default {
                 ['transmit.aiteContent']:'',
                 ['theGroupMsg.groupUsers']:that.data.theGroupMsg.groupUsers
               })
-            }else if(data.msgType == 1 || data.msgType == 2 || data.msgType == 20){//图片和语音...
+            }else if(data.msgType == 1 || data.msgType == 2 || data.msgType == 20 || data.msgType == 30){//图片和语音...
               // that.data.chatData.pop();
               set();
             }
@@ -478,7 +494,7 @@ export default {
               'isInputing': false
             })
           }else{
-            set();
+            // set();
             // app.globalData.socketTask.send({"data": dataMsg ,success(res){},fail(res){}});
           }
         }else if( data.cmd == 2 ){//系统推送消息.
@@ -503,6 +519,11 @@ export default {
   },
   onUnload(e){
     
+  },
+  evaluateMe(e){//评价消息
+    wx.navigateTo({
+      url:"/pages/evaluate/index"
+    })
   },
   retOrConfirm(e){
     let _item  = e.currentTarget.dataset;
@@ -1023,15 +1044,17 @@ export default {
   sendMsg( obj ){
     var that = this;
     let isTrue = false;
-    this.data.theGroupMsg.groupUsers.filter((item)=>{
-      if(item.act){
-        isTrue = true;
-        that.data.transmit.aiteContent += `@${item.username}(@\`-\`@)`;
-        that.setData({
-          ['sendInputMsg.toUser']:`${that.data.sendInputMsg.toUser},${item.openId}`
-        })
-      }
-    })
+    if( this.data.selUser.actType == 9 ){//9为发送@消息
+      this.data.theGroupMsg.groupUsers.filter((item)=>{
+        if(item.act){
+          isTrue = true;
+          that.data.transmit.aiteContent += `@${item.username}(@\`-\`@)`;
+          that.setData({
+            ['sendInputMsg.toUser']:`${that.data.sendInputMsg.toUser},${item.openId}`
+          })
+        }
+      })
+    }
     if( isTrue ){
       this.setData({ ['sendInputMsg.msgType']: 7 ,['sendInputMsg.content']: that.data.transmit.aiteContent + that.data.inputVal});
     }else{
@@ -1043,7 +1066,8 @@ export default {
     let that = this;
     this.setData({
       ['isHidden']:!that.data.isHidden,
-      ['transmit.isAite']:!that.data.transmit.isAite
+      ['transmit.isAite']:!that.data.transmit.isAite,
+      ["selUser.actType"]:e.currentTarget.dataset.type
     })
   },
   navigateBack () {
@@ -1063,14 +1087,53 @@ export default {
       })
     }
   },
-  selUser(e){//选择群成员.....
-    let _item = e.currentTarget.dataset;
-    let that = this;
-    this.data.theGroupMsg.groupUsers.filter((val)=>{
-      if( val.openId == _item.item.openId){
-        val.act = !val.act;
+  comeOver(e){//这个是要发送办结消息.....
+    let _me = this.data.sendInputMsg;
+    let _groupMsg = this.data.theGroupMsg;
+    let _selMe = this.data.theGroupMsg.groupUsers.filter((val)=>{
+      return val.act == true
+    })
+    let _params = {fromUser:_me.fromUser,fromUserName:_me.fromUserName,groupId:_groupMsg.groupId,groupName:_groupMsg.groupName,headImgUrl:_me.headImgUrl,position:_me.position,toUser: _selMe[0].openId
+    }
+    system.http({
+      url:"review/finish",
+      param:_params,
+      method:"post",
+      header:{'content-type': 'application/x-www-form-urlencoded'},
+      scb(res){
+        system.stateMsg({
+          title:"发送评价成功",
+          icon:"success",
+          time:1500
+        })
+      },
+      fcb(res){
+        system.stateMsg({
+          title:"发送评价失败",
+          icon:"success",
+          time:1500
+        })
       }
     })
+  },
+  selUser(e){//选择群成员.....
+    let that = this;
+    let _item = e.currentTarget.dataset;
+    if( this.data.selUser.actType == 8){//办结....
+      this.data.theGroupMsg.groupUsers.filter((val)=>{
+        if( val.openId == _item.item.openId ){
+          val.act = true;
+        }else{
+          val.act = false;
+        }
+      })
+    }else if( this.data.selUser.actType == 9 ){//@
+      this.data.theGroupMsg.groupUsers.filter((val)=>{
+        if( val.openId == _item.item.openId ){
+          val.act = !val.act;
+        }
+      })
+    }
     this.setData({
       ['theGroupMsg.groupUsers']:that.data.theGroupMsg.groupUsers
     })
@@ -1310,7 +1373,7 @@ export default {
       font-family:PingFang-SC-Medium;
       color:rgba(51,51,51,1);
       background-color: white;
-      padding: 5px;
+      padding: 5px 10px;
       border-radius: 5px;
       display: inline-block;
       max-width:90%;

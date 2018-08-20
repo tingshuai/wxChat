@@ -1,6 +1,6 @@
 <template>
   <view class="container">
-    <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#fff'} }}">
+    <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#267AFC',color:'#fff'} }}">
         <ui-row height="40">
             <ui-col vertical-align="middle" align="center" width="60">
                 <!-- <icon class="iconfont myWx-iconfontqianjin2" style="font-size:20px;"></icon> -->
@@ -41,9 +41,9 @@
     <!-- //右滑菜单.........  -->
     <view class="listContainer" hidden="{{ overList.length != 0 }}">
         <view class="sample_title" style="background-color:white;border-bottom:1px solid #E5E5E5;">
-           <text>已加入</text>
+           <text>{{ tabBar.actItem == 2 ? '历史群组' : '已加入' }}</text>
            <!-- !userMsgReq.canBuildGroup -->
-           <icon wx:if="{{ userMsgReq.canBuildGroup }}" catchtap="addGroup" class="iconfont myWx-jia1" style="float:right;right:25rpx;position:relative;font-size:55rpx;"></icon>
+           <!-- <icon wx:if="{{ userMsgReq.canBuildGroup }}" catchtap="addGroup" class="iconfont myWx-jia1" style="float:right;right:25rpx;position:relative;font-size:55rpx;"></icon> -->
         </view>
         <ui-accordion bindchange="slide" wx:for="{{ list1 }}" wx:key="{{ index }}" header-height="50" wx:if="{{ list1.length != 0 }}">
             <view slot="header" class="accorHeader">
@@ -97,8 +97,8 @@
     </view>
 
     <view class="top_tip result_list {{ overList.length != 0 ? 'listContainer' : '' }}">
-      <view class="sample_title" wx:if="{{ overList.length != 0 }}" style="border-bottom:1px solid #E5E5E5;color:#cc0000">未加入</view>
-      <ui-row height="80" border-bottom border-top wx:for="{{ overList }}" wx:key="index" data-item="{{ item }}" bindtap="toDetailPage" class="listRow">
+      <view class="sample_title" wx:if="{{ overList.length != 0 }}" style="border-bottom:1px solid #E5E5E5;color:#cc0000"> {{ tabBar.actItem == 2 ? '历史记录' : '未加入' }}</view>
+      <ui-row height="80" border-bottom border-top wx:for="{{ overList }}" wx:key="index" data-item="{{ item }}" bindtap="{{ tabBar.actItem == 2 ? 'toChat' : 'toDetailPage'}}" class="listRow">
           <ui-col space-right="0" vertical-align="middle">
               <ui-row>
                   <ui-col width="80" space="20" align="center" vertical-align="middle">
@@ -121,11 +121,33 @@
                   </ui-col>
               </ui-row>
           </ui-col>
-          <ui-col class="text" align="right" vertical-align="middle" width="80" space-right="10">
+          <ui-col class="text" align="right" vertical-align="middle" width="80" space-right="10" wx:if="{{ tabBar.actItem != 2 }}">
               <button type="primary" size="20" plain="true" class="btn" catchtap="jionGroup" data-item="{{ item }}" hover-class="touchui-hover"> 加入 </button>
           </ui-col>
       </ui-row>
     </view>
+    <ui-fixed-view bottom="0" left="0" right="0">
+      <ui-row border-top border-bottom height="50" style="background-color: #F7F7FA;">
+        <ui-col vertical-align="middle" align="center">
+            <view style="height:100%;padding-top:19rpx;" data-index="0" catchtap="toggleTab" class="{{ tabBar.actItem == 0 ? 'actItem' : '' }}">
+                <image class="icon" mode="aspectFit" src="{{ tabBar.actItem == 0 ? '../../static/img/group@2x.png' : '../../static/img/groupNo@2x.png'}}" style="width:28px;height:20px;"></image>
+                <text style="font-size:18rpx;" class="txt">群组</text>
+            </view>
+        </ui-col>
+        <ui-col vertical-align="middle" align="center" wx:if="{{ userMsgReq.canBuildGroup }}">
+            <view style="height:100%;padding-top:19rpx;" data-index="1" catchtap="toggleTab" class="{{ tabBar.actItem == 1 ? 'actItem' : '' }}">
+                <image class="icon" mode="aspectFit" src="../../static/img/Group17@2x.png" style="width:36px;height:36px;"></image>
+                <!-- <text style="font-size:18rpx;" class="txt">群组</text> -->
+            </view>
+        </ui-col>
+        <ui-col vertical-align="middle" align="center">
+            <view style="height:100%;padding-top:19rpx;" data-index="2" catchtap="toggleTab" class="{{ tabBar.actItem == 2 ? 'actItem' : '' }}">
+                <image class="icon" mode="aspectFit" src="{{ tabBar.actItem == 2 ? '../../static/img/historyYes@2x.png' : '../../static/img/history@2x.png' }}" style="width:28px;height:20px;"></image>
+                <text style="font-size:18rpx;" class="txt">历史</text>
+            </view>
+        </ui-col>
+    </ui-row>
+    </ui-fixed-view>
   </view>
 </template>
 
@@ -149,6 +171,9 @@ export default {
     showInput:true,
     defaultHeadImg:'',
     userMsgReq:{},
+    "tabBar": {
+        actItem:0
+    }
   },
   onLoad(option){
     var that = this;
@@ -160,6 +185,11 @@ export default {
     }
     system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:8000});
     that.requestGroupList('/chat/groups/tree','over');//********************************** */
+    // 登录成功删去
+    that.setData({
+        "userMsgReq":app.globalData.userMsgReq
+    })
+    // 登录成功删去
     // wx.getStorage({
     //     key: 'openId',
     //     success: function(res) {
@@ -184,6 +214,26 @@ export default {
         }
     })
     this.getDefaultImg();
+  },
+  toggleTab(e){
+    let _item = e.currentTarget.dataset;
+    let that = this;
+    if( _item.index == 0 ){//获取群组列表....
+        this.setData({
+            ['tabBar.actItem']:_item.index
+        })
+        system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:8000});
+        that.requestGroupList('/chat/groups/tree','over');
+    }else if( _item.index == 1 ){//添加群组
+      wx.navigateTo({
+          url:'/pages/newGroup/index?edit=false&addMenu=false',success(res){},fail(res){}
+      })
+    }else if( _item.index == 2 ){//历史群组
+        this.setData({
+            ['tabBar.actItem']:_item.index
+        })
+        this.requestGroupList( '/history/groups','history')
+    }
   },
   addGroup(e){
       wx.navigateTo({
@@ -226,11 +276,17 @@ export default {
         success: function(res) {
             if(type == 'over'){
                 that.setData({
-                    list1:res.data.data.rows
+                    list1:res.data.data.rows,
+                    overList:[]
                 });
             }else if( type == 'no' ){
                 that.setData({
                     overList:res.data.data.rows
+                });
+            }else if( type == 'history' ){
+                that.setData({
+                    list1:res.data.data.rows,
+                    overList:[]
                 });
             }
             wx.stopPullDownRefresh();
@@ -277,13 +333,11 @@ export default {
       this.setData({
           inputVal: e.detail.value
       });
-      if( e.detail.value == ''){
-          this.setData({
-              overList:[]
-          })
-      }else{
-        this.requestGroupList('/chat/groups/req',"no");
-      }
+          if( this.data.tabBar.actItem == 2 ){//历史。。。。
+            this.requestGroupList( '/history/groups','history')
+          }else if( this.data.tabBar.actItem == 0 ){
+            this.requestGroupList('/chat/groups/req',"no");
+          }
     //   this.requestGroupList('/chat/groups/tree',"over");
   },
   clearInput: function () {
@@ -487,7 +541,7 @@ export default {
     position:absolute;
     width:100%;
     top:113px;
-    bottom:0;
+    bottom:50px;
 }
 .container{
     height: 100%;
@@ -495,5 +549,10 @@ export default {
 }
 page{
     overflow: hidden;
+}
+.actItem{
+    .txt{
+        color: #267AFC;
+    }
 }
 </style>

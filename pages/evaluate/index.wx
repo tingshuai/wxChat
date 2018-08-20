@@ -1,6 +1,6 @@
 <template>
   <view style="padding-top:66px;">
-      <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#fff'} }}">
+      <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#267AFC',color:'#fff'} }}">
           <ui-row height="40">
               <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
                   <icon class="iconfont myWx-iconfontqianjin2" style="font-size:25px;"></icon>
@@ -10,19 +10,27 @@
               </ui-col>
               <ui-col vertical-align="middle" align="center" width="80"></ui-col>
           </ui-row>
-      </ui-nav-bar>    
+      </ui-nav-bar>
       <ui-row style="margin:30px 0 10px 0">
         <ui-col align="{{ item.align }}" wx:for="{{ face.list }}" wx:key="{{ index }}">
           <icon class="iconfont {{ item.icon }}" data-facecolor="{{ index }}" style="font-size:60px;color:{{ item.faceColor ? 'rgba(200,200,0,1)' : 'black'}};" catchtap="tapFace"></icon>
           <text style="padding:0px 9px;">{{ item.name }}</text>
         </ui-col>
       </ui-row>
-      <ui-row>
-           <text wx:for="{{ face.evaluateList }}" wx:key="{{ index }}" style="background-color:{{ item.bgColor ? '#267AFC' : 'white' }};background-color:white;padding:0px 9px;border-radius:7px;margin:0 10px;" data-item="{{ item }}" bindtap="selEvaluate">{{ item.labelName }}</text>
-      </ui-row>
+      <scroll-view scroll-x style="white-space:nowrap;height:22px;">
+          <text class="{{ item.bgColor ? 'myGreen' : ''}}" wx:for="{{ face.evaluateList }}" data-index="{{ index }}" wx:key="{{ index }}" style="display:inline-block;width:auto;white-space:nowrap; }};padding:0px 9px;border-radius:7px;margin:0 5px;" data-item="{{ item }}" bindtap="selEvaluate">{{ item.labelName }}</text>
+      </scroll-view>
       <ui-tags data="{{ search.list00 }}" id="tags0" bindchange="singleTap"></ui-tags>
-      <textarea fixed="{{ true }}" show-confirm-bar="{{ false }}" style="background-color:white;margin-top:20px;min-height:200px;border:1px solid #ddd;padding:0 5px;box-sizing:border-box;position:relative;" value="{{ face.value }}" class="weui-textarea" bindinput="requireTextareaInputing"/>
-      <button class="btn1 btn" data-show="{{ false }}" data-type="0" bindtap="handleShowMask">取消</button>
+
+      <view class="weui-cells__title">评论内容</view>
+      <view class="weui-cells weui-cells_after-title">
+          <view class="weui-cell">
+              <view class="weui-cell__bd">
+                  <textarea fixed="{{ true }}" show-confirm-bar="{{ false }}" style="background-color:white;min-height:200px;font-size:13px;box-sizing:border-box;position:relative;" value="{{ face.value }}" class="weui-textarea" bindinput="requireTextareaInputing"/>
+              </view>
+          </view>
+      </view>
+      <button class="btn1 btn" data-show="{{ false }}" data-type="0" bindtap="navigateBack">取消</button>
       <button class="btn2 btn" data-show="{{ false }}" data-type="1" bindtap="submit">确定</button>
   </view>
 </template>
@@ -61,6 +69,7 @@ export default {
     navigationBarTitleText: ''
   },
   data: {
+    theGroupMsg:{},
     face:{
       faceColor:3,
       list:[
@@ -87,11 +96,21 @@ export default {
         }
       ],
       evaluateList:[],//标签列表....
-      selLebal:{},//选中的标签...
+      selLebal:[],//选中的标签...
+      reviewText:""
     }
   },
   onLoad(option){
-
+    let _option = JSON.parse( option.groupMsg )
+    this.setData({
+      "theGroupMsg": _option
+    })
+    // this.httpEvaluateItem({"name":"非常差","id":1})//默认选中
+  },
+  requireTextareaInputing(e){
+    this.setData({
+      "reviewText":e.detail.value
+    })
   },
   tapFace(e){
     let _item = e.currentTarget.dataset;
@@ -110,8 +129,10 @@ export default {
   },
   selEvaluate(e){
     let _item = e.currentTarget.dataset;
+    let that = this;
+    this.data.face.evaluateList[_item.index].bgColor = !this.data.face.evaluateList[_item.index].bgColor;
     this.setData({
-      ["face.selLebal"]:_item.item
+      ["face.evaluateList"]:that.data.face.evaluateList
     })
   },
   httpEvaluateItem(_val){
@@ -126,7 +147,7 @@ export default {
       scb(res){
         if( res.data.status == 200 ){
           res.data.data.rows.forEach((val,i,arr)=>{
-            val.faceColor = false
+            val.bgColor = false
           })
           that.setData({
             ['face.evaluateList']:res.data.data.rows
@@ -137,19 +158,67 @@ export default {
     })
   },
   submit(e){
-    system.http({
-      url:'evaluateLabel',
-      method:"get",
-      param:{
-        
-      },
-      scb(res){
-        debugger;
-      },
-      fcb(res){}
+    let that = this;
+    let _lebal = "",_selLebal,_face;
+
+    let _promise = new Promise((resolve,reject)=>{
+      _selLebal = this.data.face.evaluateList.filter((val)=>{
+        if( val.bgColor == true ){
+          _lebal+= `,${val.labelId}`;
+          return val
+        }
+      });
+      _face = this.data.face.list.filter((val)=>{
+         return val.faceColor == true 
+      });
+      if( _selLebal.length != 0 && _face.length != 0 ){
+        resolve();
+      }else{
+        system.stateMsg({
+          title:"请选择评价",
+          icon:"none",
+          time:1500
+        })
+      }
+    })
+    _promise.then(()=>{
+      let _params = {
+        "labels":_lebal,
+        "openId":app.globalData.openId,
+        "groupId":that.data.theGroupMsg.groupId,
+        "reviewText":that.data.reviewText || "",
+        "reviewType": _face[0].id
+      }
+      system.http({
+        url:'review/add',
+        method:"post",
+        param:_params,
+        header:{'content-type': 'application/x-www-form-urlencoded'},
+        scb(res){
+          if( res.data.status == 200 ){
+            system.stateMsg({
+              title:"评价成功",
+              icon:"success",
+              time:1500
+            })
+            setTimeout(() => {
+              wx.redirectTo({
+                url: '/pages/home/index'
+              })
+            }, 1500);
+          }
+        },
+        fcb(res){
+          system.stateMsg({
+            title:"评价失败",
+            icon:"none",
+            time:1500
+          })
+        }
+      })
     })
   },
-  handleShowMask(e){
+  navigateBack(e){
     wx.navigateBack()
   }
 }

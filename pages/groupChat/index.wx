@@ -1,6 +1,6 @@
 <template id="page">
   <view id="container">
-    <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#fff'} }}">
+    <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#267AFC',color:'#fff'} }}">
         <ui-row height="40">
             <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
                 <icon class="iconfont myWx-iconfontqianjin2" style="font-size:25px;"></icon>
@@ -143,7 +143,7 @@
             <ui-col width="50" style="font-size:14px;" align="center" vertical-align="middle" hidden="{{ isInputing }}"><text class="iconfont myWx-jia" bindtap="toggleIsHidden"></text></ui-col>
             <ui-col width="55" vertical-align="middle" hidden="{{ !isInputing }}" class="sendBtn" space-left="3" space-right="3"><button type="primary" bindtap="sendMsg">发送</button></ui-col>
           </ui-row>
-          <ui-row height="100" class="sentType" hidden="{{ isHidden }}" style="justify-content:flex-start;">
+          <ui-row height="100" class="sentType" hidden="{{ isHidden }}" style="justify-content:flex-start;overflow:auto;">
             <ui-col style="display:inline-block;" class="sentType_col" width="58" align="center" vertical-align="middle"><text class="iconfont myWx-zhaopian1" bindtap="chooseFile" data-type="1" data-watermark = "false"></text></ui-col>
             <ui-col style="display:inline-block;" class="sentType_col" width="58" align="center" vertical-align="middle"><text class="iconfont myWx-tupianshuiyinshezhi" bindtap="chooseFile" data-type="1" data-watermark = "true" style="font-size:"></text></ui-col>
             <ui-col class="sentType_col" width="58" align="center" vertical-align="middle"><text class="iconfont myWx-wenjian1" bindtap="chooseFile" data-type="6"></text></ui-col>
@@ -151,16 +151,15 @@
             <ui-col class="sentType_col" width="58" align="center" vertical-align="middle"><text class="iconfont myWx-bianji" bindtap="creatRequirement" data-type="7"></text></ui-col>
             <ui-col class="sentType_col" width="58" align="center" vertical-align="middle"><text class="iconfont myWx-banjie2" bindtap="aite" data-type="8"></text></ui-col>
           </ui-row>
-          <ui-row height="100" class="sentType" hidden="{{ transmit.isAite }}" style="overflow:auto;justify-content:left;flex-flow:nowrap;">
+          <scroll-view scroll-x class="sentType" hidden="{{ transmit.isAite }}" style="height:100px;white-space:nowrap;">
              <!-- hidden="{{ item.openId == theGroupMsg.managerId }}" -->
-            <ui-col class="sentType_col" width="58" align="center" vertical-align="middle" data-isaite="true" data-index="{{ index }}" data-item="{{ item }}" wx:key="index" catchtap="selUser" wx:for="{{ theGroupMsg.groupUsers }}">
+            <view style="display:{{ item.openId == theGroupMsg.managerId ? 'none' : 'inline-block' }}" class="sentType_col" width="58" align="center" vertical-align="middle" data-isaite="true" data-index="{{ index }}" data-item="{{ item }}" wx:key="index" catchtap="selUser" wx:for="{{ theGroupMsg.groupUsers }}">
               <image mode="aspectFit" style="height:72px;" src="{{ item.headImgUrl == null ? defaultImg : item.headImgUrl }}"></image>
               <text style="text-align:center;" class="txt9">{{ item.username }}</text>
               <icon class="angleIcon angleIcon2" type="success" wx:if="{{ item.act }}" size="23"></icon>
-              <icon class="iconfont myWx-fenxiang-copy" catchtap="comeOver" style="position:absolute;background-color:white;top:10px;font-size:37px;width:42px;border:none;border-radius:0px;" wx:if="{{ item.act }}" size="23"></icon>
-            </ui-col>
-            <ui-col width="10rpx" style="opacity:0;">s</ui-col>
-          </ui-row>
+              <icon class="iconfont myWx-fenxiang-copy" catchtap="comeOver" style="left:0px;position:absolute;background-color:white;top:10px;font-size:37px;width:42px;border:none;border-radius:0px;" wx:if="{{ item.act && selUser.actType == 8 }}" size="23"></icon>
+            </view>
+          </scroll-view>
         </view>
       </ui-fixed-view>
       <!-- 全屏弹窗.... -->
@@ -318,7 +317,7 @@ export default {
   onLoad(options){
     var that = this;
     var onFirst = 1;
-    let _item = JSON.parse(options.item);
+    let _item = JSON.parse( options.item );
     let loadPromise = new Promise((resolve,reject)=>{
       wx.getStorage({
         key: 'openId',
@@ -521,8 +520,9 @@ export default {
     
   },
   evaluateMe(e){//评价消息
+    let that = this;
     wx.navigateTo({
-      url:"/pages/evaluate/index"
+      url:`/pages/evaluate/index?groupMsg=${ JSON.stringify( that.data.theGroupMsg ) }`
     })
   },
   retOrConfirm(e){
@@ -1237,10 +1237,12 @@ export default {
     }
   }
   .sentType{
-    justify-content:left;
-    overflow: auto;
     .sentType_col{
       margin:0 5px;
+      display:inline-block;
+      width:50px;
+      text-align: center;
+      position: relative;
     }
     .iconfont{
       font-size:30px;
@@ -1430,6 +1432,8 @@ export default {
   }
 }
 .txt9{
+  width:100%;
+  display:inline-block;
   .mix-text-overflow();
 }
 @keyframes myRotate

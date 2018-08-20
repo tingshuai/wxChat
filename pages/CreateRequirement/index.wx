@@ -1,6 +1,6 @@
 <template>
   <view>
-    <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#fff'} }}">
+    <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#267AFC',color:'#fff'} }}">
         <ui-row height="40">
             <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
                 <icon class="iconfont myWx-iconfontqianjin2" style="font-size:20px;"></icon>
@@ -12,19 +12,23 @@
         </ui-row>
     </ui-nav-bar>
     <view style="height:66px;width:100%;"></view>
-    <view class="formSubmit" style="height:{{ contentHeight }};display:block;">
-        <ui-row style="width:100%;background-color:white;min-height:40px;padding:5px 0;" wx:for="{{ come_msg.edit == 'true' ? come_msg.item : requireList }}" wx:key="{{ index }}">
-            <ui-col vertical-align="middle" align="center" width="30">
-                <text>{{ index + 1 }}</text>
-            </ui-col>
-            <ui-col vertical-align="middle" align="left" style="position:relative;">
-                <textarea fixed="{{ true }}" show-confirm-bar="{{ false }}" id="reqMsg" auto-height="{{ true }}" style="min-height:30px;border:1px solid #ddd;padding:0 5px;box-sizing:border-box;position:relative;" value="{{ come_msg.edit == 'true' ? item.demandText : item.value }}" data-index="{{ index }}" class="weui-textarea" bindinput="inputing"/>
-            </ui-col>
-            <ui-col vertical-align="middle" align="center" width="30">
-                <icon type="cancel" catchtap="removeItem" data-index="{{ index }}" data-item="{{ item }}" size="24"></icon>
-            </ui-col>
-        </ui-row>
+
+    <view class="weui-cells__title">文本域</view>
+    <view class="weui-cells weui-cells_after-title" style="height:min-height:40px;display:block;">
+        <view class="weui-cell">
+            <view class="weui-cell__bd">
+                <textarea fixed="{{ true }}" show-confirm-bar="{{ false }}" id="reqMsg" auto-height="{{ true }}" style="min-height:30px;border:1px solid #ddd;padding:0 5px;box-sizing:border-box;position:relative;" value="{{ form.demandText }}" data-index="{{ index }}" class="weui-textarea" bindinput="inputing"/>
+            </view>
+        </view>
     </view>
+
+    <view class="weui-cells weui-cells_after-title">
+        <navigator class="weui-cell weui-cell_access" catchtap="sendTo" hover-class="weui-cell_active">
+            <view class="weui-cell__bd">对接人</view>
+            <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+        </navigator>
+    </view>
+
     <view class="btn-area">
       <button catchtap="addItem" type="primary">增加项目</button>
       <button catchtap="sendTo" type="primary">发送到</button>
@@ -78,7 +82,7 @@ let _promise;
       modelHeight:wx.WIN_HEIGHT - 180 + 'px',
       form:{
         confirmUser :"",//需求确认人
-        demandText :[],//需求内容
+        demandText :"",//需求内容
         fromUser :"",//发送人openId
         fromUserName :"",//发送人名称
         groupId:"",//
@@ -89,7 +93,7 @@ let _promise;
       come_msg:{
         edit:"",
         item:{},
-        itemAllMsg:{}
+        itemMsg:{}
       },
       requireList:[{value:""}],
       validate:{
@@ -122,7 +126,7 @@ let _promise;
         this.setData({
             ['come_msg.edit']:option.edit,
             ['come_msg.item']:JSON.parse( option.item ).itemcontent,
-            ["come_msg.itemAllMsg"]:JSON.parse( option.item )
+            ["come_msg.itemMsg"]:JSON.parse( option.item )
         })
         this.data.groupMsg.groupUsers.filter((val)=>{//重置确认人
             if( val.openId == JSON.parse( option.item ).parentitem.toUser ){
@@ -186,17 +190,8 @@ let _promise;
         })
     },
     sendTo(e){
-        let that = this,_list;
-        if( this.data.come_msg.edit == "true" ){
-            _list = this.data.come_msg.item.filter((item)=>{
-                return item.demandText == ""
-            })
-        }else{
-            _list = this.data.requireList.filter((item)=>{
-                return item.value == ""
-            })
-        }
-        if( _list.length == 0 ){
+        let that = this;
+        if( this.data.form.demandText != 0 ){
             this.setData({
                 ['model.show']:true
             })
@@ -257,39 +252,12 @@ let _promise;
             ['groupMsg.groupUsers']:that.data.groupMsg.groupUsers
         })
     },
-    removeItem(e){
-        let that = this;
-        let _item = e.currentTarget.dataset;
-        if( this.data.come_msg.edit == "true" ){
-            if( this.data.come_msg.item.length > 1 ){
-                this.data.come_msg.item.splice(_item.index,1);
-                this.setData({
-                    ['come_msg.item']: that.data.come_msg.item
-                })
-            }
-        }else{
-            if( this.data.requireList.length > 1 ){
-                this.data.requireList.splice(_item.index,1);
-                this.setData({
-                    'requireList': that.data.requireList
-                })
-            }
-        }
-    },
     inputing(e){
         let that = this;
         let _item = e.currentTarget.dataset;
-        if( this.data.come_msg.edit == "true" ){
-            this.data.come_msg.item[_item.index].demandText = e.detail.value;
-            this.setData({
-                "come_msg": that.data.come_msg
-            })
-        }else{
-            this.data.requireList[_item.index].value = e.detail.value;
-            this.setData({
-                'requireList': that.data.requireList
-            })
-        }
+        this.setData({
+            ['form.demandText']: e.detail.value
+        })
     }
   }
 </script>
@@ -315,10 +283,6 @@ let _promise;
             font-family:PingFang-SC-Medium;
             color:rgba(51,51,51,1);
         }
-    }
-    .formSubmit{
-      height: auto;
-      overflow: auto;
     }
 .angleIcon{
     position:absolute;

@@ -43,11 +43,10 @@
                             <text selectable='true' class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 0 || item.msgType == 7}}" style="background-color: white;">{{ item.content }} </text>
                             <!--需求类型-->
                             <view class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 20 || item.msgType == 22 }}" style="background-color: white;width:100%;">
-                              <ui-row wx:for="{{ item.content }}" wx:key="indexTow" wx:for-item="itemChildren" wx:for-index="indexTow" style="border-bottom:1px solid rgba(0,0,0,0.1);">
-                                  <ui-col width="20" style="text-align:center;">{{ indexTow + 1 }}.</ui-col>
-                                  <ui-col>{{ itemChildren.demandText }}</ui-col>
+                              <ui-row style="border-bottom:1px solid rgba(0,0,0,0.1);">
+                                  <ui-col>{{ item.content.demandText }}</ui-col>
                                   <ui-col width="60" wx:if="{{ sendInputMsg.fromUser == item.toUser }}">
-                                    <button disabled="{{ itemChildren.demandState ? true : false }}" style="font-size:10px;" data-itemcontent="{{ item.content }}" data-parentitem="{{ item }}" data-index="{{ index }}" data-childIndex="{{ indexTow }}" type="{{ itemChildren.demandState ? 'default' : 'primary' }}" data-item="{{ itemChildren }}" catchtap="retOrConfirm">{{ itemChildren.demandState ? '已确认' : '确认' }}</button>
+                                    <button disabled="{{ item.content.demandState ? true : false }}" style="font-size:10px;" data-itemcontent="{{ item.content }}"  data-index="{{ index }}" type="{{ item.content.demandState ? 'default' : 'primary' }}" data-type="1" catchtap="retOrConfirm">{{ itemChildren.demandState ? '已确认' : '确认' }}</button>
                                   </ui-col>
                                   <ui-col width="60" wx:elif="{{ sendInputMsg.fromUser != item.fromUser}}">                        
                                     <text style="font-size:11px;text-align:center;color:{{ itemChildren.demandState ? 'rgba(0,200,0,0.8)' : 'rgba(200,0,0,0.8)' }};">{{ itemChildren.demandState ? "已确认" : "未确认" }}</text>
@@ -56,7 +55,7 @@
                               <ui-row>
                                   <ui-col></ui-col>
                                   <ui-col width="50">
-                                    <button style="font-size:10px;" wx:if="{{ sendInputMsg.fromUser == item.fromUser }}" type="primary" data-item="{{ itemChildren }}" data-itemcontent="{{ item.content }}" data-parentitem="{{ item }}" data-index="{{ index }}" data-childIndex="{{ indexTow }}" catchtap="retOrConfirm" data-type="0">修改</button>
+                                    <button style="font-size:10px;" wx:if="{{ sendInputMsg.fromUser == item.fromUser }}" type="primary" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="retOrConfirm" data-type="0">修改</button>
                                   </ui-col>
                               </ui-row>
                             </view>
@@ -332,13 +331,9 @@ export default {
             resolve();
         },
         fail(res){
-          // ********可登录之后恢复*****************************
-            resolve();
-
-          // wx.redirectTo({
-          //   url: '/pages/login/index'
-          // })
-          // ****************************
+          wx.redirectTo({
+            url: '/pages/login/index'
+          })
         }
       })
     })
@@ -1000,9 +995,7 @@ export default {
           formData:{
             "watermark":watermark
           },
-          header:{
-            'content-type':'multipart/form-data'
-          },
+          header:{'content-type':'multipart/form-data'},
           success: function(res){
               var data = res.data;
               that.data.sendInputMsg.attachUrl = JSON.parse(res.data).data;

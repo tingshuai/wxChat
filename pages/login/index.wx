@@ -28,22 +28,6 @@ export default {
   },
   onLoad(options){
     let that = this;
-    // ***************可登录后删除************************
-    let _userMsgReq = {username:"乔飞",position:"web前端",canBuildGroup:true,openId:"oc6Hd1BHJF55T1jIWr2eC2AEYoUQ", headImgUrl:"http://thirdwx.qlogo.cn/mmopen/hJBryIicTnFT1E8QTicPlpmNezShFEVFr0RNXsGcRicibWib9JHNsZ0iaxcibicU1yAMT3ToMJrib6gxIoCAIe6hVmtXccHPrzdYevpMia/132"}
-    app.globalData.openId = "oc6Hd1BHJF55T1jIWr2eC2AEYoUQ";
-    wx.setStorage({
-      ket:"openId",
-      data:"oc6Hd1BHJF55T1jIWr2eC2AEYoUQ"
-    });
-    wx.setStorage({
-      ket:"userMsgReq",
-      data:_userMsgReq
-    });
-    app.globalData.userMsgReq = _userMsgReq;
-    wx.redirectTo({
-      url: '/pages/home/index'
-    })
-    // ***************************************
     wx.getStorage({
       key:"wxImg",
       success(res){
@@ -111,10 +95,6 @@ export default {
       })
     })
   },
-  // formSubmit(e) {
-  //   console.log('form发生了submit事件，携带数据为：', e)
-  //   debugger;
-  // },
   bindGetUserInfo(e){
     var that = this;
     this.setData({

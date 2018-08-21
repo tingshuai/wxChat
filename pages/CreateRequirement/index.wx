@@ -12,31 +12,61 @@
         </ui-row>
     </ui-nav-bar>
     <view style="height:66px;width:100%;"></view>
-
-    <view class="weui-cells__title">文本域</view>
-    <view class="weui-cells weui-cells_after-title" style="height:min-height:40px;display:block;">
-        <view class="weui-cell">
+    <!-- 需求单 -->
+    <view class="weui-cells__title">需求描述</view>
+    <view class="weui-cells weui-cells_after-title" style="display:block;">
+        <view class="weui-cell" style="padding:0;">
             <view class="weui-cell__bd">
-                <textarea fixed="{{ true }}" show-confirm-bar="{{ false }}" id="reqMsg" auto-height="{{ true }}" style="min-height:30px;border:1px solid #ddd;padding:0 5px;box-sizing:border-box;position:relative;" value="{{ form.demandText }}" data-index="{{ index }}" class="weui-textarea" bindinput="inputing"/>
+                <textarea fixed="{{ true }}" show-confirm-bar="{{ false }}" id="reqMsg" auto-height="{{ true }}" style="min-height:100px;box-sizing:border-box;position:relative;padding:5px 10px;font-size:14px;" value="{{ form.demandText }}" data-index="{{ index }}" class="weui-textarea" bindinput="inputing"/>
             </view>
         </view>
     </view>
-
-    <view class="weui-cells weui-cells_after-title">
-        <navigator class="weui-cell weui-cell_access" catchtap="sendTo" hover-class="weui-cell_active">
+    <!-- 上传附件 -->
+    <view class="weui-cells__title">上传图片</view>
+    <view class="page__bd">
+        <view class="weui-cells" style="margin:0;">
+            <view class="weui-cell">
+                <view class="weui-cell__bd">
+                    <view class="weui-uploader">
+                        <view class="weui-uploader__bd">
+                            <view class="weui-uploader__files" id="uploaderFiles">
+                                <block wx:for="{{ form.demandAttach }}" wx:key="*this">
+                                    <view class="weui-uploader__file" bindtap="previewImage" id="{{item}}" style="position:relative;">
+                                        <image class="weui-uploader__img" src="{{ item }}" mode="aspectFill" />
+                                        <icon type="cancel" catchtap="cancle" data-index="{{ index }}" data-type="0" data-item="{{ item }}" size="23" style="position:absolute;top:-1px;right:-1px;z-index:100;"></icon>
+                                    </view>
+                                </block>
+                                <block wx:for="{{ come_msg.files }}" wx:key="*this">
+                                    <view class="weui-uploader__file" bindtap="previewImage" id="{{item}}" style="position:relative;">
+                                        <image class="weui-uploader__img" src="{{ item }}" mode="aspectFill" />
+                                        <icon type="cancel" catchtap="cancle" data-type="1" data-index="{{ index }}" data-item="{{ item }}" size="23" style="position:absolute;top:-1px;right:-1px;z-index:100;"></icon>
+                                    </view>
+                                </block>
+                            </view>
+                            <view class="weui-uploader__input-box">
+                                <view class="weui-uploader__input" bindtap="chooseImage"></view>
+                            </view>
+                        </view>
+                    </view>
+                </view>
+            </view>
+        </view>
+    </view>    
+    <!-- 选择需求对接人 -->
+    <view class="weui-cells weui-cells_after-title" style="margin-top:20px;">
+        <navigator class="weui-cell weui-cell_access" url="" catchtap="sendTo" hover-class="weui-cell_active">
             <view class="weui-cell__bd">对接人</view>
-            <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+            <view class="weui-cell__ft weui-cell__ft_in-access">{{ form.confirmUserName }}</view>
         </navigator>
     </view>
 
     <view class="btn-area">
-      <button catchtap="addItem" type="primary">增加项目</button>
-      <button catchtap="sendTo" type="primary">发送到</button>
+      <button catchtap="submit" type="primary" class="myBtnSuccess">提交需求</button>
     </view>
     <ui-popup show="{{ model.show }}" height="100%">
         <view style="height:100%;width:100%;overflow:hidden;">
             <view style="height:70px;"></view>
-            <scroll-view scroll-y style="height:{{ modelHeight }};border-top:1px solid #ddd;">
+            <scroll-view scroll-y style="height:100%;border-top:1px solid #ddd;">
                 <ui-row height="55" wx:for="{{ groupMsg.groupUsers }}" wx:key="{{ index }}" class="top_tip" border-bottom style="padding-right:35px;" data-parentItem="0" data-isaite="false" data-index="{{ index }}" data-item="{{ item }}" bindtap="selUser">
                     <ui-col width="55" align="center" vertical-align="middle" data-item="{{ item }}" style="padding:4px;">
                         <image mode="aspectFit" src="{{ item.headImgUrl }}" style="height:100%;"></image>
@@ -53,11 +83,7 @@
                     </ui-col>
                     <icon class="angleIcon" type="success" wx:if="{{ item.act }}" size="23"></icon>
                 </ui-row>
-            </scroll-view>
-            <view class="btn-area">
-                <button catchtap="cancle" type="primary">取消</button>
-                <button catchtap="submit" type="primary">确定</button>
-            </view>                          
+            </scroll-view>    
         </view>
     </ui-popup>
   </view>
@@ -67,7 +93,7 @@
 var app = getApp();
 import system from '../../static/utils/system'
 
-let _promise;
+let _promise1;
   export default {
     config: {
       navigationBarTitleText: '申请填写'
@@ -88,12 +114,15 @@ let _promise;
         groupId:"",//
         groupName :"",//
         headImgUrl :"",//
-        position :""//
+        position :"",//
+        demandAttach :[]
       },
       come_msg:{
         edit:"",
         item:{},
-        itemMsg:{}
+        itemMsg:{},
+        selUserName:"",
+        files:[]
       },
       requireList:[{value:""}],
       validate:{
@@ -108,32 +137,39 @@ let _promise;
       groupMsg:{}
     },
     navigateBack () {
-        wx.navigateBack()
+        wx.navigateBack();
     },
     onLoad(option){
-      let _item = JSON.parse( option.groupMsg );
+      let _groupMsg = JSON.parse( option.groupMsg );
       let that = this;
       this.setData({
-        groupMsg:_item,
+        groupMsg:_groupMsg,
         ['form.fromUser']:app.globalData.openId,
-        ['form.fromUserName']:"秦琼",
-        ['form.groupName']:_item.groupName,
-        ['form.groupId']:_item.groupId,
+        ['form.fromUserName']:app.globalData.userMsgReq.username,
+        ['form.groupName']:_groupMsg.groupName,
+        ['form.groupId']:_groupMsg.groupId,
         ['form.headImgUrl']:app.globalData.userMsgReq.headImgUrl,
-        ['form.position']:app.globalData.userMsgReq.position
+        ['form.position']:app.globalData.userMsgReq.position,
       });
       if( option.edit == "true" ){//编辑进来.....
+        let _item = JSON.parse( option.item );
         this.setData({
             ['come_msg.edit']:option.edit,
-            ['come_msg.item']:JSON.parse( option.item ).itemcontent,
-            ["come_msg.itemMsg"]:JSON.parse( option.item )
+            ['come_msg.item']:_item.itemcontent,
+            ["come_msg.itemMsg"]:_item,
+            ["form.confirmUser"]:_item.item.toUser,
+            ["form.demandText"]:_item.itemcontent.demandText,
+            ["form.fromUser"]:_item.item.fromUser,
+            ["form.fromUserName"]:_item.item.fromUserName, 
+            ["form.demandId"]:_item.itemcontent.demandId,
+            ["form.demandAttach"]:_item.itemcontent.demandAttach.split(',')
         })
         this.data.groupMsg.groupUsers.filter((val)=>{//重置确认人
-            if( val.openId == JSON.parse( option.item ).parentitem.toUser ){
+            if( val.openId == _item.item.toUser ){
                 val.act = true;
                 that.setData({
-                    ["form.confirmUser"]:val.openId,
-                    ["groupMsg.groupUsers"]:that.data.groupMsg.groupUsers
+                    ["groupMsg.groupUsers"]:that.data.groupMsg.groupUsers,
+                    ["form.confirmUserName"]:val.username
                 })
             }else{
                 val.act = false;
@@ -144,50 +180,76 @@ let _promise;
     addRequirement(e){
 
     },
-    cancle(e){
-        this.setData({
-            ['model.show']:false
-        })
-    },
     submit(e){
         let that = this, _url;
-        if( this.data.come_msg.edit == "true" ){
-            this.setData({
-                ["form.demands"]:JSON.stringify(that.data.come_msg.item),
-                ["form.msgId"]:that.data.come_msg.itemAllMsg.parentitem.msgId
-            })
-            delete this.data.form.demandText;
-            _url = 'demand/edit';
-        }else{
-            _url = 'demand/add'
-            this.data.requireList.filter((item)=>{
-                that.data.form.demandText.push( item.value );
-            })
-            this.setData({
-                ["form.demandText"]:that.data.form.demandText
-            })
-        }
-        system.http({
-            url:_url,
-            param:that.data.form,
-            method:"post",
-            header:{'content-type': 'application/x-www-form-urlencoded'},
-            scb(res){
-                if( res.data.status == 200 ){
-                    system.stateMsg({
-                        title:"发送成功",
-                        icon:"success",
-                        time:1500
-                    })
-                    setTimeout(() => {
-                        wx.navigateBack()
-                    }, 1500);
-                }
-            },
-            fcb(res){
-                debugger;
+        this.data.come_msg.edit == "true" ? _url = 'demand/edit' : _url = 'demand/add';
+        _promise1 = new Promise((resolve,rejece)=>{
+            if( that.data.form.demandText == '' ){
+                system.stateMsg({title:"需求内容不能为空",icon:"none",time:1000})
+            }else if( that.data.form.confirmUser == '' ){
+                system.stateMsg({title:"确认人不能为空",icon:"none",time:1000})
+            }else{
+                let promises = that.data.come_msg.files.map((val,i,arr)=>{
+                    return that.upload({'val':val,"resolve":resolve,'i':i,"arr":arr});
+                })
+                Promise.all(promises).then((allData) => {
+                    if( that.data.come_msg.edit == "true" ){
+                        that.setData({
+                            ["come_msg.files"]:[]
+                        })
+                    }
+                    resolve();//_promise1的提交请求......
+                }).catch((err) => {
+                    console.log(err);
+                })
             }
         })
+        _promise1.then(()=>{
+            let _newDemand = Object.assign( that.data.form,{demandAttach: that.data.form.demandAttach.join( ',' )}) ;
+            system.http({
+                url:_url,
+                param:that.data.form,
+                method:"post",
+                header:{'content-type': 'application/x-www-form-urlencoded'},
+                scb(res){
+                    if( res.data.status == 200 ){
+                        system.stateMsg({title:"发送成功",icon:"success",time:1500})
+                        setTimeout(() => { wx.navigateBack() }, 1500);
+                    }
+                },
+                fcb(res){
+                    system.stateMsg({title: that.data.come_msg.edit == "true" ? "编辑失败" : "编辑成功" ,icon:"none",time:1500})
+                    setTimeout(() => { wx.navigateBack() }, 1500);
+                }
+            })
+        })
+    },
+    upload(obj){
+        let that = this;
+        return new Promise((resolve, reject) => {
+            let uploadTask =  wx.uploadFile({
+                url: `${app.globalData.httpUpload}/fileSystem/uploadFile`, //仅为示例，非真实的接口地址
+                filePath: obj.val,
+                name: 'file',
+                success(res){
+                    let _resData = JSON.parse( res.data );
+                    if( _resData.errorCode == 0 ){
+                        that.data.form.demandAttach
+                        debugger;
+                        that.data.form.demandAttach.push( _resData.model );
+                        that.setData({
+                            ["form.demandAttach"]:that.data.form.demandAttach
+                        })
+                        resolve(obj.i)
+                    }else{
+                        system.stateMsg( {title: _resData.message, icon:"none", time:1000} )
+                    }
+                },
+                fail(res){
+                    system.stateMsg( {title: "文件上传失败", icon:"none", time:1000} )
+                }
+            })
+        });        
     },
     sendTo(e){
         let that = this;
@@ -203,53 +265,57 @@ let _promise;
             })
         }
     },
-    addItem(){
-        let that = this,_list;
-        if( this.data.come_msg.edit == "true" ){
-            _list = this.data.come_msg.item.filter((item)=>{
-                return item.demandText == ""
-            })
-        }else{
-            _list = this.data.requireList.filter((item)=>{
-                return item.value == ""
-            })
-        }
-        if( _list.length == 0 ){
-            if( this.data.come_msg.edit == "true" ){
-                this.data.come_msg.item.push( { demandText:""} )
-                this.setData({
-                    ["come_msg.item"]: that.data.come_msg.item
-                })                
-            }else{
-                this.data.requireList.push( {value:""} )
-                this.setData({
-                    "requireList": that.data.requireList
-                })                
+    chooseImage: function (e) {
+        var that = this;
+        wx.chooseImage({
+            sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
+            sourceType: ['album', 'camera'], // 可以指定来源是相册还是相机，默认二者都有
+            success (res) {
+                // 返回选定照片的本地文件路径列表，tempFilePath可以作为img标签的src属性显示图片
+                that.setData({
+                    ['come_msg.files']: that.data.come_msg.files.concat(res.tempFilePaths)
+                });
             }
-        }else{
-            system.stateMsg({
-                title:"新增条目不能为空",
-                icon:"none",
-                time:2000
-            })
+        })
+    },
+    cancle(e){
+        let that = this;
+        let _item = e.currentTarget.dataset;
+        if( _item.type == "0" ){//
+            that.data.form.demandAttach.splice(_item.index,1)
+            that.setData({
+                ['form.demandAttach']: that.data.form.demandAttach
+            });
+        }else if( _item.type == "1" ){
+            that.data.come_msg.files.splice(_item.index,1)
+            that.setData({
+                ['come_msg.files']: that.data.come_msg.files
+            });
         }
-        
+    },
+    previewImage(e){
+        wx.previewImage({
+            current: e.currentTarget.id, // 当前显示图片的http链接
+            urls: this.data.come_msg.files // 需要预览的图片http链接列表
+        })
     },
     selUser(e){//选择群成员.....
         let _item = e.currentTarget.dataset;
         let that = this;
         this.data.groupMsg.groupUsers.filter((val)=>{
             if( val.openId == _item.item.openId){
-                val.act = !val.act;
+                val.act = true;
                 that.setData({
-                    ["form.confirmUser"]:val.openId
+                    ["form.confirmUser"]:val.openId,
+                    ["form.confirmUserName"]:val.username
                 })
             }else{
                 val.act = false;
             }
         })
         this.setData({
-            ['groupMsg.groupUsers']:that.data.groupMsg.groupUsers
+            ['groupMsg.groupUsers']:that.data.groupMsg.groupUsers,
+            ['model.show']:false
         })
     },
     inputing(e){

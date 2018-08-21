@@ -184,26 +184,21 @@ export default {
       },fail(res){}});
     }
     system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:8000});
-    that.requestGroupList('/chat/groups/tree','over');//********************************** */
-    // 登录成功删去
-    that.setData({
-        "userMsgReq":app.globalData.userMsgReq
+
+    wx.getStorage({
+        key: 'openId',
+        success: function(res) {
+            app.globalData.openId = res.data;
+            that.requestGroupList('/chat/groups/tree','over');
+            console.log( "获取openId成功")
+        },
+        fail(res){
+            console.log("获取openid失败",res)
+            wx.redirectTo({
+              url: '/pages/login/index'
+            })
+        }
     })
-    // 登录成功删去
-    // wx.getStorage({
-    //     key: 'openId',
-    //     success: function(res) {
-    //         app.globalData.openId = res.data;
-    //         that.requestGroupList('/chat/groups/tree','over');
-    //         console.log( "获取openId成功")
-    //     },
-    //     fail(res){
-    //         console.log("获取openid失败",res)
-    //         wx.redirectTo({
-    //           url: '/pages/login/index'
-    //         })
-    //     }
-    // })
     wx.getStorage({
         key:'userMsgReq',
         success(res){

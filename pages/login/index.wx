@@ -139,7 +139,7 @@ export default {
             wx.setStorage({
               key:"userMsgReq",
               data:_response
-            })            
+            })
             wx.redirectTo({
               url:`/pages/home/index`
             })

@@ -227,6 +227,7 @@ export default {
         this.setData({
             ['tabBar.actItem']:_item.index
         })
+        system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:8000});
         this.requestGroupList( '/history/groups','history')
     }
   },
@@ -325,14 +326,19 @@ export default {
   },
     //   搜索.....
   inputTyping: function (e) {
-      this.setData({
-          inputVal: e.detail.value
-      });
-          if( this.data.tabBar.actItem == 2 ){//历史。。。。
-            this.requestGroupList( '/history/groups','history')
-          }else if( this.data.tabBar.actItem == 0 ){
-            this.requestGroupList('/chat/groups/req',"no");
-          }
+    let that = this;
+    this.setData({
+        inputVal: e.detail.value
+    });
+    if( this.data.tabBar.actItem == 2 ){//历史。。。。
+      this.requestGroupList( '/history/groups','history')
+    }else if( this.data.tabBar.actItem == 0 ){
+        if( that.data.inputVal == "" ){
+          that.requestGroupList('/chat/groups/tree','over');
+        }else{
+          this.requestGroupList('/chat/groups/req',"no");
+        }
+    }
     //   this.requestGroupList('/chat/groups/tree',"over");
   },
   clearInput: function () {

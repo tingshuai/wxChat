@@ -32,8 +32,14 @@
             </label>
         </view>
     </view>
-    <ui-tags data="{{ search.list00 }}" id="tags0" bindchange="singleTap"></ui-tags>
-    <view class="weui-cells weui-cells_after-title">
+    
+    <ui-row height="60">
+        <ui-col align="center" vertical-align="middle" wx:for="{{ search.list00 }}" wx:key="{{ index }}">
+            <view class="tag" style="color:{{ item.checked ? '#dd0000' : 'black'}}" data-item="{{ item }}" bindtap="singleTap" data-index="{{ index }}">{{ item.text }}</view>
+        </ui-col>
+    </ui-row>
+
+    <view class="weui-cells weui-cells_after-title" style="height:{{ search.list00[1].checked == true ? '88px' : '0px' }};overflow:hidden;transition:all 0.3s;">
         <view class="weui-cell weui-cell_input">
             <view class="weui-cell__hd">
                 <view class="weui-label fontMini">开始日期</view>
@@ -80,21 +86,24 @@
                             <!--文本类型-->
                             <text selectable='true' class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 0 || item.msgType == 7}}" style="background-color: {{ sendInputMsg.fromUser == item.fromUser ? '#A0E75A' : 'white' }}">{{ item.content }} </text>
                             <!--需求类型-->
-                            <view class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 20 || item.msgType == 22 }}" style="background-color: {{ sendInputMsg.fromUser == item.fromUser ? '#A0E75A' : 'white' }};width:100%;">
-                              <ui-row wx:for="{{ item.content }}" wx:key="indexTow" wx:for-item="itemChildren" wx:for-index="indexTow" style="border-bottom:1px solid rgba(0,0,0,0.1);">
-                                  <ui-col width="20" style="text-align:center;">{{ indexTow + 1 }}.</ui-col>
-                                  <ui-col>{{ itemChildren.demandText }}</ui-col>
-                                  <ui-col width="60" wx:if="{{ sendInputMsg.fromUser == item.toUser }}">
-                                    <button disabled="{{ itemChildren.demandState ? true : false }}" style="font-size:10px;" data-itemcontent="{{ item.content }}" data-parentitem="{{ item }}" data-index="{{ index }}" data-childIndex="{{ indexTow }}" type="{{ itemChildren.demandState ? 'default' : 'primary' }}" data-item="{{ itemChildren }}" catchtap="retOrConfirm">{{ itemChildren.demandState ? '已确认' : '确认' }}</button>
-                                  </ui-col>
-                                  <ui-col width="60" wx:elif="{{ sendInputMsg.fromUser != item.fromUser}}">                        
-                                    <text style="font-size:11px;text-align:center;color:{{ itemChildren.demandState ? 'rgba(0,200,0,0.8)' : 'rgba(200,0,0,0.8)' }};">{{ itemChildren.demandState ? "已确认" : "未确认" }}</text>
-                                  </ui-col>
+                            <view class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 20 || item.msgType == 22 || item.msgType == 21}}" style="background-color: white;width:100%;">
+                              <ui-row style="border-bottom:1px solid rgba(0,0,0,0.1);">
+                                  <ui-col>{{ item.content.demandText }}</ui-col>
                               </ui-row>
                               <ui-row>
                                   <ui-col></ui-col>
-                                  <ui-col width="50">
-                                    <button style="font-size:10px;" wx:if="{{ sendInputMsg.fromUser == item.fromUser }}" type="primary" data-item="{{ itemChildren }}" data-itemcontent="{{ item.content }}" data-parentitem="{{ item }}" data-index="{{ index }}" data-childIndex="{{ indexTow }}" catchtap="retOrConfirm" data-type="0">修改</button>
+                                  <!-- 确认人确认需求 -->
+                                  <ui-col width="60" wx:if="{{ userMsgReq.openId == item.toUser }}">
+                                    <button disabled="{{ item.content.demandState ? true : false }}" style="font-size:10px;" data-item="{{ item }}"  data-index="{{ index }}" type="{{ item.content.demandState ? 'default' : 'primary' }}" data-type="1" catchtap="retOrConfirm">{{ itemChildren.demandState ? '已确认' : '确认' }}</button>
+                                  </ui-col>
+                                  <!-- 发送人编辑需求 -->
+                                  <ui-col width="60" wx:if="{{ userMsgReq.openId == item.fromUser }}">
+                                    <button style="font-size:10px;" wx:if="{{ item.content.demandState }}" disabled type="primary" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="retOrConfirm" data-type="0">已确认</button>
+                                    <button style="font-size:10px;" wx:else type="default" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="retOrConfirm" data-type="0">修改</button>
+                                  </ui-col>
+                                  <!-- 为除发送人和确认人外的人展示 -->
+                                  <ui-col width="60" wx:else>                        
+                                    <text style="font-size:11px;text-align:center;color:{{ itemChildren.demandState ? 'rgba(0,200,0,0.8)' : 'rgba(200,0,0,0.8)' }};">{{ itemChildren.demandState ? "已确认" : "未确认" }}</text>
                                   </ui-col>
                               </ui-row>
                             </view>
@@ -252,13 +261,12 @@ export default {
         modelHeight:wx.DEFAULT_CONTENT_HEIGHT - 148 + 'px',
         statusBarHeight: wx.STATUS_BAR_HEIGHT,
         headerHeight: wx.DEFAULT_HEADER_HEIGHT,
-        scrollHeight: wx.WIN_HEIGHT - 296,
+        scrollHeight: wx.WIN_HEIGHT - 170,
         defaultMonthrange: [],
         chatData:[],
         theGroupMsg:{},
         popUp:{
             show:false,
-            show2:false
         },
         search:{
             showInput:true,//是否显示删除按钮..
@@ -271,11 +279,11 @@ export default {
                     checked: true,
                     msgType:""
                 },{
-                    text: '文字，语音',
+                    text: '日期',
                     tagStyle: tagStyle00,
                     tagSelectedStyle: selectStyle,
                     checked: false,
-                    msgType:"7"
+                    msgType:""
                 },{
                     text: '图片',
                     tagStyle: tagStyle00,
@@ -288,12 +296,6 @@ export default {
                     tagSelectedStyle: selectStyle,
                     checked: false,
                     msgType:"6"
-                },{
-                    text: '需求',
-                    tagStyle: tagStyle00,
-                    tagSelectedStyle: selectStyle,
-                    checked: false,
-                    msgType:"20"
                 }]
         },
         searchData:{
@@ -321,7 +323,8 @@ export default {
             users:[],
             act:''
         },
-        defaultHeadImg:""
+        defaultHeadImg:"",
+        userMsgReq:{}
     },
     onLoad( option ){
         let _groupMsg = JSON.parse( option.item );
@@ -335,7 +338,8 @@ export default {
         this.setData({
             ["searchData.openId"]:app.globalData.openId,
             ["searchData.groupId"]:_groupMsg.groupId,
-            "defaultHeadImg":app.globalData.defaultImg
+            "defaultHeadImg":app.globalData.defaultImg,
+            "userMsgReq":app.globalData.userMsgReq
         })
         this.reqGroupList();
         this.getHistoryMsg(1);
@@ -399,29 +403,34 @@ export default {
     },
     getHistoryMsg(pageNumber){
         var that= this;
-        wx.request({
-        url: `${app.globalData.httpHost}/chat/msg`,
-        data: that.data.searchData,
-        success: function(res) {
-            if( res.data.status == 200 ){
-            res.data.data.rows.forEach((val,i,arr)=>{//未读@信息......
-                if(val.msgType == 7 && /(@\`-\`@)/.test(val.content) ){
-                    val.content = val.content.split('(@\`-\`@)').join(' ');
-                }else if( val.msgType == 20 || val.msgType == 21 || val.msgType == 22 ){
-                    val.content = JSON.parse( val.content );
-                }
-            })
-            that.data.chatData.splice(that.data.chatData.length,0,...res.data.data.rows);
+        if( pageNumber == 1){
             that.setData({
-                chatData:that.data.chatData,
-                ['searchData.pageNum']: pageNumber
+                chatData:[]
             })
-            wx.hideToast()
-            }else{
-                wx.hideToast()
-                system.stateMsg({title: '提示',content: res.data.message,scb(){},ccb(){}})
-            }
         }
+        wx.request({
+            url: `${app.globalData.httpHost}/chat/msg`,
+            data: that.data.searchData,
+            success: function(res) {
+                if( res.data.status == 200 ){
+                res.data.data.rows.forEach((val,i,arr)=>{//未读@信息......
+                    if(val.msgType == 7 && /(@\`-\`@)/.test(val.content) ){
+                        val.content = val.content.split('(@\`-\`@)').join(' ');
+                    }else if( val.msgType == 20 || val.msgType == 21 || val.msgType == 22 ){
+                        val.content = JSON.parse( val.content );
+                    }
+                })
+                that.data.chatData.splice(that.data.chatData.length,0,...res.data.data.rows);
+                that.setData({
+                    chatData:that.data.chatData,
+                    ['searchData.pageNum']: pageNumber
+                })
+                wx.hideToast()
+                }else{
+                    wx.hideToast()
+                    system.stateMsg({title: '提示',content: res.data.message,scb(){},ccb(){}})
+                }
+            }
         })
     },
     clearInput(e){
@@ -503,29 +512,48 @@ export default {
     },
     singleTap (e) {
         let that = this;
-        let opt = e.detail.index;
-        wx.showToast({
-            title: that.data.search.list00[opt].text,
-            icon:'none'
-        })
+        let _item = e.currentTarget.dataset;
         this.data.search.list00.forEach((item, index) => {
-            item.checked = (index === opt)
+            if( _item.index == 1 ){//点击日期....
+                if( index == 1 ){
+                    item.checked = !item.checked;
+                    if( item.checked == true ){
+                        that.setData({
+                            "scrollHeight":that.data.scrollHeight - 88
+                        })
+                    }else{
+                        that.setData({
+                            "scrollHeight":that.data.scrollHeight + 88
+                        })
+                    }
+                }else{
+                    return;
+                }
+            }else{//点击非日期.....
+                if( index != 1 ){
+                    item.checked = ( index == _item.index )
+                    that.setData({
+                        ["searchData.pageNum"]:1
+                    })
+                }
+            }
         })
         this.setData({
             ["search.list00"]:that.data.search.list00,
-            "chatData":[],
-            ["searchData.pageNum"]:1
         })
-        if( opt != 4 ){
+        if( _item.index == 0 ){//点击全部..
             this.setData({
-                ["searchData.msgType"]:that.data.search.list00[opt].msgType
+                ["searchData.msgType"]:""
             })
+            this.getHistoryMsg(1);
+        }else if( _item.index == 1 ){//点击日期
+            
         }else{
             this.setData({
-                ["popUp.show2"]:true
+                ["searchData.msgType"]:_item.item.msgType
             })
+            this.getHistoryMsg(1);
         }
-        this.getHistoryMsg(1);
     },
     selUser(e){//选择群组.....
         let _item = e.currentTarget.dataset;

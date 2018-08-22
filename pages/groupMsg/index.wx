@@ -16,13 +16,16 @@
 
     <!-- 群成员头像 -->
     <view class="talkItem" >
-        <view width="60" align="left" vertical-align="top" bindtap="sel" data-index="{{index}}" data-item="{{item}}" class="mycol" wx:for="{{ groupMsg.groupUsers }}" wx:key="{{index}}">
+        <view width="60" style="vertical-align:top;" align="left" vertical-align="top" bindtap="sel" data-index="{{index}}" data-item="{{item}}" class="mycol" wx:for="{{ groupMsg.groupUsers }}" wx:key="{{index}}">
             <view class="left_icon left_icon1">
                 <image src="{{ item.headImgUrl }}"/>
                 <icon class="iconfont myWx-qunzhu" wx:if="{{ groupMsg.managerId == item.openId }}"></icon>
             </view>
-            <text>{{ item.username }}</text>
-            <icon type="success" size="15" class="figure" wx:if="{{ item.authAddMember }}"></icon>
+            <text>{{ item.username || "" }}</text>
+            <!-- <icon type="success" size="15" class="figure" wx:if="{{ item.authAddMember }}"></icon> -->
+        </view>
+        <view class="mycol" style="vertical-align:top;" bindtap="editGroup" wx:if="{{ canAddMenuber }}">
+          <icon class="iconfont myWx-jia4" style="color:#ccc;font-size:37px;border:1px solid #ccc;width:50px;height:50px;line-height:50px;text-align:center;"></icon>
         </view>
     </view>
     <ui-row class="groupName" vertical-align="middle">
@@ -34,8 +37,9 @@
       <ui-col vertical-align="middle" space-right="10" align="right" span="10" class="txtRight">{{ groupMsg.groupDesc ? groupMsg.groupDesc : '' }}</ui-col>
     </ui-row>
     <view class="weui-cells weui-cells_after-title">
-        <view class="weui-cell weui-cell_link" style="padding-left:10px;line-height:21px;" bindtap="selChatList">
+        <view class="weui-cell weui-cell_link" style="padding-left:10px;line-height:21px;padding-right:5px;" bindtap="selChatList">
             <view class="weui-cell__bd" style="color:black;" >查找聊天记录</view>
+            <view><icon class="iconfont myWx-xiangyou" style="font-size:20px;"></icon></view>
         </view>
     </view>
     <!--退群按钮-->
@@ -88,10 +92,6 @@
         ['submitData.groupDesc']:JSON.parse( option.item ).groupDesc,
         "userMsg":app.globalData.userMsgReq
       })
-      this.data.userMsg
-      this.data.groupMsg;
-      app.globalData.userMsgReq
-      debugger;
       wx.setNavigationBarTitle({//设置页面标题....
         title: JSON.parse( option.item ).groupName
       })

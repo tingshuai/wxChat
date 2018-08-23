@@ -19,7 +19,8 @@
         <view width="60" style="vertical-align:top;" align="left" vertical-align="top" bindtap="sel" data-index="{{index}}" data-item="{{item}}" class="mycol" wx:for="{{ groupMsg.groupUsers }}" wx:key="{{index}}">
             <view class="left_icon left_icon1">
                 <image src="{{ item.headImgUrl }}"/>
-                <icon class="iconfont myWx-qunzhu" wx:if="{{ groupMsg.managerId == item.openId }}"></icon>
+                <image mode="aspectFit" wx:if="{{ groupMsg.managerId == item.openId }}" src="../../static/img/imperial@2x.png" style="width:25px;position:absolute;top:-45px;left:3px;"/>
+                <!-- <icon class="iconfont myWx-qunzhu" wx:if="{{ groupMsg.managerId == item.openId }}"></icon> -->
             </view>
             <text>{{ item.username || "" }}</text>
             <!-- <icon type="success" size="15" class="figure" wx:if="{{ item.authAddMember }}"></icon> -->

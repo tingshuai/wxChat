@@ -86,25 +86,22 @@
                             <!--文本类型-->
                             <text selectable='true' class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 0 || item.msgType == 7}}" style="background-color: {{ sendInputMsg.fromUser == item.fromUser ? '#A0E75A' : 'white' }}">{{ item.content }} </text>
                             <!--需求类型-->
-                            <view class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 20 || item.msgType == 22 || item.msgType == 21}}" style="background-color: white;width:100%;">
+                            <view class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="retOrConfirm" wx:if="{{ item.msgType == 20 || item.msgType == 22 || item.msgType == 21}}" style="background-color: white;width:100%;">
                               <ui-row style="border-bottom:1px solid rgba(0,0,0,0.1);">
-                                  <ui-col>{{ item.content.demandText }}</ui-col>
+                                  <ui-col style="color:{{ item.content.demandState ? '#4EBF62' : '#267AFC' }};font-size:12px;">{{ item.msgType == 20 || item.msgType == 21 ? "需求确认" : "修改需求确认" }}</ui-col>
+                              </ui-row>
+                              <ui-row style="height:60px;padding:7px 0;">
+                                  <ui-col style="font-size:12px;" width="45">
+                                    <image mode="aspectFit" src="../../static/img/Group6Copy@2x.png"></image>
+                                  </ui-col>
+                                  <ui-col style="font-size:12px;padding-left:10px;">
+                                    <view style="white-space:nowrap;text-overflow:ellipsis;overflow:hidden;height:30px;">需求单{{ item.content.demandId }}</view>
+                                    <view style="white-space:nowrap;height:30px;line-height:40px;" wx:if="{{ sendInputMsg.fromUser == item.content.createUser && (item.content.demandState == false) }}">发起人<text>@</text>{{ item.fromUserName }}</view>
+                                    <view style="white-space:nowrap;height:30px;line-height:40px;" wx:else="{{ sendInputMsg.fromUser == item.toUser && ( item.content.demandState == false )}}">确认人<text style="color: #FF9D44;">@{{ item.content.confirmUserName }}</text></view>
+                                  </ui-col>
                               </ui-row>
                               <ui-row>
-                                  <ui-col></ui-col>
-                                  <!-- 确认人确认需求 -->
-                                  <ui-col width="60" wx:if="{{ userMsgReq.openId == item.toUser }}">
-                                    <button disabled="{{ item.content.demandState ? true : false }}" style="font-size:10px;" data-item="{{ item }}"  data-index="{{ index }}" type="{{ item.content.demandState ? 'default' : 'primary' }}" data-type="1" catchtap="retOrConfirm">{{ itemChildren.demandState ? '已确认' : '确认' }}</button>
-                                  </ui-col>
-                                  <!-- 发送人编辑需求 -->
-                                  <ui-col width="60" wx:if="{{ userMsgReq.openId == item.fromUser }}">
-                                    <button style="font-size:10px;" wx:if="{{ item.content.demandState }}" disabled type="primary" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="retOrConfirm" data-type="0">已确认</button>
-                                    <button style="font-size:10px;" wx:else type="default" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="retOrConfirm" data-type="0">修改</button>
-                                  </ui-col>
-                                  <!-- 为除发送人和确认人外的人展示 -->
-                                  <ui-col width="60" wx:else>                        
-                                    <text style="font-size:11px;text-align:center;color:{{ itemChildren.demandState ? 'rgba(0,200,0,0.8)' : 'rgba(200,0,0,0.8)' }};">{{ itemChildren.demandState ? "已确认" : "未确认" }}</text>
-                                  </ui-col>
+                                    <ui-col style="white-space:nowrap;font-size:12px;" wx:if="{{ item.content.demandState == true }}">确认日期{{ item.content.createAt }}</ui-col>
                               </ui-row>
                             </view>
                             <!--图片类型-->
@@ -344,6 +341,13 @@ export default {
         this.reqGroupList();
         this.getHistoryMsg(1);
     },
+    retOrConfirm(e){
+        let _item  = e.currentTarget.dataset;
+        let that = this;
+        wx.navigateTo({
+            url:`/pages/CreateRequirement/index?groupMsg=${JSON.stringify(that.data.theGroupMsg)}&item=${JSON.stringify(_item)}&enterType=1`//编辑进
+        })
+    },
     reqGroupList(e){
         let that = this;
         system.http({ url:`chat/groups/tree`, method:"get",param:{openId:app.globalData.openId} ,header:{'content-type': 'application/x-www-form-urlencoded'},scb(res){
@@ -359,7 +363,7 @@ export default {
             this.setData({
                 ["dater.date1"]:e.detail.value,
                 ["dater.timer1"]:new Date( e.detail.value ),
-                ["searchData.endAt"]:e.detail.value,
+                ["searchData.endAt"]:e.detail.value + " 23:59:59",
                 "chatData":[],
                 ["searchData.pageNum"]:1
             })

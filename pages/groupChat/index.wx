@@ -1,22 +1,20 @@
 <template id="page">
   <view id="container">
-    <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#267AFC',color:'#fff'} }}">
-        <ui-row height="40">
-            <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
-                <icon class="iconfont myWx-iconfontqianjin2" style="font-size:25px;"></icon>
-            </ui-col>
-            <ui-col vertical-align="middle" align="center" class="title">
-                {{ title }}
-            </ui-col>
-            <ui-col vertical-align="middle" align="center" width="80"></ui-col>
-        </ui-row>
-    </ui-nav-bar>
+      <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#267AFC',color:'#fff'} }}">
+          <ui-row height="40">
+              <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
+                  <icon class="iconfont myWx-iconfontqianjin2" style="font-size:25px;"></icon>
+              </ui-col>
+              <ui-col vertical-align="middle" align="center" class="title">
+                  {{ title }}
+              </ui-col>
+              <ui-col vertical-align="middle" align="center" width="80"></ui-col>
+          </ui-row>
+      </ui-nav-bar>
   
-
       <view class="loadingData" style="top:{{ loadingMsg.top }}">
         <icon class="iconfont myWx-unif032" style="color:{{ loadingMsg.color }};font-size:32px;"></icon>
       </view>
-
 
       <view class="article" style="height:{{ scrollHeight }}px;">
         <view class="weui-cells weui-cells_after-title" style="height:40px;background-color:rgba(38,122,252,0.6);top:-1px;">
@@ -25,10 +23,10 @@
                 <view><icon class="iconfont myWx-xiangyou" style="font-size:16px;color:white;line-height:35px;"></icon></view>
             </view>
         </view>
-        <!-- <view class="groupMsgBtn">
-          <button bindtap="groupMsg" wx:if="{{ !transmit.isTransmit }}" class="seeGroupMsg cBtn0"> 群信息 </button>
+        <view class="groupMsgBtn">
+          <!-- <button bindtap="groupMsg" wx:if="{{ !transmit.isTransmit }}" class="seeGroupMsg cBtn0"> 群信息 </button> -->
           <button bindtap="showModel" wx:if="{{ transmit.isTransmit }}" class="seeGroupMsg cBtn0">转发</button>
-        </view> -->
+        </view>
         <scroll-view scroll-y="true" bindscroll="scrllView" id="viewport" style="height: {{ scrollHeight - 103 }}px;overflow:hidden;top:-2px;position:relative;" scroll-into-view="{{toView}}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden"><!-- bindscrolltoupper="bindscrolltoupper"，，，，catch:touchstart="loadTouchstart" catch:touchend="loadTouchend" catch:touchmove="loadTouchmove"-->
           <view class="content" id="content">
             <checkbox-group bindchange="checkboxChange">
@@ -50,13 +48,13 @@
                             <!--文本类型-->
                             <text selectable='true' class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 0 || item.msgType == 7}}" style="background-color: white;">{{ item.content }} </text>
                             <!--需求类型-->
-                            <view class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="retOrConfirm" data-type="0" wx:if="{{ item.msgType == 20 || item.msgType == 22 || item.msgType == 21}}" style="background-color: white;width:100%;">
+                            <view class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="retOrConfirm" wx:if="{{ item.msgType == 20 || item.msgType == 22 || item.msgType == 21}}" style="background-color: white;width:100%;">
                               <ui-row style="border-bottom:1px solid rgba(0,0,0,0.1);">
                                   <ui-col style="color:{{ item.content.demandState ? '#4EBF62' : '#267AFC' }};font-size:12px;">{{ item.msgType == 20 || item.msgType == 21 ? "需求确认" : "修改需求确认" }}</ui-col>
                               </ui-row>
                               <ui-row style="height:60px;padding:7px 0;">
                                   <ui-col style="font-size:12px;" width="45">
-                                    <image mode="aspectFit" src="../../static/img/Group 6 Copy@2x.png"></image>
+                                    <image mode="aspectFit" src="../../static/img/Group6Copy@2x.png"></image>
                                   </ui-col>
                                   <ui-col style="font-size:12px;padding-left:10px;">
                                     <view style="white-space:nowrap;text-overflow:ellipsis;overflow:hidden;height:30px;">需求单{{ item.content.demandId }}</view>
@@ -66,22 +64,6 @@
                               </ui-row>
                               <ui-row>
                                     <ui-col style="white-space:nowrap;font-size:12px;" wx:if="{{ item.content.demandState == true }}">确认日期{{ item.content.createAt }}</ui-col>
-                              </ui-row>
-                              <ui-row>
-                                  <ui-col></ui-col>
-                                  <!-- 确认人确认需求 -->
-                                  <ui-col width="60" wx:if="{{ sendInputMsg.fromUser == item.toUser }}">
-                                    <button disabled="{{ item.content.demandState ? true : false }}" style="font-size:10px;" data-item="{{ item }}"  data-index="{{ index }}" type="{{ item.content.demandState ? 'default' : 'primary' }}" data-type="1" catchtap="retOrConfirm">{{ itemChildren.demandState ? '已确认' : '确认' }}</button>
-                                  </ui-col>
-                                  <!-- 发送人编辑需求 -->
-                                  <ui-col width="60" wx:if="{{ sendInputMsg.fromUser == item.fromUser }}">
-                                    <button style="font-size:10px;" wx:if="{{ item.content.demandState }}" disabled type="primary" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="retOrConfirm" data-type="0">已确认</button>
-                                    <button style="font-size:10px;" wx:else type="default" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="retOrConfirm" data-type="0">修改</button>
-                                  </ui-col>
-                                  <!-- 为除发送人和确认人外的人展示 -->
-                                  <ui-col width="60" wx:else>                        
-                                    <text style="font-size:11px;text-align:center;color:{{ itemChildren.demandState ? 'rgba(0,200,0,0.8)' : 'rgba(200,0,0,0.8)' }};">{{ itemChildren.demandState ? "已确认" : "未确认" }}</text>
-                                  </ui-col>
                               </ui-row>
                             </view>
                             <!--图片类型-->
@@ -143,7 +125,7 @@
                         </view>
                         <!-- 消息转发选项框...... -->
                     </ui-col>
-                    <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && transmit.isTransmit }}"><checkbox checked="{{ item.checked }}" class="checkbox" value="{{ item.msgId }}"/></view>
+                    <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && transmit.isTransmit && item.msgType != 20 && item.msgType != 21 && item.msgType != 22 }}"><checkbox checked="{{ item.checked }}" class="checkbox" value="{{ item.msgId }}"/></view>
                 </ui-row>
               </checkbox-group>
           </view>
@@ -159,21 +141,38 @@
       <!-- <ccGroupChat></ccGroupChat> -->
       <!--底部输入工具-->
       <ui-fixed-view bottom="0" left="0" right="0">
-        <view class="fixed_bottom">
+        <view class="fixed_bottom" style="background-color:rgba(0,0,0,0);">
           <ui-row class="rowInputs" height="50" border-top border-bottom>
-            <ui-col width="50" style="font-size:14px;" align="center" vertical-align="middle"><text class="iconfont {{ msgType == 0 ? 'myWx-jianpan' : 'myWx-ai01' }}" bindtap="toggleMsgType"></text></ui-col>
-            <ui-col vertical-align="middle" hidden="{{ msgType == 0 }}"><input cursor-spacing="6" class="myInput" focus="{{inputIn.inputFocus}}" bindinput="onInput" value="{{ inputVal }}"/></ui-col>
+            <ui-col width="50" style="font-size:14px;" align="center" vertical-align="middle"><text class="iconfont {{ msgType == 0 ? 'myWx-jianpan' : 'myWx-yuyintonghua' }}" bindtap="toggleMsgType"></text></ui-col>
+            <ui-col vertical-align="middle" hidden="{{ msgType == 0 }}"><input cursor-spacing="6" class="myInput" focus="{{inputIn.inputFocus}}" bindinput="onInput" value="{{ inputVal }}" style="background-color:white;"/></ui-col>
             <ui-col vertical-align="middle" hidden="{{ msgType == 1 }}"><button catch:touchstart="touchstart" catch:touchend="touchend" catch:touchmove="touchmove">按住说话</button></ui-col>
             <ui-col width="50" style="font-size:14px;" align="center" vertical-align="middle" hidden="{{ isInputing }}"><text class="iconfont myWx-jia" bindtap="toggleIsHidden"></text></ui-col>
             <ui-col width="55" vertical-align="middle" hidden="{{ !isInputing }}" class="sendBtn" space-left="3" space-right="3"><button type="primary" bindtap="sendMsg">发送</button></ui-col>
           </ui-row>
           <ui-row height="100" class="sentType" hidden="{{ isHidden }}" style="justify-content:flex-start;overflow:auto;">
-            <ui-col style="display:inline-block;" class="sentType_col" width="58" align="center" vertical-align="middle"><text class="iconfont myWx-zhaopian1" bindtap="chooseFile" data-type="1" data-watermark = "false"></text></ui-col>
-            <ui-col style="display:inline-block;" class="sentType_col" width="58" align="center" vertical-align="middle"><text class="iconfont myWx-tupianshuiyinshezhi" bindtap="chooseFile" data-type="1" data-watermark = "true" style="font-size:"></text></ui-col>
-            <ui-col class="sentType_col" width="58" align="center" vertical-align="middle"><text class="iconfont myWx-wenjian1" bindtap="chooseFile" data-type="6"></text></ui-col>
-            <ui-col class="sentType_col" width="58" align="center" vertical-align="middle"><text class="iconfont myWx-xiazai" bindtap="aite" data-type="9"></text></ui-col>
-            <ui-col class="sentType_col" width="58" align="center" vertical-align="middle"><text class="iconfont myWx-bianji" bindtap="creatRequirement" data-type="7"></text></ui-col>
-            <ui-col class="sentType_col" width="58" align="center" vertical-align="middle"><text class="iconfont myWx-banjie2" bindtap="aite" data-type="8"></text></ui-col>
+            <ui-col style="display:inline-block;" class="sentType_col" width="58" align="center" vertical-align="middle">
+              <!-- <text class="iconfont myWx-zhaopian1" bindtap="chooseFile" data-type="1" data-watermark = "false"></text> -->
+              <image src="../../static/img/GroupCopy@2x.png" style="width:50px;height:50px;" bindtap="chooseFile" data-type="1" data-watermark = "false"></image>
+            </ui-col>
+            <ui-col style="display:inline-block;" class="sentType_col" width="58" align="center" vertical-align="middle">
+              <!-- <text class="iconfont myWx-tupianshuiyinshezhi" bindtap="chooseFile" data-type="1" data-watermark = "true" style="font-size:"></text> -->
+              <image src="../../static/img/Group2Copy@2x.png" style="width:50px;height:50px;" bindtap="chooseFile" data-type="1" data-watermark = "true"></image>
+            </ui-col>
+            <ui-col class="sentType_col" width="58" align="center" vertical-align="middle">
+              <!-- <text class="iconfont myWx-wenjian1" bindtap="chooseFile" data-type="6"></text> -->
+              <image src="../../static/img/Group3Copy@2x.png" bindtap="chooseFile" data-type="6" style="width:50px;height:50px;"></image>              
+            </ui-col>
+            <ui-col class="sentType_col" width="58" align="center" vertical-align="middle">
+              <!-- <text class="iconfont myWx-xiazai" bindtap="aite" data-type="9"></text> -->
+              <image src="../../static/img/Group4Copy@2x.png" bindtap="aite" data-type="9" style="width:50px;height:50px;"></image>              
+            </ui-col>
+            <ui-col class="sentType_col" width="58" align="center" vertical-align="middle">
+              <!-- <text class="iconfont myWx-bianji" bindtap="creatRequirement" data-type="7"></text> -->
+              <image src="../../static/img/Group5Copy@2x.png" bindtap="creatRequirement" data-type="7" style="width:50px;height:50px;"></image>              
+            </ui-col>
+            <ui-col class="sentType_col" width="58" align="center" vertical-align="middle">
+              <text class="iconfont myWx-banjie2" bindtap="aite" data-type="8" style=""></text>
+            </ui-col>
           </ui-row>
           <scroll-view scroll-x class="sentType" hidden="{{ transmit.isAite }}" style="height:100px;white-space:nowrap;">
              <!-- hidden="{{ item.openId == theGroupMsg.managerId }}" -->
@@ -193,7 +192,7 @@
             <scroll-view scroll-y style="height:{{modelHeight}};border-top:1px solid #ddd;">
               <ui-accordion bindchange="slide" wx:for="{{ transmit.groupList }}" header-height="50" wx:key="index">
                   <view slot="header" class="accorHeader">
-                      <ui-row height="80" class="top_tip" border-bottom style="padding-right:35px;" data-parentItem="0" data-isaite="false" data-index="{{ index }}" data-item="{{ item }}" bindtap="selUser">
+                      <ui-row height="80" class="top_tip" border-bottom style="padding-right:35px;" data-parentItem="0" data-isaite="false" data-index="{{ index }}" data-item="{{ item }}" bindtap="selGroup">
                         <ui-col width="80" align="center" vertical-align="middle" data-item="{{ item }}">
                             <view class="left_icon left_icon1" style="">
                                 <image src="{{ item.icon || defaultHeadImg }}"></image>
@@ -214,7 +213,7 @@
                     </ui-row>
                   </view>
                   <view slot="content" class="accorContent" v-if="{{ item.children.length != 0 }}">
-                      <ui-row height="70" style="padding-right:0;" class="top_tip" border-bottom wx:key="{{indexTow}}" wx:for="{{item.children}}" bindtap="selUser" data-parentItem="{{ item }}" wx:for-item="itemChidren" data-item="{{itemChidren}}" wx:for-index="indexTow">
+                      <ui-row height="70" style="padding-right:0;" class="top_tip" border-bottom wx:key="{{indexTow}}" wx:for="{{item.children}}" bindtap="selGroup" data-parentItem="{{ item }}" wx:for-item="itemChidren" data-item="{{itemChidren}}" wx:for-index="indexTow">
                         <ui-col space-left="25" width="80" align="center" vertical-align="middle" data-item="{{ itemChidren }}">
                             <view class="left_icon left_icon1" style="">
                                 <image src="{{ itemChidren.icon || defaultHeadImg}}"></image>
@@ -436,7 +435,13 @@ export default {
             that.setData({
               scrollTop:10000
             })
-            that.sendReadedReceipt();
+            if(  data.msgType == 20 || data.msgType == 21 || data.msgType == 22 ){
+              setTimeout(() => {
+                that.sendReadedReceipt();                
+              }, 2000);
+            }else{
+              that.sendReadedReceipt();
+            }
           }else{//转发消息返回的消息，说明转发成功了
             if(data.fromUser == app.globalData.openId){
               system.stateMsg({title:"消息转发成功",icon:"success",time:1000})
@@ -470,8 +475,19 @@ export default {
         }else if( data.cmd == 0 ){//用户发送消息的时候发送 消息回执......
           if( data.msgType == 7){//@消息改写格式
             data.content = data.content.split('(@\`-\`@)').join(" ");
-          }else if( data.msgType == 22 || data.msgType == 21 || data.msgType == 20 ){//需求消息改写格式
+          }else if( data.msgType == 20 || data.msgType == 21 || data.msgType == 22 ){//需求
             data.content = JSON.parse(data.content);
+            let _time = new Date( data.content.createAt );
+            let endTime = `${_time.getFullYear()}-${_time.getUTCMonth() + 1}-${_time.getUTCDate()}`;
+            data.content.createAt = endTime;
+            that.data.chatData.filter((val)=>{
+              if( val.msgId == data.content.disableMsgId ){
+                val.content.disableMsgId = false
+              }
+            })
+            that.setData({
+              "chatData":that.data.chatData
+            })
           }
           var isMe = data.fromUser == that.data.sendInputMsg.fromUser ? true : false;
           if(isMe){
@@ -539,38 +555,9 @@ export default {
   retOrConfirm(e){
     let _item  = e.currentTarget.dataset;
     let that = this;
-    if( _item.type == 0 ){//修改需求......
       wx.navigateTo({
-        url:`/pages/CreateRequirement/index?groupMsg=${JSON.stringify(that.data.theGroupMsg)}&item=${JSON.stringify(_item)}&edit=${true}`
+        url:`/pages/CreateRequirement/index?groupMsg=${JSON.stringify(that.data.theGroupMsg)}&item=${JSON.stringify(_item)}&enterType=1`//编辑进
       })
-    }else if( _item.item.demandState != true ){ //未确认
-      let _params = {
-        "demandId":_item.item.content.demandId,
-        "fromUser":_item.item.fromUser,
-        "fromUserName":_item.item.fromUserName,
-        "groupId":_item.item.groupId,
-        "groupName":_item.item.groupName,
-        "headImgUrl":_item.item.headImgUrl,
-        "msgId":_item.item.msgId,
-        "position":_item.item.position
-      }
-      system.http({
-        url:'demand/confirm',
-        param:_params,
-        method:"post",
-        header:{'content-type': 'application/x-www-form-urlencoded'},
-        scb(res){
-          if( res.data.status == 200 ){
-            system.stateMsg({title:"确认成功",icon:"success"})
-          }
-        },
-        fcb(res){
-            system.stateMsg({title:"操作失败",icon:"none"})
-        }
-      })
-    }else{//已确认....
-
-    }
   },
   handleShowMask (e) {
     let _item = e.currentTarget.dataset;
@@ -621,14 +608,48 @@ export default {
   },
   creatRequirement(e){//新增需求......
     let that = this;
+    let _item  = e.currentTarget.dataset;
     wx.navigateTo({
-      url:`/pages/CreateRequirement/index?groupMsg=${JSON.stringify(that.data.theGroupMsg)}&edit=${false}`
+      url:`/pages/CreateRequirement/index?groupMsg=${JSON.stringify(that.data.theGroupMsg)}&item=${JSON.stringify(_item)}&enterType=0`//新增进
     })
   },
   showModel(){
     this.setData({
       ["model.show"]:true
     })
+  },
+  selGroup(e){//选择群组.....
+      let _item = e.currentTarget.dataset;
+      let that = this;
+      if( that.data.theGroupMsg.groupId != _item.item.groupId ){
+          this.data.transmit.groupList.forEach((val,i,arr)=>{
+              if(val.groupId == _item.item.groupId){
+                  val.act = true;
+              }else{
+                  val.act = false;
+              }
+              if( val.children.length > 0 ){
+                  val.children.forEach((value,ii,array)=>{
+                  if( value.groupId == _item.item.groupId ){
+                      value.act = true;
+                  }else{
+                      value.act = false;
+                  }
+                  })
+              }
+          })
+      }else{
+          system.stateMsg({
+              title:"不能选择本群",
+              icon:"none",
+              content:"",
+              time:1500
+          })
+      }
+      this.setData({
+          ['transmit.groupList']:that.data.transmit.groupList,
+          ['selUser.selMe']:_item.item
+      })
   },
   transMsg(){//选择完转发消息后跳转到群组列表页面
     let that = this;
@@ -665,6 +686,28 @@ export default {
         urls: imgList // 需要预览的图片http链接列表
     })
   },
+  remind(item){//提醒查看.....
+      let that = this;
+      system.http({
+       url:'chat/msg/chatRemind',
+       method:'post',
+       header:{'content-type': 'application/x-www-form-urlencoded'},
+       param:{
+         groupId:item.groupId,
+         fromUserName:item.fromUserName,
+         headImgUrl:that.data.theGroupMsg.icon,
+         managerId :that.data.theGroupMsg.managerId,
+         groupName :that.data.theGroupMsg.groupName,
+         sessionId:app.globalData.sessionId
+       },
+       scb(res){
+         system.stateMsg({title:"提醒成功",icon:"success",time:1000})
+       },
+       fcb(res){
+         system.stateMsg({title:"提醒失败",icon:"none",time:1000})
+       }
+     })
+  },
   openActionsheet(e){
     var that = this;
     var dataset = e.currentTarget.dataset;
@@ -679,9 +722,9 @@ export default {
     }
     function toggle(){
       if(new Date().getTime() - creatTime > 120000){
-        typeCode == 2 ? list = ['提醒查看','转发',"语音转文字"] : list = ['提醒查看','转发'];
+        typeCode == 2 ? list = ['提醒查看','转发',"语音转文字"] : ( (typeCode == 20 || typeCode == 21 || typeCode == 22) ? list = ['提醒查看'] : list = ['提醒查看','转发']);
       }else{
-        typeCode == 2 ? list = ['提醒查看','转发','撤回',"语音转文字"] : list = ['提醒查看','转发','撤回'];
+        typeCode == 2 ? list = ['提醒查看','转发','撤回',"语音转文字"] : ( (typeCode == 20 || typeCode == 21 || typeCode == 22) ? list = ['提醒查看','撤回'] : list = ['提醒查看','转发','撤回']);
       }
     }
     if( item.fromUser == that.data.sendInputMsg.fromUser ){
@@ -696,76 +739,33 @@ export default {
         'chatData':that.data.chatData
       })
     }
-    // 消息撤回.....
-    if(  item.fromUser == that.data.sendInputMsg.fromUser ){
-      wx.showActionSheet({
-          itemList: list,
-          success: function(res) {
-              if (res.tapIndex == 2 ) {
-                if(new Date().getTime() - creatTime > 120000){//语音转文字.....
-                changeData();
-                }else{//撤回
-                  app.globalData.socketTask.send({"data":JSON.stringify({msgId:item.msgId,cmd:'1',groupId:item.groupId,fromUser:item.fromUser,fromUserName:item.fromUserName})});
-                }
-              }else if( res.tapIndex == 0 ){//提醒查看
-                system.http({
-                  url:'chat/msg/chatRemind',
-                  method:'post',
-                  header:{'content-type': 'application/x-www-form-urlencoded'},
-                  param:{
-                    groupId:item.groupId,
-                    fromUserName:item.fromUserName,
-                    headImgUrl:that.data.theGroupMsg.icon,
-                    managerId :that.data.theGroupMsg.managerId,
-                    groupName :that.data.theGroupMsg.groupName,
-                    sessionId:app.globalData.sessionId
-                  },
-                  scb(res){
-                    system.stateMsg({title:"提醒成功",icon:"success",time:1000})
-                  },
-                  fcb(res){
-                    system.stateMsg({title:"提醒失败",icon:"none",time:1000})
-                  }
-                })
-              }else if( res.tapIndex == 1 ){//转发
-                that.data.chatData.filter((item_0)=>{
-                  if(item_0.msgId == item.msgId){
-                    item_0.checked = true;
-                    that.data.transmit.transData.push( item_0.msgId )
-                  }
-                })
-                that.setData({
-                  "chatData":that.data.chatData,
-                  ["transmit.isTransmit"]:true,
-                  ['inputIn.isLeft']:true,
-                })
-              }else if( res.tapIndex == 3){//语音转文字.....
-                changeData();
-              }
+    function _implement (code){
+      if( list[code] == "语音转文字"){
+        changeData();
+      }else if( list[code] == "提醒查看" ){
+        that.remind(item);
+      }else if( list[code] == "转发" ){
+        that.data.chatData.filter((item_0)=>{
+          if(item_0.msgId == item.msgId){
+            item_0.checked = true;
+            that.data.transmit.transData.push( item_0.msgId )
           }
-      });
-    }else{
-      wx.showActionSheet({
-          itemList: list,
-          success: function(res) {
-              if (res.tapIndex == 1 ) {//语音转文字
-                changeData();
-              }else if(res.tapIndex == 0){//转发
-                that.data.chatData.filter((item_0)=>{
-                  if(item_0.msgId == item.msgId){
-                    item_0.checked = true;
-                    that.data.transmit.transData.push( item_0.msgId )
-                  }
-                })
-                that.setData({
-                  "chatData":that.data.chatData,
-                  ["transmit.isTransmit"]:true,
-                  ['inputIn.isLeft']:true,
-                })
-              }
-          }
-      });
+        })
+        that.setData({
+          "chatData":that.data.chatData,
+          ["transmit.isTransmit"]:true,
+          ['inputIn.isLeft']:true,
+        })
+      }else if( list[code] == "撤回" ){
+        app.globalData.socketTask.send({"data":JSON.stringify({msgId:item.msgId,cmd:'1',groupId:item.groupId,fromUser:item.fromUser,fromUserName:item.fromUserName})});
+      }
     }
+    wx.showActionSheet({
+        itemList: list,
+        success: function(res) {
+            _implement(res.tapIndex);
+        }
+    });
   },
   handleShow3(){
       this.setData({
@@ -961,6 +961,9 @@ export default {
               val.content = val.content.split('(@\`-\`@)').join(' ');
             }else if( val.msgType == 20 || val.msgType == 22 || val.msgType == 21){
               val.content = JSON.parse( val.content )
+              let _time = new Date( val.content.createAt );
+              let endTime = `${_time.getFullYear()}-${_time.getUTCMonth() + 1}-${_time.getUTCDate()}`;
+              val.content.createAt = endTime;
             }
           })
           that.data.chatData.splice(0,0,...res.data.data.rows);
@@ -1099,6 +1102,7 @@ export default {
   comeOver(e){//这个是要发送办结消息.....
     let _me = this.data.sendInputMsg;
     let _groupMsg = this.data.theGroupMsg;
+    let that = this;
     let _selMe = this.data.theGroupMsg.groupUsers.filter((val)=>{
       return val.act == true
     })
@@ -1110,6 +1114,10 @@ export default {
       method:"post",
       header:{'content-type': 'application/x-www-form-urlencoded'},
       scb(res){
+        that.setData({
+          "isHidden":true,
+          ["transmit.isAite"]:true
+        })
         system.stateMsg({
           title:"发送评价成功",
           icon:"success",
@@ -1256,8 +1264,9 @@ export default {
     .iconfont{
       font-size:30px;
       padding:0px 8px;
-      border:1px solid #999999;
-      border-radius: 7px;
+      // border:1px solid #999999;
+      // border-radius: 7px;
+      background-color: white;
       color: #666666;
       &:active{
         opacity: 0.8;
@@ -1266,8 +1275,8 @@ export default {
   }
   .myInput{
     // background:rgba(255,255,255,1);
-    border-radius:5px;
-    border: 1px solid #999999;
+    // border-radius:5px;
+    // border: 1px solid #999999;
     height: 30px;
     text-indent: 10px;
     padding-left: 5px;
@@ -1400,6 +1409,9 @@ export default {
   bottom:0px;
   left:0;
 }
+.myWx-yuyintonghua{
+  font-size: 30px;
+}
 .loadingData{
   text-align:center;
   height:100%;
@@ -1493,6 +1505,7 @@ export default {
   .angleIcon2{
     right:-17rpx;
     top:9rpx;
+    background-color:rgba(0,0,0,0);
   }
   .atMsg {
     height: 100%;

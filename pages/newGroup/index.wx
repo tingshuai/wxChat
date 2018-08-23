@@ -40,7 +40,7 @@
           </view>
       </view>
 
-      <view class="weui-cells__title" wx:if="{{ addMenu == 'false' }}">有效日期</view>
+      <!-- <view class="weui-cells__title" wx:if="{{ addMenu == 'false' }}">有效日期</view>
       <view class="weui-cells weui-cells_after-title" wx:if="{{ addMenu == 'false' }}">
           <view class="weui-cell weui-cell_select">
               <view class="weui-cell__hd weui-cell__hd_in-select-after">
@@ -52,7 +52,7 @@
                   </picker>
               </view>
           </view>
-      </view>
+      </view> -->
 
       <view class="weui-cells__title" wx:if="{{ addMenu == 'false' }}">群描述</view>
       <view class="weui-cells weui-cells_after-title" wx:if="{{ addMenu == 'false' }}">
@@ -144,7 +144,7 @@ export default {
         require:true
       },
       deadline:{
-        require:true
+        require:false
       }
     }
   },
@@ -411,6 +411,7 @@ export default {
       if(that.data.edit == 'true'){
         formData.groupId = that.data.groupMsg.groupId;
       }
+      delete formData.deadline;
       system.http({
         url: that.data.edit == 'true' ? `chat/groups/${that.data.groupMsg.groupId}` : 'chat/groups',//新增&修改....
         method:'post',
@@ -420,14 +421,13 @@ export default {
           let tip = that.data.edit == 'true' ? "修改群组成功" : '新增群组成功';
           if(res.data.status == 200){
             system.stateMsg({title: tip,icon:"success",time:1000});
-            if ( app.globalData.socketTask ){
+            if ( app.globalData.socketTask.openType == true ){
               app.globalData.socketTask.close();
             }
             setTimeout(function(){
               wx.reLaunch({
                 url: '/pages/home/index'
               })
-              console.log( "跳转")
             },1000)
           }else{
             system.stateMsg({title:res.data.message,icon:"none",time:1000})

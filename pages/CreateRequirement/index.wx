@@ -1,5 +1,5 @@
 <template>
-  <view>
+  <view style="height:100%;overflow:auto;">
     <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#267AFC',color:'#fff'} }}">
         <ui-row height="40">
             <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
@@ -11,89 +11,108 @@
             <ui-col vertical-align="middle" align="center" width="80"></ui-col>
         </ui-row>
     </ui-nav-bar>
-    <view style="height:66px;width:100%;"></view>
-    <!-- 需求单 -->
-    <view class="weui-cells__title">需求描述</view>
-    <view class="weui-cells weui-cells_after-title" style="display:block;">
-        <view class="weui-cell" style="padding:0;">
-            <view class="weui-cell__bd">
-                <textarea fixed="{{ true }}" show-confirm-bar="{{ false }}" id="reqMsg" auto-height="{{ true }}" style="min-height:100px;box-sizing:border-box;position:relative;padding:5px 10px;font-size:14px;" value="{{ form.demandText }}" data-index="{{ index }}" class="weui-textarea" bindinput="inputing"/>
+    <view  wx:if="{{ come_msg.enterType == '0'  }}">
+        <view style="height:66px;width:100%;"></view>
+        <!-- 需求单 -->
+        <view class="weui-cells__title">需求描述</view>
+        <view class="weui-cells weui-cells_after-title" style="display:block;">
+            <view class="weui-cell" style="padding:0;">
+                <view class="weui-cell__bd">
+                    <textarea fixed="{{ true }}" show-confirm-bar="{{ false }}" id="reqMsg" auto-height="{{ true }}" style="min-height:100px;box-sizing:border-box;position:relative;padding:5px 10px;font-size:14px;" value="{{ form.demandText }}" data-index="{{ index }}" class="weui-textarea" bindinput="inputing"/>
+                </view>
             </view>
         </view>
-    </view>
-    <!-- 上传附件 -->
-    <view class="weui-cells__title">上传图片</view>
-    <view class="page__bd">
-        <view class="weui-cells" style="margin:0;">
-            <view class="weui-cell">
-                <view class="weui-cell__bd">
-                    <view class="weui-uploader">
-                        <view class="weui-uploader__bd">
-                            <view class="weui-uploader__files" id="uploaderFiles">
-                                <block wx:for="{{ form.demandAttach }}" wx:key="*this">
-                                    <view class="weui-uploader__file" bindtap="previewImage" id="{{item}}" style="position:relative;">
-                                        <image class="weui-uploader__img" src="{{ item }}" mode="aspectFill" />
-                                        <icon type="cancel" catchtap="cancle" data-index="{{ index }}" data-type="0" data-item="{{ item }}" size="23" style="position:absolute;top:-1px;right:-1px;z-index:100;"></icon>
-                                    </view>
-                                </block>
-                                <block wx:for="{{ come_msg.files }}" wx:key="*this">
-                                    <view class="weui-uploader__file" bindtap="previewImage" id="{{item}}" style="position:relative;">
-                                        <image class="weui-uploader__img" src="{{ item }}" mode="aspectFill" />
-                                        <icon type="cancel" catchtap="cancle" data-type="1" data-index="{{ index }}" data-item="{{ item }}" size="23" style="position:absolute;top:-1px;right:-1px;z-index:100;"></icon>
-                                    </view>
-                                </block>
-                            </view>
-                            <view class="weui-uploader__input-box">
-                                <view class="weui-uploader__input" bindtap="chooseImage"></view>
+        <!-- 上传附件 -->
+        <view class="weui-cells__title">上传图片</view>
+        <view class="page__bd">
+            <view class="weui-cells" style="margin:0;">
+                <view class="weui-cell">
+                    <view class="weui-cell__bd">
+                        <view class="weui-uploader">
+                            <view class="weui-uploader__bd">
+                                <view class="weui-uploader__files" id="uploaderFiles">
+                                    <block wx:for="{{ form.demandAttach }}" wx:key="*this">
+                                        <view class="weui-uploader__file" bindtap="previewImage" id="{{item}}" style="position:relative;">
+                                            <image class="weui-uploader__img" src="{{ item }}" mode="aspectFill" />
+                                            <icon type="cancel" catchtap="cancle" data-index="{{ index }}" data-type="0" data-item="{{ item }}" size="23" style="position:absolute;top:-1px;right:-1px;z-index:100;"></icon>
+                                        </view>
+                                    </block>
+                                    <block wx:for="{{ come_msg.files }}" wx:key="*this">
+                                        <view class="weui-uploader__file" bindtap="previewImage" id="{{item}}" style="position:relative;">
+                                            <image class="weui-uploader__img" src="{{ item }}" mode="aspectFill" />
+                                            <icon type="cancel" catchtap="cancle" data-type="1" data-index="{{ index }}" data-item="{{ item }}" size="23" style="position:absolute;top:-1px;right:-1px;z-index:100;"></icon>
+                                        </view>
+                                    </block>
+                                </view>
+                                <view class="weui-uploader__input-box">
+                                    <view class="weui-uploader__input" bindtap="chooseImage"></view>
+                                </view>
                             </view>
                         </view>
                     </view>
                 </view>
             </view>
+        </view>    
+        <!-- 选择需求对接人 -->
+        <view class="weui-cells weui-cells_after-title" style="margin-top:20px;">
+            <navigator class="weui-cell weui-cell_access" url="" catchtap="sendTo" hover-class="weui-cell_active">
+                <view class="weui-cell__bd">对接人</view>
+                <view class="weui-cell__ft weui-cell__ft_in-access">{{ form.confirmUserName || "" }}</view>
+            </navigator>
         </view>
-    </view>    
-    <!-- 选择需求对接人 -->
-    <view class="weui-cells weui-cells_after-title" style="margin-top:20px;">
-        <navigator class="weui-cell weui-cell_access" url="" catchtap="sendTo" hover-class="weui-cell_active">
-            <view class="weui-cell__bd">对接人</view>
-            <view class="weui-cell__ft weui-cell__ft_in-access">{{ form.confirmUserName || "" }}</view>
-        </navigator>
-    </view>
 
-    <view class="btn-area">
-      <button catchtap="submit" type="primary" class="myBtnSuccess">提交需求</button>
-    </view>
-    <ui-popup show="{{ model.show }}" height="100%">
-        <view style="height:100%;width:100%;overflow:hidden;">
-            <view style="height:70px;"></view>
-            <scroll-view scroll-y style="height:100%;border-top:1px solid #ddd;">
-                <ui-row height="55" wx:for="{{ groupMsg.groupUsers }}" wx:key="{{ index }}" class="top_tip" border-bottom style="padding-right:35px;" data-parentItem="0" data-isaite="false" data-index="{{ index }}" data-item="{{ item }}" bindtap="selUser">
-                    <ui-col width="55" align="center" vertical-align="middle" data-item="{{ item }}" style="padding:4px;">
-                        <image mode="aspectFit" src="{{ item.headImgUrl }}" style="height:100%;"></image>
-                    </ui-col>
-                    <ui-col class="text" align="left" vertical-align="middle" space="20" data-item="{{ item }}">
-                        <view style="width: 100%;">
-                            <ui-row height="22">
-                                <ui-col align="left" vertical-align="middle">
-                                    <text>{{ item.username || "" }}</text>
-                                </ui-col>
-                            </ui-row>
-                            <view class="txt">{{ item.position ? item.position : "" }}</view>
-                        </view>
-                    </ui-col>
-                    <icon class="angleIcon" type="success" wx:if="{{ item.act }}" size="23"></icon>
-                </ui-row>
-            </scroll-view>    
+        <view class="btn-area">
+            <button catchtap="submit" type="primary" class="myBtnSuccess">提交需求</button>
         </view>
-    </ui-popup>
+        <ui-popup show="{{ model.show }}" height="100%">
+            <view style="height:100%;width:100%;overflow:hidden;">
+                <view style="height:70px;"></view>
+                <scroll-view scroll-y style="height:100%;border-top:1px solid #ddd;">
+                    <ui-row height="55" wx:for="{{ groupMsg.groupUsers }}" wx:key="{{ index }}" class="top_tip" border-bottom style="padding-right:35px;" data-parentItem="0" data-isaite="false" data-index="{{ index }}" data-item="{{ item }}" bindtap="selUser">
+                        <ui-col width="55" align="center" vertical-align="middle" data-item="{{ item }}" style="padding:4px;">
+                            <image mode="aspectFit" src="{{ item.headImgUrl }}" style="height:100%;"></image>
+                        </ui-col>
+                        <ui-col class="text" align="left" vertical-align="middle" space="20" data-item="{{ item }}">
+                            <view style="width: 100%;">
+                                <ui-row height="22">
+                                    <ui-col align="left" vertical-align="middle">
+                                        <text>{{ item.username || "" }}</text>
+                                    </ui-col>
+                                </ui-row>
+                                <view class="txt">{{ item.position ? item.position : "" }}</view>
+                            </view>
+                        </ui-col>
+                        <icon class="angleIcon" type="success" wx:if="{{ item.act }}" size="23"></icon>
+                    </ui-row>
+                </scroll-view>    
+            </view>
+        </ui-popup>
+    </view>
     <!-- 填好的需求确认单... -->
-    <view>
-        <ui-row><ui-col>需求单{{ come_msg.item.content.demandId }}</ui-col></ui-row>
-        <ui-row><ui-col>发起时间{{ come_msg.item.content.createAt }}</ui-col></ui-row>
-        <ui-row><ui-col>发起人{{ come_msg.item.content.createUser }}</ui-col></ui-row>
-        <ui-row><ui-col>对接人{{ come_msg.item.toUser }}</ui-col></ui-row>
-        <ui-row><ui-col>需求内容</ui-col></ui-row>
-        <ui-row><ui-col>{{ come_msg.item.content.demandText  }}</ui-col></ui-row>
+    <view wx:if="{{ come_msg.enterType == '1' }}" style="height:100%;">
+        <view style="height:66px;width:100%;"></view>
+        <view style="padding:5px 10px;background-color:white;margin-top:7px;">
+            <ui-row style="margin-top:10px;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><ui-col>需求单{{ come_msg.item.content.demandId }}</ui-col></ui-row>
+            <view class="weui-cells__title" style="padding-left:0px;margin-top:1px;font-size:12px;">发起时间{{ come_msg.item.content.createAt }}</view>
+            <view class="weui-cells__title" style="padding-left:0px;font-size:12px;margin-top:20px;">发起人：{{ come_msg.item.fromUserName }}</view>
+            <view class="weui-cells__title" style="padding-left:0px;font-size:12px;margin-top:0px;">对接人：{{ come_msg.item.content.confirmUserName }}</view>
+            <view class="weui-cells__title" style="padding-left:0px;font-size:12px;color:black;font-size:15px;">需求内容</view>
+            <view style="display:block;color:#999;">
+                {{ come_msg.item.content.demandText  }}
+            </view>
+            <view class="weui-cells__title" style="padding-left:0px;color:black;font-size:15px;">图片</view>
+            <view style="height:90px;">
+                <block wx:for="{{ form.demandAttach }}" wx:key="*this">
+                    <view class="weui-uploader__file" bindtap="previewImage2" id="{{item}}" style="position:relative;">
+                        <image class="weui-uploader__img" src="{{ item }}" mode="aspectFill" />
+                    </view>
+                </block>
+            </view>         
+        </view>
+        <view class="btn-area" style="margin-top:35px;">
+            <button catchtap="editRequirement" wx:if="{{ come_msg.item.content.editable }}" type="primary" class="myBtnSuccess">修改需求</button>
+            <button catchtap="confirmRequirement" style="margin-top:15px;" type="default" wx:if="{{ !come_msg.item.content.demandState && ( come_msg.item.toUser == userMsgReq.openId) }}">确认需求</button>
+        </view>
     </view>
   </view>
 </template>
@@ -102,7 +121,7 @@
 var app = getApp();
 import system from '../../static/utils/system'
 
-let _promise1;
+let _promise1,_url;
   export default {
     config: {
       navigationBarTitleText: '申请填写'
@@ -125,14 +144,15 @@ let _promise1;
         headImgUrl :"",//
         position :"",//
         confirmUserName:"",
-        demandAttach :[]
+        demandAttach :[],
+        msgId:""
       },
       come_msg:{
-        edit:"",
+        enterType:"",
         item:{},
         itemMsg:{},
         selUserName:"",
-        files:[]
+        files:[],
       },
       requireList:[{value:""}],
       validate:{
@@ -144,7 +164,8 @@ let _promise1;
             isLegal:false
         }
       },
-      groupMsg:{}
+      groupMsg:{},
+      userMsgReq:app.globalData.userMsgReq
     },
     navigateBack () {
         wx.navigateBack();
@@ -152,8 +173,12 @@ let _promise1;
     onLoad(option){
       let _groupMsg = JSON.parse( option.groupMsg );
       let that = this;
+      let _item = JSON.parse( option.item );
+      option.enterType == 1 ? _url = 'demand/edit' : _url = 'demand/add';
       this.setData({
         groupMsg:_groupMsg,
+        ["come_msg.enterType"]:option.enterType,
+        ["come_msg.itemMsg"]:_item,
         ['form.fromUser']:app.globalData.openId,
         ['form.fromUserName']:app.globalData.userMsgReq.username,
         ['form.groupName']:_groupMsg.groupName,
@@ -161,22 +186,28 @@ let _promise1;
         ['form.headImgUrl']:app.globalData.userMsgReq.headImgUrl,
         ['form.position']:app.globalData.userMsgReq.position,
       });
-      if( option.edit == "true" ){//编辑进来.....
-        let _item = JSON.parse( option.item );
+      if( option.enterType == 1 ){//编辑。。。。
         this.setData({
-            ['come_msg.edit']:option.edit,
+            ['form.msgId']:_item.item.msgId,
             ['come_msg.item']:_item.item,
-            ["come_msg.itemMsg"]:_item,
-            ["form.confirmUser"]:_item.item.toUser,
-            ["form.demandText"]:_item.itemcontent.demandText,
-            ["form.fromUser"]:_item.item.fromUser,
-            ["form.fromUserName"]:_item.item.fromUserName, 
-            ["form.demandId"]:_item.itemcontent.demandId,
-            ["form.confirmUserName"]:_item.itemcontent.confirmUserName,
             ["form.demandAttach"]:_item.itemcontent.demandAttach.split(',')
         })
+      }
+    },
+    editRequirement(e){
+        let that = this;
+        let _itemMsg = that.data.come_msg.itemMsg;
+        this.setData({
+            ["come_msg.enterType"]:0,
+            ["form.confirmUser"]:_itemMsg.item.toUser,
+            ["form.demandText"]:_itemMsg.itemcontent.demandText,
+            // ["form.fromUser"]:_itemMsg.item.fromUser,
+            // ["form.fromUserName"]:_itemMsg.item.fromUserName,
+            ["form.demandId"]:_itemMsg.itemcontent.demandId,
+            ["form.confirmUserName"]:_itemMsg.itemcontent.confirmUserName,
+        })
         this.data.groupMsg.groupUsers.filter((val)=>{//重置确认人
-            if( val.openId == _item.item.toUser ){
+            if( val.openId == _itemMsg.item.toUser ){
                 val.act = true;
                 that.setData({
                     ["groupMsg.groupUsers"]:that.data.groupMsg.groupUsers,
@@ -184,15 +215,40 @@ let _promise1;
             }else{
                 val.act = false;
             }
-        })      
-      }
+        })
     },
-    addRequirement(e){
-
+    confirmRequirement(e){
+      let that = this;
+      let _itemMsg = that.data.come_msg.itemMsg;
+      let _params = {
+        "demandId":_itemMsg.item.content.demandId,
+        "fromUser":_itemMsg.item.fromUser,
+        "fromUserName":_itemMsg.item.fromUserName,
+        "groupId":_itemMsg.item.groupId,
+        "groupName":_itemMsg.item.groupName,
+        "headImgUrl":_itemMsg.item.headImgUrl,
+        "msgId":_itemMsg.item.msgId,
+        "position":_itemMsg.item.position
+      }
+      system.http({
+        url:'demand/confirm',
+        param:_params,
+        method:"post",
+        header:{'content-type': 'application/x-www-form-urlencoded'},
+        scb(res){
+          if( res.data.status == 200 ){
+            system.stateMsg({title:"确认成功",icon:"success",time:1000})
+            wx.navigateBack()
+          }
+        },
+        fcb(res){
+            system.stateMsg({title:"操作失败",icon:"none",time:1000})
+            wx.navigateBack()
+        }
+      })
     },
     submit(e){
-        let that = this, _url;
-        this.data.come_msg.edit == "true" ? _url = 'demand/edit' : _url = 'demand/add';
+        let that = this;
         _promise1 = new Promise((resolve,rejece)=>{
             if( that.data.form.demandText == '' ){
                 system.stateMsg({title:"需求内容不能为空",icon:"none",time:1000})
@@ -213,6 +269,7 @@ let _promise1;
             }
         })
         _promise1.then(()=>{
+            that.data.form.demandAttach
             let _newDemand = Object.assign( that.data.form,{demandAttach: that.data.form.demandAttach.join( ',' )}) ;
             system.http({
                 url:_url,
@@ -222,11 +279,20 @@ let _promise1;
                 scb(res){
                     if( res.data.status == 200 ){
                         system.stateMsg({title:"发送成功",icon:"success",time:1500})
-                        setTimeout(() => { wx.navigateBack() }, 1500);
+                        setTimeout(() => { 
+                            let page = getCurrentPages();
+                            if( page[ page.length -2 ].route == "pages/groupChat/index" ){
+                                wx.navigateBack()
+                            }else if( page[ page.length -2 ].route == "pages/historyMsg/index"){
+                                wx.navigateBack({
+                                    delta: page.length - 4
+                                })
+                            }
+                         }, 1500);
                     }
                 },
                 fcb(res){
-                    system.stateMsg({title: that.data.come_msg.edit == "true" ? "编辑失败" : "编辑成功" ,icon:"none",time:1500})
+                    system.stateMsg({title: that.data.come_msg.enterType == 1 ? "编辑失败" : "编辑成功" ,icon:"none",time:1500})
                     setTimeout(() => { wx.navigateBack() }, 1500);
                 }
             })
@@ -303,6 +369,12 @@ let _promise1;
         wx.previewImage({
             current: e.currentTarget.id, // 当前显示图片的http链接
             urls: this.data.come_msg.files // 需要预览的图片http链接列表
+        })
+    },
+    previewImage2(e){
+        wx.previewImage({
+            current: e.currentTarget.id, // 当前显示图片的http链接
+            urls: this.data.form.demandAttach // 需要预览的图片http链接列表
         })
     },
     selUser(e){//选择群成员.....

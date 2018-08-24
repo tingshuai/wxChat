@@ -16,10 +16,10 @@
         <icon class="iconfont myWx-unif032" style="color:{{ loadingMsg.color }};font-size:32px;"></icon>
       </view>
 
-      <view class="article" style="height:{{ scrollHeight }}px;">
+      <view class="article" style="height:{{ transmit.tabBar.actItem == 0 ? scrollHeight : ( scrollHeight + 50 ) }}px;">
         <view class="weui-cells weui-cells_after-title" style="height:40px;background-color:rgba(38,122,252,0.6);top:-1px;">
             <view class="weui-cell weui-cell_link" style="padding-left:10px;padding-right:5px;height:100%;" bindtap="groupMsg">
-                <view class="weui-cell__bd" style="color:white;font-size:12px;" >群信息</view>
+                <view class="weui-cell__bd" style="color:white;font-size:12px;">群信息</view>
                 <view><icon class="iconfont myWx-xiangyou" style="font-size:16px;color:white;line-height:35px;"></icon></view>
             </view>
         </view>
@@ -27,7 +27,7 @@
           <!-- <button bindtap="groupMsg" wx:if="{{ !transmit.isTransmit }}" class="seeGroupMsg cBtn0"> 群信息 </button> -->
           <button bindtap="showModel" wx:if="{{ transmit.isTransmit }}" class="seeGroupMsg cBtn0">转发</button>
         </view>
-        <scroll-view scroll-y="true" bindscroll="scrllView" id="viewport" style="height: {{ scrollHeight - 103 }}px;overflow:hidden;top:-2px;position:relative;" scroll-into-view="{{toView}}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden"><!-- bindscrolltoupper="bindscrolltoupper"，，，，catch:touchstart="loadTouchstart" catch:touchend="loadTouchend" catch:touchmove="loadTouchmove"-->
+        <scroll-view scroll-y="true" bindscroll="scrllView" id="viewport" style="height: {{ transmit.tabBar.actItem == 0 ? (scrollHeight - 103) : (scrollHeight - 53)}}px;overflow:hidden;top:-2px;position:relative;" scroll-into-view="{{toView}}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden"><!-- bindscrolltoupper="bindscrolltoupper"，，，，catch:touchstart="loadTouchstart" catch:touchend="loadTouchend" catch:touchmove="loadTouchmove"-->
           <view class="content" id="content">
             <checkbox-group bindchange="checkboxChange">
               <ui-row hover-class="touchui-hover" class="talkItem" wx:for="{{ chatData }}" wx:key="index" id="the{{index}}">
@@ -42,7 +42,7 @@
                         <view style="width: 100%; text-align:{{ sendInputMsg.fromUser == item.fromUser ? 'right' : 'left' }};">
                             <ui-row height="20" wx:if="{{ sendInputMsg.fromUser != item.fromUser }}">
                                 <ui-col align="{{ sendInputMsg.fromUser == item.fromUser ? 'right' : 'left'}}" vertical-align="top">
-                                    <view class="userMsg"><text class="name">{{ item.fromUserName }}</text><text decode="true">&nbsp;&nbsp;</text><text class="job">{{ item.position }}</text></view>
+                                    <view class="userMsg"><text class="name">{{ item.fromUserName }}</text><text decode="true">&nbsp;&nbsp;</text><text class="job">{{ item.position || '' }}</text></view>
                                 </ui-col>
                             </ui-row>
                             <!--文本类型-->
@@ -68,7 +68,7 @@
                             </view>
                             <!--图片类型-->
                             <view class="talkContent" wx:if="{{ item.msgType == 1 }}" style="height:100px;background-color:rgba(0,0,0,0);width:40%;">
-                              <image lazy-load="true" mode="aspectFit" data-item="{{item}}" bindtap="previewImage" catch:longpress="openActionsheet" style="height:100%;width:auto" src="{{ item.attachUrl }}"></image>
+                              <image lazy-load="true" mode="aspectFill" data-item="{{item}}" bindtap="previewImage" catch:longpress="openActionsheet" style="height:100%;width:auto" src="{{ item.attachUrl }}"></image>
                               <view class="myProgress" wx:if="{{ item.progress >0 && item.progress < 100 }}" style="height:1px;width:{{ item.progress }}%;background-color: {{ item.progress == 100 && item.readCount >= 0 ? '#49CC8D' : 'rgba(255,100,100,0.8)' }}"></view></view>
                             <!--语音类型-->
                             <view class="talkContent" wx:if="{{ item.msgType == 2 }}" style="width:{{ item.seeWord ? 'auto' : '100px' }};min-width:100px;" catchtap="playVoice" bind:longpress="openActionsheet" data-index="{{ index }}" data-item="{{item}}">
@@ -130,7 +130,7 @@
               </checkbox-group>
           </view>
         </scroll-view>
-        <ui-fixed-view top="30%" left="{{ voice.plVoice }}" style="z-index:9999;" wx:if="{{ voice.show }}">
+        <ui-fixed-view top="30%" left="{{ voice.plVoice }}" style="z-index:9999;display:{{ voice.show ? 'block' : 'none' }}">
             <view class="fixed-view-content" style="background-color:rgba(0,0,0,0.5);padding:0px 35px 20px 35px;border-radius:7px;">
               <image src="{{ voice.icon }}" style="width:100px;height:100px;"></image>
               <text style="display:block;text-align:center;color:white;background-color:{{ voice.color }}">{{ voice.content }}</text>
@@ -140,8 +140,8 @@
       <!-- <cc-group-chat></cc-group-chat> -->
       <!-- <ccGroupChat></ccGroupChat> -->
       <!--底部输入工具-->
-      <ui-fixed-view bottom="0" left="0" right="0">
-        <view class="fixed_bottom" style="background-color:rgba(0,0,0,0);">
+      <ui-fixed-view bottom="0" left="0" right="0" wx:if="{{ transmit.tabBar.actItem == 0 }}">
+        <view class="fixed_bottom" style="background-color:rgba(0,0,0,0);border-top:1px solid #ddd;">
           <ui-row class="rowInputs" height="50" border-top border-bottom>
             <ui-col width="50" style="font-size:14px;" align="center" vertical-align="middle"><text class="iconfont {{ msgType == 0 ? 'myWx-jianpan' : 'myWx-yuyintonghua' }}" bindtap="toggleMsgType"></text></ui-col>
             <ui-col vertical-align="middle" hidden="{{ msgType == 0 }}"><input cursor-spacing="6" class="myInput" focus="{{inputIn.inputFocus}}" bindinput="onInput" value="{{ inputVal }}" style="background-color:white;"/></ui-col>
@@ -150,33 +150,39 @@
             <ui-col width="55" vertical-align="middle" hidden="{{ !isInputing }}" class="sendBtn" space-left="3" space-right="3"><button type="primary" bindtap="sendMsg">发送</button></ui-col>
           </ui-row>
           <ui-row height="100" class="sentType" hidden="{{ isHidden }}" style="justify-content:flex-start;overflow:auto;">
+            <!-- 发送图片 -->
             <ui-col style="display:inline-block;" class="sentType_col" width="58" align="center" vertical-align="middle">
               <!-- <text class="iconfont myWx-zhaopian1" bindtap="chooseFile" data-type="1" data-watermark = "false"></text> -->
               <image src="../../static/img/GroupCopy@2x.png" style="width:50px;height:50px;" bindtap="chooseFile" data-type="1" data-watermark = "false"></image>
             </ui-col>
+            <!-- 发送水印图片 -->
             <ui-col style="display:inline-block;" class="sentType_col" width="58" align="center" vertical-align="middle">
               <!-- <text class="iconfont myWx-tupianshuiyinshezhi" bindtap="chooseFile" data-type="1" data-watermark = "true" style="font-size:"></text> -->
               <image src="../../static/img/Group2Copy@2x.png" style="width:50px;height:50px;" bindtap="chooseFile" data-type="1" data-watermark = "true"></image>
             </ui-col>
+            <!-- 查看文件 -->
             <ui-col class="sentType_col" width="58" align="center" vertical-align="middle">
               <!-- <text class="iconfont myWx-wenjian1" bindtap="chooseFile" data-type="6"></text> -->
               <image src="../../static/img/Group3Copy@2x.png" bindtap="chooseFile" data-type="6" style="width:50px;height:50px;"></image>              
             </ui-col>
+            <!-- @成员 -->
             <ui-col class="sentType_col" width="58" align="center" vertical-align="middle">
               <!-- <text class="iconfont myWx-xiazai" bindtap="aite" data-type="9"></text> -->
               <image src="../../static/img/Group4Copy@2x.png" bindtap="aite" data-type="9" style="width:50px;height:50px;"></image>              
             </ui-col>
+            <!-- 创建需求 -->
             <ui-col class="sentType_col" width="58" align="center" vertical-align="middle">
               <!-- <text class="iconfont myWx-bianji" bindtap="creatRequirement" data-type="7"></text> -->
               <image src="../../static/img/Group5Copy@2x.png" bindtap="creatRequirement" data-type="7" style="width:50px;height:50px;"></image>              
             </ui-col>
-            <ui-col class="sentType_col" width="58" align="center" vertical-align="middle">
+            <!-- 办结 -->
+            <ui-col class="sentType_col" width="58" align="center" vertical-align="middle" wx:if="{{ sendInputMsg.isGroupManager }}">
               <text class="iconfont myWx-banjie2" bindtap="aite" data-type="8" style=""></text>
             </ui-col>
           </ui-row>
           <scroll-view scroll-x class="sentType" hidden="{{ transmit.isAite }}" style="height:100px;white-space:nowrap;">
              <!-- hidden="{{ item.openId == theGroupMsg.managerId }}" -->
-            <view style="display:{{ item.openId == theGroupMsg.managerId ? 'none' : 'inline-block' }}" class="sentType_col" width="58" align="center" vertical-align="middle" data-isaite="true" data-index="{{ index }}" data-item="{{ item }}" wx:key="index" catchtap="selUser" wx:for="{{ theGroupMsg.groupUsers }}">
+            <view style="display:{{ item.openId == sendInputMsg.fromUser ? 'none' : 'inline-block' }}" class="sentType_col" width="58" align="center" vertical-align="middle" data-isaite="true" data-index="{{ index }}" data-item="{{ item }}" wx:key="index" catchtap="selUser" wx:for="{{ theGroupMsg.groupUsers }}">
               <image mode="aspectFit" style="height:72px;" src="{{ item.headImgUrl == null ? defaultImg : item.headImgUrl }}"></image>
               <text style="text-align:center;" class="txt9">{{ item.username }}</text>
               <icon class="angleIcon angleIcon2" type="success" wx:if="{{ item.act }}" size="23"></icon>
@@ -297,6 +303,7 @@ export default {
       msgId:'',
       groupName:'',
       status:0,
+      isGroupManager:false,
       src:'../../static/img/voice2.png',//语音消息的图片地址
     },
     userMsg:{},
@@ -322,7 +329,10 @@ export default {
       transData:[],//选中的项目.
       groupList:[],
       aiteContent:"",//@成员
-      aiteId:[]
+      aiteId:[],
+      tabBar:{
+        "actItem":0
+      }
     },
     loadingMsg:{//加载数据的loading
       top:'-100%',
@@ -341,6 +351,12 @@ export default {
     var that = this;
     var onFirst = 1;
     let _item = JSON.parse( options.item );
+    let _tabBar = JSON.parse( options.tabBar );
+    if( _tabBar.actItem == 2 ){//是历史群组不显示底部栏
+      this.setData({
+        ["transmit.tabBar"]:_tabBar,
+      })
+    }
     let loadPromise = new Promise((resolve,reject)=>{
       wx.getStorage({
         key: 'openId',
@@ -392,6 +408,8 @@ export default {
         })
       })
       that.reqGroupList();//请求群列表
+      // 如果已经有socket 连接则先关闭.
+      system.closeSocket( getApp() );
       // 连接sockey服务
       app.globalData.socketTask = wx.connectSocket({
         url: app.globalData.socketHost + `/websocket/${that.data.sendInputMsg.fromUser}`,//用户id
@@ -427,10 +445,12 @@ export default {
         }
         var dataMsg =JSON.stringify( { "cmd" : 3, msgId:chatDataMsgId, "groupId":that.data.theGroupMsg.groupId ,"fromUser":data.fromUser } ) ;
         function set(){
+          console.log( "发送语音消息");
           if( data.groupId == that.data.sendInputMsg.groupId ){//非转发消息push进消息队列......
             that.data.chatData.push( data );
             that.setData({
-              chatData:that.data.chatData
+              chatData:that.data.chatData,
+              ["sendInputMsg.msgType"]:0
             })
             that.setData({
               scrollTop:10000
@@ -621,31 +641,22 @@ export default {
   selGroup(e){//选择群组.....
       let _item = e.currentTarget.dataset;
       let that = this;
-      if( that.data.theGroupMsg.groupId != _item.item.groupId ){
-          this.data.transmit.groupList.forEach((val,i,arr)=>{
-              if(val.groupId == _item.item.groupId){
-                  val.act = true;
+      this.data.transmit.groupList.forEach((val,i,arr)=>{
+          if(val.groupId == _item.item.groupId){
+              val.act = true;
+          }else{
+              val.act = false;
+          }
+          if( val.children.length > 0 ){
+              val.children.forEach((value,ii,array)=>{
+              if( value.groupId == _item.item.groupId ){
+                  value.act = true;
               }else{
-                  val.act = false;
+                  value.act = false;
               }
-              if( val.children.length > 0 ){
-                  val.children.forEach((value,ii,array)=>{
-                  if( value.groupId == _item.item.groupId ){
-                      value.act = true;
-                  }else{
-                      value.act = false;
-                  }
-                  })
-              }
-          })
-      }else{
-          system.stateMsg({
-              title:"不能选择本群",
-              icon:"none",
-              content:"",
-              time:1500
-          })
-      }
+              })
+          }
+      })
       this.setData({
           ['transmit.groupList']:that.data.transmit.groupList,
           ['selUser.selMe']:_item.item
@@ -985,7 +996,7 @@ export default {
           wx.hideToast()
         }else{
           wx.hideToast()
-          system.stateMsg({title: res.data.message,time:1500,icon:"none",scb(){},ccb(){}})
+          // system.stateMsg({title: res.data.message,time:1500,icon:"none",scb(){},ccb(){}})
         }
       }
     })
@@ -993,6 +1004,7 @@ export default {
   // 上传.....
   upload( tempFilePaths , type ,watermark , contentMsg=""){
     var that = this;
+    let uploadTask;
       that.setData({
         ['sendInputMsg.msgType']:type,
         ['sendInputMsg.content']:contentMsg,
@@ -1000,36 +1012,35 @@ export default {
         ['sendInputMsg.progress']:0,
         ['sendInputMsg.createAt']:new Date().getTime(),
       });
-      // that.data.chatData.push(JSON.parse( JSON.stringify(that.data.sendInputMsg) ) );
-      // that.setData({
-      //   "chatData":that.data.chatData
-      // })
-      // that.setData({
-      //   'scrollTop':10000
-      // })
-      let uploadTask = wx.uploadFile({
-          url: `${app.globalData.httpHost}/chat/attach`,
-          filePath: tempFilePaths,
-          name: 'file',
-          formData:{
-            "watermark":watermark
-          },
-          header:{'content-type':'multipart/form-data'},
-          success: function(res){
-              var data = res.data;
-              that.data.sendInputMsg.attachUrl = JSON.parse(res.data).data;
-              that.sendSocketMessage( JSON.stringify( that.data.sendInputMsg),{upload:true} );
-          },
-          fail(res){
-              system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
-          }
-        })
-        uploadTask.onProgressUpdate((res) => {
-            that.data.chatData[that.data.chatData.length - 1].progress = res.progress;
-            that.setData({
-              "chatData":that.data.chatData
-            })
-        })
+      return new Promise((resolve, reject) => {
+        uploadTask = wx.uploadFile({
+            url: `${app.globalData.httpHost}/chat/attach`,
+            filePath: tempFilePaths,
+            name: 'file',
+            formData:{
+              "watermark":watermark
+            },
+            header:{'content-type':'multipart/form-data'},
+            success: function(res){
+                var data = res.data;
+                if( type == 2 ){//发送语音
+                  that.data.sendInputMsg.attachUrl = JSON.parse(data).data;
+                  that.sendSocketMessage( JSON.stringify( that.data.sendInputMsg),{upload:true} );
+                }
+                resolve( res.data );
+            },
+            fail(res){
+                system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
+                reject()
+            }
+          })
+          // uploadTask.onProgressUpdate((res) => {
+          //     that.data.chatData[that.data.chatData.length - 1].progress = res.progress;
+          //     that.setData({
+          //       "chatData":that.data.chatData
+          //     })
+          // })
+      })
   },
   chooseFile(event){
     var type = event.currentTarget.dataset.type;
@@ -1039,9 +1050,16 @@ export default {
       wx.chooseImage({
         count:5,
         success: function(res) {
-          res.tempFilePaths.forEach((val,i,arr)=>{
-            that.upload( val , type ,watermark );
-            console.log(i)
+          let promises = res.tempFilePaths.map(( val,i,arr )=>{
+            return that.upload( val , type ,watermark );
+          });
+          Promise.all(promises).then((obj_i) => {
+              obj_i.forEach((val,i,arr)=>{
+                that.data.sendInputMsg.attachUrl = JSON.parse(val).data;
+                that.sendSocketMessage( JSON.stringify( that.data.sendInputMsg),{upload:true} );
+              })
+          }).catch((err) => {
+              console.log(err);
           })
         },
         fail(res){}
@@ -1123,6 +1141,9 @@ export default {
           icon:"success",
           time:1500
         })
+        setTimeout(()=>{
+          that.navigateBack();
+        },1500)
       },
       fcb(res){
         system.stateMsg({
@@ -1206,7 +1227,7 @@ export default {
     var that = this;
     let msg = JSON.stringify( that.data.theGroupMsg );
     wx.navigateTo({
-      url: `/pages/groupMsg/index?item=${msg}`
+      url: `/pages/groupMsg/index?item=${msg}&tabBar=${ JSON.stringify( that.data.transmit.tabBar ) }`
     })
   }
 }
@@ -1274,9 +1295,6 @@ export default {
     }
   }
   .myInput{
-    // background:rgba(255,255,255,1);
-    // border-radius:5px;
-    // border: 1px solid #999999;
     height: 30px;
     text-indent: 10px;
     padding-left: 5px;
@@ -1289,7 +1307,7 @@ export default {
     }
   }
   .fixed_bottom{
-    background: #ffffff;
+    background: #EFEFF4;
   }
 .article{
   position: relative;
@@ -1298,8 +1316,8 @@ export default {
   overflow: hidden;
   .groupMsgBtn{
       position: absolute;
-      right: 12px;
-      top: 80px;
+      right:48px;
+      top:115px;
       z-index: 1;
       font-size: 14px;
       border-radius: 12px;

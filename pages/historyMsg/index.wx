@@ -145,7 +145,7 @@
                         </view>
                         <!-- 消息转发选项框...... -->
                     </ui-col>
-                    <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && item.msgType != 20 && item.msgType != 21 && item.msgType != 22 }}"><checkbox checked="{{ item.checked }}" class="checkbox" value="{{ item.msgId }}"/></view>
+                    <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && item.msgType != 20 && item.msgType != 21 && item.msgType != 22 && tabBar.actItem == 0 }}"><checkbox checked="{{ item.checked }}" class="checkbox" value="{{ item.msgId }}"/></view>
                 </ui-row>
               </checkbox-group>
               <view wx:if="{{ chatData.length == 0 }}" class="historyLine">无匹配内容</view>
@@ -158,7 +158,7 @@
                 <scroll-view scroll-y style="height:{{modelHeight}};border-top:1px solid #ddd;">
                 <ui-accordion bindchange="slide" wx:for="{{ transmit.groupList }}" header-height="50" wx:key="index">
                     <view slot="header" class="accorHeader">
-                        <ui-row height="80" class="top_tip" border-bottom style="padding-right:35px;" data-parentItem="0" data-isaite="false" data-index="{{ index }}" data-item="{{ item }}" bindtap="selUser">
+                        <ui-row height="80" class="top_tip" border-bottom style="padding-right:35px;" data-parentItem="0" data-isaite="false" data-index="{{ index }}" data-item="{{ item }}" bindtap="selGroup">
                             <ui-col width="80" align="center" vertical-align="middle" data-item="{{ item }}">
                                 <view class="left_icon left_icon1" style="">
                                     <image src="{{ item.icon || defaultHeadImg }}"></image>
@@ -179,7 +179,7 @@
                         </ui-row>
                     </view>
                     <view slot="content" class="accorContent" v-if="{{ item.children.length != 0 }}">
-                        <ui-row height="70" style="padding-right:0;" class="top_tip" border-bottom wx:key="{{indexTow}}" wx:for="{{item.children}}" bindtap="selUser" data-parentItem="{{ item }}" wx:for-item="itemChidren" data-item="{{itemChidren}}" wx:for-index="indexTow">
+                        <ui-row height="70" style="padding-right:0;" class="top_tip" border-bottom wx:key="{{indexTow}}" wx:for="{{item.children}}" bindtap="selGroup" data-parentItem="{{ item }}" wx:for-item="itemChidren" data-item="{{itemChidren}}" wx:for-index="indexTow">
                             <ui-col space-left="25" width="80" align="center" vertical-align="middle" data-item="{{ itemChidren }}">
                                 <view class="left_icon left_icon1" style="">
                                     <image src="{{ itemChidren.icon || defaultHeadImg}}"></image>
@@ -321,12 +321,21 @@ export default {
             act:''
         },
         defaultHeadImg:"",
-        userMsgReq:{}
+        userMsgReq:{},
+        tabBar:{
+            "actItem":0
+        }
     },
     onLoad( option ){
         let _groupMsg = JSON.parse( option.item );
+        let _tabBar = JSON.parse( option.tabBar );
         let time = new Date(),that = this;
         let endTime = `${time.getFullYear()}-${time.getUTCMonth() + 1}-${time.getUTCDate()}`;
+        if( _tabBar.actItem == 2 ){//是历史群组不显示底部栏
+            this.setData({
+                tabBar:_tabBar
+            })
+        }
         this.setData({
             "theGroupMsg":_groupMsg,
             ['dater.end']:endTime,
@@ -344,9 +353,11 @@ export default {
     retOrConfirm(e){
         let _item  = e.currentTarget.dataset;
         let that = this;
-        wx.navigateTo({
-            url:`/pages/CreateRequirement/index?groupMsg=${JSON.stringify(that.data.theGroupMsg)}&item=${JSON.stringify(_item)}&enterType=1`//编辑进
-        })
+        if( this.data.tabBar.actItem == 0 ){
+            wx.navigateTo({
+                url:`/pages/CreateRequirement/index?groupMsg=${JSON.stringify(that.data.theGroupMsg)}&item=${JSON.stringify(_item)}&enterType=1`//编辑进
+            })
+        }
     },
     reqGroupList(e){
         let that = this;
@@ -485,8 +496,15 @@ export default {
                 val.content == null ? val.content = "" : null;
                 let a = JSON.stringify( val );
                 app.globalData.socketTask.send({ data: JSON.stringify( val ) ,success(res){
+                    that.data.chatData.filter((val)=>{
+                        if( val.checked == true ){
+                            val.checked = false;
+                        }
+                    })
                     that.setData({
-                        ["model.show"]:false
+                        ["model.show"]:false,
+                        ["transmit.transData"]:[],
+                        "chatData":that.data.chatData
                     })
                 },fail(res){
                     that.stateMsg({
@@ -559,34 +577,26 @@ export default {
             this.getHistoryMsg(1);
         }
     },
-    selUser(e){//选择群组.....
+    selGroup(e){//选择群组.....
         let _item = e.currentTarget.dataset;
         let that = this;
-        if( that.data.theGroupMsg.groupId != _item.item.groupId ){
-            this.data.transmit.groupList.forEach((val,i,arr)=>{
-                if(val.groupId == _item.item.groupId){
-                    val.act = true;
-                }else{
-                    val.act = false;
-                }
-                if( val.children.length > 0 ){
-                    val.children.forEach((value,ii,array)=>{
+        // that.data.theGroupMsg.groupId != _item.item.groupId //是否是本群的提示
+        this.data.transmit.groupList.forEach((val,i,arr)=>{
+            if(val.groupId == _item.item.groupId){
+                val.act = true;
+            }else{
+                val.act = false;
+            }
+            if( val.children.length > 0 ){
+                val.children.forEach((value,ii,array)=>{
                     if( value.groupId == _item.item.groupId ){
                         value.act = true;
                     }else{
                         value.act = false;
                     }
-                    })
-                }
-            })
-        }else{
-            system.stateMsg({
-                title:"不能选择本群",
-                icon:"none",
-                content:"",
-                time:1500
-            })
-        }
+                })
+            }
+        })
         this.setData({
             ['transmit.groupList']:that.data.transmit.groupList,
             ['selUser.selMe']:_item.item

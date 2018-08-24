@@ -25,7 +25,7 @@
             <text>{{ item.username || "" }}</text>
             <!-- <icon type="success" size="15" class="figure" wx:if="{{ item.authAddMember }}"></icon> -->
         </view>
-        <view class="mycol" style="vertical-align:top;" bindtap="editGroup" wx:if="{{ canAddMenuber }}">
+        <view class="mycol" style="vertical-align:top;" bindtap="editGroup" wx:if="{{ canAddMenuber && tabBar.actItem == 0 }}">
           <icon class="iconfont myWx-jia4" style="color:#ccc;font-size:37px;border:1px solid #ccc;width:50px;height:50px;line-height:50px;text-align:center;"></icon>
         </view>
     </view>
@@ -44,7 +44,7 @@
         </view>
     </view>
     <!--退群按钮-->
-    <ui-fixed-view bottom="0" left="0" right="0">
+    <ui-fixed-view bottom="0" left="0" right="0" wx:if="{{ tabBar.actItem == 0 }}">
       <view class="fixed-view-content" style="padding:0 35rpx;">
         <view class="btn-area">
           <button type="warn" class="fixed_bottom" wx:if="{{ userMsg.openId == groupMsg.managerId  }}" data-disband="true" bindtap="exitGroup">解散群组</button>
@@ -82,10 +82,14 @@
         groupName :"",
         groupDesc:"",
         addMemberOpenIds:[]
+      },
+      tabBar:{
+        "actItem":0
       }
     },
     onLoad( option ){
       let that = this;
+      let _tabBar = JSON.parse( option.tabBar );
       this.setData({
         groupMsg:JSON.parse( option.item ),
         ['submitData.groupId']:JSON.parse( option.item ).groupId,
@@ -93,6 +97,11 @@
         ['submitData.groupDesc']:JSON.parse( option.item ).groupDesc,
         "userMsg":app.globalData.userMsgReq
       })
+      if( _tabBar.actItem == 2 ){//是历史群组不显示底部栏
+        this.setData({
+          tabBar:_tabBar,
+        })
+      }
       wx.setNavigationBarTitle({//设置页面标题....
         title: JSON.parse( option.item ).groupName
       })
@@ -113,7 +122,7 @@
     selChatList(e){
       let that = this;
       wx.navigateTo({
-        url:`/pages/historyMsg/index?item=${ JSON.stringify( that.data.groupMsg ) }`
+        url:`/pages/historyMsg/index?item=${ JSON.stringify( that.data.groupMsg ) }&tabBar=${ JSON.stringify( that.data.tabBar) }`
       })
     },
     editGroup(e){//编辑群组
@@ -171,7 +180,6 @@
             scb(res){
               if ( res.data.status == 200) {
                   system.stateMsg({title:obj._tip,icon:"success",time:1500});
-                  app.globalData.socketTask.close();
                   setTimeout(() => {
                       wx.reLaunch({
                           url: `/pages/home/index`

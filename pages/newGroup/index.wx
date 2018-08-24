@@ -14,14 +14,14 @@
 
   <view style="height:66px;width:100%;"></view>
 
-  <view class="weui-toptips weui-toptips_warn" wx:if="{{ tip.showTopTips }}">{{ tip.tipMsg }}</view>
+  <view class="weui-toptips weui-toptips_warn" style="top:66px;" wx:if="{{ tip.showTopTips }}">{{ tip.tipMsg }}</view>
   <view class="pageContainer">
     <form catchsubmit="submitGroupData" catchreset="formCancel">
 
       <view class="weui-cells weui-cells_after-title" wx:if="{{ addMenu == 'false' }}">
           <view class="weui-cell weui-cell_input">
               <view class="weui-cell__hd">
-                  <view class="weui-label label0">群名称<text class="xingxing {{  formRuler.groupName.require ? 'warnXing' : 'defaultXing' }}">★</text></view>
+                  <view class="weui-label label0">群名称<text class="xingxing {{  formRuler.groupName.require ? 'warnXing' : 'defaultXing' }}">*</text></view>
               </view>
               <view class="weui-cell__bd">
                   <input class="weui-input valueFont" value="{{ formData.groupName }}" bindinput="inputName" name="groupName" placeholder="请输入群名称" placeholder-class="placeholderClass"/>
@@ -33,7 +33,7 @@
                   <view class="weui-label label0">父群组名称</view>
               </view>
               <view class="weui-cell__bd">
-                  <picker disabled="{{ edit == 'true' }}" bindchange="bindGroupChange" value="{{formData.parentGroupIndex}}" range="{{formData.parentGroupLst}}">
+                  <picker disabled="{{ edit == 'true' }}" bindchange="bindGroupChange" value="{{formData.parentGroupIndex}}" range="{{ formData.parentGroupLst }}">
                       <view class="weui-select weui-select_in-select-after valueFont">{{formData.parentGroupValue}}</view>
                   </picker>
               </view>
@@ -44,7 +44,7 @@
       <view class="weui-cells weui-cells_after-title" wx:if="{{ addMenu == 'false' }}">
           <view class="weui-cell weui-cell_select">
               <view class="weui-cell__hd weui-cell__hd_in-select-after">
-                  <view class="weui-label label0">日期<text class="xingxing {{  formRuler.deadline.require ? 'warnXing' : 'defaultXing' }}">★</text></view>
+                  <view class="weui-label label0">日期<text class="xingxing {{  formRuler.deadline.require ? 'warnXing' : 'defaultXing' }}">*</text></view>
               </view>
               <view class="weui-cell__bd">
                   <picker mode="date" name="deadline" value="{{ formData.date }}" start="{{ formData.startTime }}" bindchange="bindDateChange">
@@ -56,7 +56,7 @@
 
       <view class="weui-cells__title" wx:if="{{ addMenu == 'false' }}">群描述</view>
       <view class="weui-cells weui-cells_after-title" wx:if="{{ addMenu == 'false' }}">
-          <view class="weui-cell">
+          <view class="weui-cell" style="padding:4px 15px;">
               <view class="weui-cell__bd" style="position:relative;">
                   <textarea fixed="{{ tag }}" placeholder-class="placeholderClass" value="{{ formData.groupDesc }}" class="weui-textarea fontValue" name="groupDesc" placeholder="请输入群描述" style="height: 3.3em;position:relative;" />
               </view>
@@ -88,7 +88,7 @@
       <ui-fixed-view bottom="0" left="0" right="0">
         <view class="fixed-view-content" style="padding:0 35rpx;">
           <view class="btn-area">
-            <button type="primary" formType="submit">提交</button>
+            <button type="primary" formType="submit" class="myBtnSuccess">提交</button>
             <button formType="reset">取消</button>
           </view>
         </view>
@@ -210,7 +210,6 @@ export default {
   upUserList(){
     let that = this;
     let openIds = [];
-    that.data.groupMsg.groupUsers
     that.data.groupMsg.groupUsers.forEach((value,ii,array)=>{
       that.data.formData.userList.filter((val,i,arr)=>{
         if(val.openId == value.openId){
@@ -356,7 +355,9 @@ export default {
       scb(res){
         that.data.formData.parentGroupLst.push("不填");
         res.data.data.rows.forEach((val,i,arr)=>{
-          that.data.formData.parentGroupLst.push( val.groupName )
+          if ( val.managerId == app.globalData.openId ) {
+            that.data.formData.parentGroupLst.push( val.groupName )
+          }
         })
         that.setData({
           ['formData.originGroupList']:res.data.data.rows,
@@ -421,9 +422,6 @@ export default {
           let tip = that.data.edit == 'true' ? "修改群组成功" : '新增群组成功';
           if(res.data.status == 200){
             system.stateMsg({title: tip,icon:"success",time:1000});
-            if ( app.globalData.socketTask.openType == true ){
-              app.globalData.socketTask.close();
-            }
             setTimeout(function(){
               wx.reLaunch({
                 url: '/pages/home/index'
@@ -538,7 +536,7 @@ export default {
     left: 0;
   }
   .placeholderClass{
-    font-size: 30rpx;
+    font-size: 28rpx;
   }
   .headImg{
     width: 65rpx;
@@ -553,12 +551,12 @@ export default {
     left: 14rpx;
   }
   .label0{
-    font-size: 30rpx;
+    font-size: 28rpx;
   }
   .fontValue{
-    font-size:35rpx;
-    line-height:38rpx;
-    padding-top:13rpx;
+    font-size:28rpx;
+    line-height:28rpx;
+    min-height: 100rpx;
   }
   .figure{
     position: absolute;

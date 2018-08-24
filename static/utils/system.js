@@ -28,6 +28,13 @@ export default {
       duration: options.time
     })
   },
+  closeSocket(app){
+    if( app.globalData.socketTask.openType == true ){
+      app.globalData.socketTask.close({success(res){
+          app.globalData.socketTask.openType = false;
+      },fail(res){}});
+    }
+  },
   // 消息提示....
   msgTip(options={}){
     wx.showModal({

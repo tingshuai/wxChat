@@ -19,7 +19,7 @@
               <view class="weui-search-bar__form">
                   <view class="weui-search-bar__box">
                       <icon class="weui-icon-search_in-box" type="search" size="14" wx:if="{{ !showInput }}"></icon>
-                      <input type="text" class="weui-search-bar__input" placeholder="{{showInput ? '' :  '搜索'}}" value="{{inputVal}}" focus="{{ inputShowed }}" bindinput="inputTyping" />
+                      <input type="text" class="weui-search-bar__input" placeholder="{{ showInput ? '' :  '搜索'}}" value="{{inputVal}}" focus="{{ inputShowed }}" bindinput="inputTyping" />
                       <view class="weui-icon-clear" wx:if="{{ inputVal.length > 0 }}" bindtap="clearInput">
                           <icon type="clear" size="14"></icon>
                       </view>
@@ -35,7 +35,7 @@
     <!-- </ui-fixed-view> -->
     <!-- 设置内容距离nav-bar高度占位 -->
     <!-- <view style="height:49px"></view> -->
-    <view class="weui-loadmore weui-loadmore_line" wx:if="{{ list1.length == 0 && overList.length == 0 }}">
+    <view class="weui-loadmore weui-loadmore_line" wx:if="{{ (list1.length == 0 && tabBar.actItem == 0) || (overList.length == 0 && tabBar.actItem == 2) }}">
         <view class="weui-loadmore__tips weui-loadmore__tips_in-line" style="background-color:none;">暂无数据 可尝试下拉刷新</view>
     </view>
     <!-- //右滑菜单.........  -->
@@ -45,9 +45,9 @@
            <!-- !userMsgReq.canBuildGroup -->
            <!-- <icon wx:if="{{ userMsgReq.canBuildGroup }}" catchtap="addGroup" class="iconfont myWx-jia1" style="float:right;right:25rpx;position:relative;font-size:55rpx;"></icon> -->
         </view>
-        <ui-accordion bindchange="slide" wx:for="{{ list1 }}" wx:key="{{ index }}" header-height="50" wx:if="{{ list1.length != 0 }}">
+        <ui-accordion bindchange="slide" wx:for="{{ list1 }}" wx:key="{{ index }}" header-height="50" wx:if="{{ tabBar.actItem == 0 }}">
             <view slot="header" class="accorHeader">
-                <ui-row height="80" class="top_tip" border-bottom style="padding-right:35px;">
+                <ui-row height="70" class="top_tip" border-bottom style="padding-right:35px;">
                   <ui-col width="80" align="center" vertical-align="middle" bindtap="toChat" data-item="{{ item }}">
                       <view class="left_icon left_icon1" style="">
                           <image src="{{ item.icon || defaultHeadImg }}"></image>
@@ -60,18 +60,14 @@
                               <ui-col align="left" vertical-align="middle">
                                   <text>{{ item.groupName }}</text>
                               </ui-col>
-                              <!-- <ui-col align="right" width="100" vertical-align="middle" space-right="10">
-                                  <text>09-18</text>
-                              </ui-col> -->
                           </ui-row>
                           <view class="txt">{{ item.groupDesc ? item.groupDesc : "" }}</view>
                       </view>
                   </ui-col>
-                    <!-- <view class="msgTransCheckbox" wx:if="{{true }}"><checkbox-group data-item="{{ item }}" bindchange="checkboxChange"><label><checkbox class="checkbox" value="{{item.msgId}}"/></label></checkbox-group></view> -->
               </ui-row>
             </view>
             <view slot="content" class="accorContent" v-if="{{ item.children.length != 0 }}">
-                <ui-row height="70" style="padding-right:0;" class="top_tip" border-bottom wx:for="{{item.children}}" wx:key="indexTow" wx:for-item="itemChidren" wx:for-index="indexTow">
+                <ui-row height="60" style="padding-right:0;" class="top_tip" border-bottom wx:for="{{item.children}}" wx:key="indexTow" wx:for-item="itemChidren" wx:for-index="indexTow">
                   <ui-col space-left="25" width="80" align="center" vertical-align="middle" bindtap="toChat" data-item="{{ itemChidren }}">
                       <view class="left_icon left_icon1" style="">
                           <image src="{{ itemChidren.icon || defaultHeadImg}}"></image>
@@ -84,9 +80,49 @@
                               <ui-col align="left" vertical-align="middle">
                                   <text>{{ itemChidren.groupName }}</text>
                               </ui-col>
-                              <!-- <ui-col align="right" width="100" vertical-align="middle" space-right="10">
-                                  <text>09-18</text>
-                              </ui-col> -->
+                          </ui-row>
+                          <view class="txt">{{ itemChidren.groupDesc ? itemChidren.groupDesc : "" }}</view>
+                      </view>
+                  </ui-col>
+                </ui-row>
+            </view>
+        </ui-accordion>
+        <!-- 历史群组 -->
+        <ui-accordion bindchange="slide" wx:for="{{ historyList }}" wx:key="{{ index }}" header-height="50" wx:if="{{ tabBar.actItem == 2 }}">
+            <view slot="header" class="accorHeader">
+                <ui-row height="70" class="top_tip" border-bottom style="padding-right:35px;">
+                  <ui-col width="80" align="center" vertical-align="middle" bindtap="toChat" data-item="{{ item }}">
+                      <view class="left_icon left_icon1" style="">
+                          <image src="{{ item.icon || defaultHeadImg }}"></image>
+                          <text class="angleIcon" wx:if="{{ item.unreadCount != 0 }}">{{ item.unreadCount >= 100 ? '99+' : item.unreadCount }}</text>
+                      </view>
+                  </ui-col>
+                  <ui-col class="text" align="left" vertical-align="middle" space="20" bindtap="toChat" data-item="{{ item }}">
+                      <view style="width: 100%;">
+                          <ui-row height="22">
+                              <ui-col align="left" vertical-align="middle">
+                                  <text>{{ item.groupName }}</text>
+                              </ui-col>
+                          </ui-row>
+                          <view class="txt">{{ item.groupDesc ? item.groupDesc : "" }}</view>
+                      </view>
+                  </ui-col>
+              </ui-row>
+            </view>
+            <view slot="content" class="accorContent" v-if="{{ item.children.length != 0 }}">
+                <ui-row height="60" style="padding-right:0;" class="top_tip" border-bottom wx:for="{{item.children}}" wx:key="indexTow" wx:for-item="itemChidren" wx:for-index="indexTow">
+                  <ui-col space-left="25" width="80" align="center" vertical-align="middle" bindtap="toChat" data-item="{{ itemChidren }}">
+                      <view class="left_icon left_icon1" style="">
+                          <image src="{{ itemChidren.icon || defaultHeadImg}}"></image>
+                          <text class="angleIcon angleIcon2" wx:if="{{ itemChidren.unreadCount != 0 }}">{{ itemChidren.unreadCount >= 100 ? '99+' : itemChidren.unreadCount }}</text>
+                      </view>
+                  </ui-col>
+                  <ui-col space-left="25" class="text" align="left" vertical-align="middle" space="20" bindtap="toChat" data-item="{{ itemChidren }}">
+                      <view style="width: 100%;">
+                          <ui-row height="24">
+                              <ui-col align="left" vertical-align="middle">
+                                  <text>{{ itemChidren.groupName }}</text>
+                              </ui-col>
                           </ui-row>
                           <view class="txt">{{ itemChidren.groupDesc ? itemChidren.groupDesc : "" }}</view>
                       </view>
@@ -103,7 +139,6 @@
               <ui-row>
                   <ui-col width="80" space="20" align="center" vertical-align="middle">
                     <view class="left_icon left_icon1">
-                        <!-- <ui-icon type="api-access" color="#fff" size="20"></ui-icon> -->
                         <image src="{{ item.icon || defaultHeadImg }}"></image>
                     </view>
                   </ui-col>
@@ -137,7 +172,6 @@
         <ui-col vertical-align="middle" align="center" wx:if="{{ userMsgReq.canBuildGroup }}">
             <view style="height:100%;padding-top:19rpx;" data-index="1" catchtap="toggleTab" class="{{ tabBar.actItem == 1 ? 'actItem' : '' }}">
                 <image class="icon" mode="aspectFit" src="../../static/img/Group17@2x.png" style="width:36px;height:36px;"></image>
-                <!-- <text style="font-size:18rpx;" class="txt">群组</text> -->
             </view>
         </ui-col>
         <ui-col vertical-align="middle" align="center">
@@ -166,6 +200,7 @@ export default {
     inputShowed: false,
     inputVal: "",
     list1: [],
+    historyList:[],
     overList:[],
     el: 'undefined',
     showInput:true,
@@ -177,12 +212,8 @@ export default {
   },
   onLoad(option){
     var that = this;
-    console.log( "home 页面")
-    if( app.globalData.socketTask.openType == true ){
-      app.globalData.socketTask.close({success(res){
-          app.globalData.socketTask.openType = false;
-      },fail(res){}});
-    }
+    // 关闭socket
+    system.closeSocket( getApp() );
     system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:8000});
 
     wx.getStorage({
@@ -228,7 +259,7 @@ export default {
             ['tabBar.actItem']:_item.index
         })
         system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:8000});
-        this.requestGroupList( '/history/groups','history')
+        this.requestGroupList( '/history/groups/tree','history')
     }
   },
   addGroup(e){
@@ -272,17 +303,24 @@ export default {
         success: function(res) {
             if(type == 'over'){
                 that.setData({
-                    list1:res.data.data.rows,
-                    overList:[]
+                    overList:[],
+                });
+                that.setData({
+                    list1:res.data.data.rows
                 });
             }else if( type == 'no' ){
+                that.setData({
+                    overList:[]
+                });
                 that.setData({
                     overList:res.data.data.rows
                 });
             }else if( type == 'history' ){
                 that.setData({
-                    list1:res.data.data.rows,
-                    overList:[]
+                    overList:[],
+                });
+                that.setData({
+                    historyList:res.data.data.rows
                 });
             }
             wx.stopPullDownRefresh();
@@ -297,10 +335,11 @@ export default {
   },
   toChat(event){//跳转到群聊页面.....
     let item = {};
+    let that = this;
     item.group = event.currentTarget.dataset.item ;
     item.user = app.globalData.userMsgReq;
     wx.navigateTo({
-      url: `/pages/groupChat/index?item=${JSON.stringify(item)}`
+      url: `/pages/groupChat/index?item=${JSON.stringify(item)}&tabBar=${JSON.stringify(that.data.tabBar)}`
     })
   },
   toDetailPage(event){//跳转到群详情页面....
@@ -331,22 +370,26 @@ export default {
         inputVal: e.detail.value
     });
     if( this.data.tabBar.actItem == 2 ){//历史。。。。
-      this.requestGroupList( '/history/groups','history')
+      this.requestGroupList( '/history/groups/tree','history')
     }else if( this.data.tabBar.actItem == 0 ){
-        if( that.data.inputVal == "" ){
-          that.requestGroupList('/chat/groups/tree','over');
-        }else{
-          this.requestGroupList('/chat/groups/req',"no");
-        }
+        that.requestGroupList('/chat/groups/tree','over');
+        // if( that.data.inputVal == "" ){
+        //   that.requestGroupList('/chat/groups/tree','over');
+        // }else{
+        //   this.requestGroupList('/chat/groups/req',"no");
+        // }
     }
-    //   this.requestGroupList('/chat/groups/tree',"over");
   },
   clearInput: function () {
       this.setData({
           inputVal: "",
           showInput:true
       });
-      this.requestGroupList('/chat/groups/tree',"over");
+      if( this.data.tabBar.actItem == 2 ){
+        this.requestGroupList( '/history/groups/tree','history')
+      }else if( this.data.tabBar.actItem == 0 ){
+        this.requestGroupList('/chat/groups/tree',"over");
+      }
       this.setData({
           overList:[]
       })

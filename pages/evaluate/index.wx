@@ -171,7 +171,7 @@ export default {
       _face = this.data.face.list.filter((val)=>{
          return val.faceColor == true 
       });
-      if( _selLebal.length != 0 && _face.length != 0 ){
+      if( _face.length != 0 ){
         resolve();
       }else{
         system.stateMsg({

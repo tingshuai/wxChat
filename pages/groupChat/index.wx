@@ -350,6 +350,7 @@ export default {
   onLoad(options){
     var that = this;
     var onFirst = 1;
+    console.log( "options" , options )
     let _item = JSON.parse( options.item );
     let _tabBar = JSON.parse( options.tabBar );
     if( _tabBar.actItem == 2 ){//是历史群组不显示底部栏
@@ -432,7 +433,7 @@ export default {
       })
       app.globalData.socketTask.onMessage(function(res) {
         var data = JSON.parse( res.data );
-        console.log("接收消息" , data )
+        console.log( "接收消息" , data )
         var chatDataMsgId;
         if( onFirst == 1 ){
           that.data.chatData.forEach((val,ii,arr)=>{
@@ -1209,7 +1210,7 @@ export default {
   },
   scrllView(e){//滚动的时候发送已读消息回执...
     let that = this;
-    // that.sendReadedReceipt();
+    that.sendReadedReceipt();
   },
   loadTouchstart(e){
     

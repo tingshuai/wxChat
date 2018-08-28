@@ -92,7 +92,7 @@
     <view wx:if="{{ come_msg.enterType == '1' }}" style="height:100%;overflow:hidden;">
         <view style="height:66px;width:100%;"></view>
         <view style="padding:5px 10px;background-color:white;margin-top:7px;">
-            <ui-row style="margin-top:10px;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><ui-col>需求单{{ come_msg.item.content.demandId }}</ui-col></ui-row>
+            <ui-row style="margin-top:10px;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><ui-col>需求单{{ come_msg.item.content.demandNum }}</ui-col></ui-row>
             <view class="weui-cells__title" style="padding-left:0px;margin-top:1px;font-size:12px;">发起时间{{ come_msg.item.content.createAt }}</view>
             <view class="weui-cells__title" style="padding-left:0px;font-size:12px;margin-top:20px;">发起人：{{ come_msg.item.fromUserName }}</view>
             <view class="weui-cells__title" style="padding-left:0px;font-size:12px;margin-top:0px;">对接人：{{ come_msg.item.content.confirmUserName }}</view>
@@ -105,14 +105,13 @@
                 <block wx:for="{{ form.demandAttach }}" wx:key="*this" wx:if="{{ form.demandAttach.length > 0 }}">
                     <view class="weui-uploader__file" bindtap="previewImage2" id="{{item}}" style="position:relative;">
                         <image class="weui-uploader__img" src="{{ item }}" mode="aspectFill" />
-                        <text>{{ form.demandAttach.length }}</text>
                     </view>
                 </block>
             </view>         
         </view>
         <view class="btn-area" style="margin-top:35px;">
             <button catchtap="editRequirement" wx:if="{{ come_msg.item.content.editable }}" type="primary" class="myBtnSuccess">修改需求</button>
-            <button catchtap="confirmRequirement" style="margin-top:15px;" type="default" wx:if="{{ !come_msg.item.content.demandState && ( come_msg.item.toUser == userMsgReq.openId) }}">确认需求</button>
+            <button catchtap="confirmRequirement" style="margin-top:15px;" type="default" wx:if="{{ !come_msg.item.content.demandState && ( come_msg.item.toUser == userMsgReq.openId ) }}">确认需求</button>
         </view>
     </view>
   </view>
@@ -166,7 +165,7 @@ let _promise1,_url;
         }
       },
       groupMsg:{},
-      userMsgReq:app.globalData.userMsgReq
+      userMsgReq:{}
     },
     navigateBack () {
         wx.navigateBack();
@@ -186,11 +185,12 @@ let _promise1,_url;
         ['form.groupId']:_groupMsg.groupId,
         ['form.headImgUrl']:app.globalData.userMsgReq.headImgUrl,
         ['form.position']:app.globalData.userMsgReq.position,
+        "userMsgReq":app.globalData.userMsgReq
       });
       if( option.enterType == 1 ){//编辑。。。。
         if( _item.itemcontent.demandAttach != "" ){
             this.setData({
-                ["form.demandAttach"]:_item.itemcontent.demandAttach.split(',')
+                ["form.demandAttach"]:_item.itemcontent.demandAttach.split( ',' )
             })
         }
         this.setData({

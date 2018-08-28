@@ -28,7 +28,7 @@ export default {
       duration: options.time
     })
   },
-  closeSocket(app){
+  closeSocket(app,fun){
     if( app.globalData.socketTask.openType == true ){
       app.globalData.socketTask.close({success(res){
           app.globalData.socketTask.openType = false;

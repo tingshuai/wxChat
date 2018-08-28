@@ -57,7 +57,7 @@
                                     <image mode="aspectFit" src="../../static/img/Group6Copy@2x.png"></image>
                                   </ui-col>
                                   <ui-col style="font-size:12px;padding-left:10px;">
-                                    <view style="white-space:nowrap;text-overflow:ellipsis;overflow:hidden;height:30px;">需求单{{ item.content.demandId }}</view>
+                                    <view style="white-space:nowrap;text-overflow:ellipsis;overflow:hidden;height:30px;">需求单{{ item.content.demandNum }}</view>
                                     <view style="white-space:nowrap;height:30px;line-height:40px;" wx:if="{{ sendInputMsg.fromUser == item.content.createUser && (item.content.demandState == false) }}">发起人<text>@</text>{{ item.fromUserName }}</view>
                                     <view style="white-space:nowrap;height:30px;line-height:40px;" wx:else="{{ sendInputMsg.fromUser == item.toUser && ( item.content.demandState == false )}}">确认人<text style="color: #FF9D44;">@{{ item.content.confirmUserName }}</text></view>
                                   </ui-col>
@@ -369,7 +369,10 @@ export default {
                 app.globalData.userMsgReq = res.data;
               }
             })
-            resolve();
+            system.closeSocket( getApp() , resolve );
+            setTimeout(()=>{
+              resolve();
+            },200)
         },
         fail(res){
           wx.redirectTo({
@@ -410,27 +413,28 @@ export default {
       })
       that.reqGroupList();//请求群列表
       // 如果已经有socket 连接则先关闭.
-      system.closeSocket( getApp() );
       // 连接sockey服务
-      app.globalData.socketTask = wx.connectSocket({
-        url: app.globalData.socketHost + `/websocket/${that.data.sendInputMsg.fromUser}`,//用户id
-        data:{},
-        header:{
-          'content-type': 'application/json'
-        },
-        success:function(msg){
-          that.getHistoryMsg(that.data.theGroupMsg.groupId, 10 , that.data.pageNum,true);
-        },
-        fail:function(msg){
-          system.stateMsg({title: '提示',content: res.errMsg,icon:"none",scb(){},ccb(){}})
-        }
-      })
-      //连接状态
-      app.globalData.socketTask.onOpen(function(res) { app.globalData.socketTask.openType=true ;console.log( 'socket open');})
-      //监听WebSocket错误。
-      app.globalData.socketTask.onError(function(res){
-        system.msgTip({title: '提示',content: "会话连接失败。请重新连接。",scb(){},ccb(){}})
-      })
+      if( app.globalData.socketTask.openType == false ){
+        app.globalData.socketTask = wx.connectSocket({
+          url: app.globalData.socketHost + `/websocket/${that.data.sendInputMsg.fromUser}`,//用户id
+          data:{},
+          header:{
+            'content-type': 'application/json'
+          },
+          success:function(msg){
+            that.getHistoryMsg( that.data.theGroupMsg.groupId, 10 , that.data.pageNum,true );
+          },
+          fail:function(msg){
+            system.stateMsg({title: '提示',content: res.errMsg,icon:"none",scb(){},ccb(){}})
+          }
+        })
+        //连接状态
+        app.globalData.socketTask.onOpen(function(res) { app.globalData.socketTask.openType = true ;console.log( 'socket open');})
+        //监听WebSocket错误。
+        app.globalData.socketTask.onError(function(res){
+          system.msgTip({title: '提示',content: "会话连接失败。请重新连接。",scb(){},ccb(){}})
+        })
+      }
       app.globalData.socketTask.onMessage(function(res) {
         var data = JSON.parse( res.data );
         console.log( "接收消息" , data )
@@ -541,7 +545,7 @@ export default {
               'isInputing': false
             })
           }else{
-            // set();
+            set();
             // app.globalData.socketTask.send({"data": dataMsg ,success(res){},fail(res){}});
           }
         }else if( data.cmd == 2 ){//系统推送消息.

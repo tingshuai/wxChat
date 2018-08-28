@@ -193,7 +193,7 @@ export default {
     navigationBarTitleText: '首页',
     backgroundColor: '#F4F4F4',
     navigationBarTextStyle: 'black',
-    "enablePullDownRefresh": true
+    // "enablePullDownRefresh": true
   },
   data: {
     isShow:false,
@@ -213,14 +213,14 @@ export default {
   onLoad(option){
     var that = this;
     // 关闭socket
-    system.closeSocket( getApp() );
+    // system.closeSocket( getApp() );
     system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:8000});
-
     wx.getStorage({
         key: 'openId',
         success: function(res) {
             app.globalData.openId = res.data;
             that.requestGroupList('/chat/groups/tree','over');
+            that.homeSocket();
             console.log( "获取openId成功")
         },
         fail(res){
@@ -274,6 +274,27 @@ export default {
           'inputShowed':true
       })
   },
+  sortList( resData ){
+    let head_message = resData.filter((item)=>{
+        return item.unreadCount > 0;
+    })
+    let tail_message = resData.filter((item)=>{
+        return item.unreadCount == 0;
+    })
+    return head_message.concat( tail_message );//将有消息的群放在前面
+  },
+  homeSocket(){
+      if( app.globalData.socketTask.openType == true ){
+          app.globalData.socketTask.onMessage((res)=>{
+            var _data = JSON.parse( res.data );
+            debugger;
+            if( _data.cmd == 0 ){
+            debugger;
+                that.requestGroupList('/chat/groups/tree','over');
+            }
+          })
+      }
+  },
   exitGroup(e){
     let that = this;
     let groupMsg = e.currentTarget.dataset.item;
@@ -302,11 +323,13 @@ export default {
         },
         success: function(res) {
             if(type == 'over'){
+                let newList = that.sortList( res.data.data.rows );
                 that.setData({
                     overList:[],
                 });
+                debugger;
                 that.setData({
-                    list1:res.data.data.rows
+                    list1:newList
                 });
             }else if( type == 'no' ){
                 that.setData({
@@ -323,7 +346,7 @@ export default {
                     historyList:res.data.data.rows
                 });
             }
-            wx.stopPullDownRefresh();
+            // wx.stopPullDownRefresh();
             wx.hideNavigationBarLoading();
             wx.hideToast()
         },
@@ -360,8 +383,8 @@ export default {
     })
   },
   onPullDownRefresh() {
-    wx.showNavigationBarLoading() //在标题栏中显示加载
-    this.clearInput();
+    // wx.showNavigationBarLoading() //在标题栏中显示加载
+    // this.clearInput();
   },
     //   搜索.....
   inputTyping: function (e) {

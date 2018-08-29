@@ -66,6 +66,10 @@ export default {
       }
     })
   },
+  formatTime(_timer){
+    let _time = new Date( _timer.replace(new RegExp("-","gm"),"/") );
+    return `${_time.getFullYear()}-${_time.getUTCMonth() + 1}-${_time.getUTCDate()}`;
+  },
   searchUrl(obj={color:blue,str:''}) {
     var reg = /(http:\/\/|https:\/\/)((\w|=|\?|\.|\/|&|-)+)/g;
     //var reg = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;

@@ -45,7 +45,7 @@
            <!-- !userMsgReq.canBuildGroup -->
            <!-- <icon wx:if="{{ userMsgReq.canBuildGroup }}" catchtap="addGroup" class="iconfont myWx-jia1" style="float:right;right:25rpx;position:relative;font-size:55rpx;"></icon> -->
         </view>
-        <ui-accordion bindchange="slide" wx:for="{{ list1 }}" wx:key="{{ index }}" header-height="50" wx:if="{{ tabBar.actItem == 0 }}">
+        <ui-accordion bindchange="slide" wx:for="{{ list1 }}" wx:key="{{ index }}" header-height="50" wx:if="{{ tabBar.actItem == 0 }}" show-arrow="{{ item.children.length != 0 }}">
             <view slot="header" class="accorHeader">
                 <ui-row height="70" class="top_tip" border-bottom style="padding-right:35px;">
                   <ui-col width="80" align="center" vertical-align="middle" bindtap="toChat" data-item="{{ item }}">
@@ -88,7 +88,7 @@
             </view>
         </ui-accordion>
         <!-- 历史群组 -->
-        <ui-accordion bindchange="slide" wx:for="{{ historyList }}" wx:key="{{ index }}" header-height="50" wx:if="{{ tabBar.actItem == 2 }}">
+        <ui-accordion bindchange="slide" wx:for="{{ historyList }}" wx:key="{{ index }}" header-height="50" wx:if="{{ tabBar.actItem == 2 }}" show-arrow="{{ item.children.length != 0 }}">
             <view slot="header" class="accorHeader">
                 <ui-row height="70" class="top_tip" border-bottom style="padding-right:35px;">
                   <ui-col width="80" align="center" vertical-align="middle" bindtap="toChat" data-item="{{ item }}">
@@ -275,6 +275,7 @@ export default {
       })
   },
   sortList( resData ){
+    let that = this;
     let head_message = resData.filter((item)=>{
         return item.unreadCount > 0;
     })
@@ -284,13 +285,12 @@ export default {
     return head_message.concat( tail_message );//将有消息的群放在前面
   },
   homeSocket(){
+      let that = this;
       if( app.globalData.socketTask.openType == true ){
           app.globalData.socketTask.onMessage((res)=>{
             var _data = JSON.parse( res.data );
-            debugger;
-            if( _data.cmd == 0 ){
-            debugger;
-                that.requestGroupList('/chat/groups/tree','over');
+            if( _data.cmd == 0 || _data.cmd == 3 || _data.cmd == 2){
+                that.requestGroupList( '/chat/groups/tree','over' );
             }
           })
       }
@@ -327,7 +327,6 @@ export default {
                 that.setData({
                     overList:[],
                 });
-                debugger;
                 that.setData({
                     list1:newList
                 });

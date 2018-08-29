@@ -133,6 +133,24 @@
                               <view style="border-top:1xp solid blue;"></view>
                               <view class="myProgress" wx:if="{{ item.progress }}" style="height:1px;width:{{ item.progress }}px;background-color: {{ item.progress == 100 ? '#49CC8D' : 'rgba(255,100,100,0.8)' }}"></view>
                             </view>
+                            <!-- 评价 -->
+                            <view class="talkContent" wx:if="{{ item.msgType == 30 }}" style="width:80%;">
+                              <ui-row space-bottom="" style="height:30px;line-height:26px;">
+                                  <ui-col align="left" vertical-align="top">
+                                      <text style="font-size:13px;color:#333333;">服务评价</text>
+                                  </ui-col>
+                              </ui-row>
+                              <ui-row style="border-top:1px solid #ddd;border-bottom:1px solid #ddd;padding:10px 0 20px 0;">
+                                  <ui-col align="left" vertical-align="top">
+                                      <text style="font-size:13px;color:#333333;text-align:right;display:block;width:100%;font-size:13px;">{{ item.fromUserName }}邀请你对本次服务进行评价。</text>
+                                  </ui-col>
+                              </ui-row>   
+                              <ui-row>
+                                  <ui-col align="right" vertical-align="top">
+                                      <button style="color:white;font-size:15px;" class="myBtnSuccess" data-item="{{item}}" type="primary" size="mini" catchtap="evaluateMe">点击评价</button>
+                                  </ui-col>
+                              </ui-row>        
+                            </view>
                         </view>
                         <view class="readMe" wx:if="{{ sendInputMsg.fromUser == item.fromUser }}" style="right:{{ sendInputMsg.fromUser == item.fromUser ? '5px' : '' }}">{{ item.readCount >= 0 ? theGroupMsg.groupUsers.length - item.readCount : item.msgType != 1 && item.msgType != 2 ? '发送失败' : item.progress + '%' }} {{ item.readCount >= 0 ? "人未读" : ''}}</view>
                     </ui-col>
@@ -239,6 +257,7 @@ line-height: 20px;
 margin:10px;
 `
 import system from '../../static/utils/system'
+var backgroundAudioManager = wx.getBackgroundAudioManager();
 var app = getApp();
 export default {
     config: {
@@ -368,6 +387,12 @@ export default {
             })
         }})
     },
+    evaluateMe(e){//评价消息
+        let that = this;
+        wx.navigateTo({
+            url:`/pages/evaluate/index?groupMsg=${ JSON.stringify( that.data.theGroupMsg ) }`
+        })
+    },
     bindDateChange1(e){
         let that = this;
         if( that.data.dater.timer <= new Date( e.detail.value ).getTime() ){
@@ -412,6 +437,65 @@ export default {
                 time:1500
             })
         }
+    },
+    playVoice(e){
+        var that = this;
+        var item = e.currentTarget.dataset.item;
+        var i = e.currentTarget.dataset.index;
+        backgroundAudioManager.index
+        if( backgroundAudioManager.paused == false ){//正在播放.....
+        if( backgroundAudioManager.index == i ){
+            backgroundAudioManager.stop();
+            this.setData({
+                [`chatData[${i}].src`]:'../../static/img/voice2.png',
+            })
+        }else{
+            backgroundAudioManager.stop();
+            this.setData({
+            [`chatData[${backgroundAudioManager.index}].src`]:'../../static/img/voice2.png',
+            })
+            backgroundAudioManager.title = "语音消息"
+            backgroundAudioManager.index = e.currentTarget.dataset.index
+            backgroundAudioManager.epname = item.fromUserName
+            backgroundAudioManager.singer = item.fromUserName
+            backgroundAudioManager.coverImgUrl = item.headImgUrl
+            backgroundAudioManager.src = item.attachUrl; // 设置了 src 之后会自动播放
+        }
+        console.log( "播放1", backgroundAudioManager.paused );
+        }else{
+            backgroundAudioManager.stop();
+            backgroundAudioManager.title = "语音消息"
+            backgroundAudioManager.index = e.currentTarget.dataset.index
+            backgroundAudioManager.epname = item.fromUserName
+            backgroundAudioManager.singer = item.fromUserName
+            backgroundAudioManager.coverImgUrl = item.headImgUrl
+            backgroundAudioManager.src = item.attachUrl; // 设置了 src 之后会自动播放
+        console.log( "播放2", backgroundAudioManager.paused );
+        }
+        console.log("播放状态", backgroundAudioManager.paused )
+        backgroundAudioManager.onPlay(()=>{
+        var d = that.data.chatData[i];
+        this.setData({
+            [`chatData[${i}].src`]:'../../static/img/voice.gif',
+        })
+        })
+        backgroundAudioManager.onPause(()=>{
+        this.setData({
+            [`chatData[${i}].src`]:'../../static/img/voice2.png',
+        })
+        })
+        backgroundAudioManager.onStop((res)=>{
+        this.data.chatData.forEach((val,ii ,arr)=>{
+            this.setData({
+            [`chatData[${ii}].src`]:'../../static/img/voice2.png',
+            })
+        })
+        })
+        backgroundAudioManager.onEnded(()=>{
+        this.setData({
+            [`chatData[${i}].src`]:'../../static/img/voice2.png',
+        })
+        })
     },
     navigateBack() {
         wx.navigateBack()
@@ -514,6 +598,19 @@ export default {
                 }})
             }
         })
+        })
+    },
+    previewImage: function(e){//图片预览.....
+        var imgUrl = e.currentTarget.dataset.item.attachUrl;
+        var imgList = [];
+        this.data.chatData.forEach((val,i,arr)=>{
+        if( val.msgType == 1 ){
+            imgList.push( val.attachUrl );
+        }
+        })
+        wx.previewImage({
+            current: imgUrl, // 当前显示图片的http链接
+            urls: imgList // 需要预览的图片http链接列表
         })
     },
     inputTyping(e){

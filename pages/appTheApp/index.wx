@@ -68,7 +68,7 @@
         <button formType="submit" type="primary" disabled="{{ disabled }}">提交</button>
       </view>
     </form>
-    <view id="successMsg" wx:if="{{ show }}">提交成功，请等待审核通过。</view>
+    <view id="successMsg" wx:if="{{ show }}">提交成功，请等待审核通过。如果未关注公众号，请先关注公众号</view>
   </view>
 </template>
 

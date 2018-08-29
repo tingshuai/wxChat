@@ -175,7 +175,7 @@ export default {
       })
       promise.then(()=>{
         that.data.formData.userList.filter((item)=>{
-          if(item.openId == app.globalData.openId){
+          if( item.openId == app.globalData.openId ){
             item.checked = true;
             item.isAddMember = true;
           }
@@ -209,20 +209,37 @@ export default {
   },
   upUserList(){
     let that = this;
-    let openIds = [];
+    let openIds = [],list_1;
     that.data.groupMsg.groupUsers.forEach((value,ii,array)=>{
-      that.data.formData.userList.filter((val,i,arr)=>{
-        if(val.openId == value.openId){
+      list_1 = that.data.formData.userList.filter(( val )=>{
+        if( val.openId == value.openId ){
           val.checked = true;
           openIds.push( value.openId )
           if(value.authAddMember){
             val.isAddMember = true;
           }
+        }else{
+          return 
         }
       })
+      value.checked = true;
+      if(value.authAddMember){
+        value.isAddMember = true;
+      }else{
+        value.isAddMember = false;
+      }
     })
+    let _b = that.data.formData.userList.filter( (item)=>{//将父群组和子群组中的人合并去重....
+      let _a = that.data.groupMsg.groupUsers.findIndex((val,i,arr)=>{
+        return val.openId == item.openId
+      })
+      if( _a == -1 ){
+        return item
+      }
+    })
+    let newUserList = _b.concat( that.data.groupMsg.groupUsers );
     that.setData({
-      ["formData.userList"]:that.data.formData.userList,
+      ["formData.userList"]:newUserList,
       ['submitFormData.openIds']:openIds,
     })
   },
@@ -318,18 +335,22 @@ export default {
         ['formData.parentGroupValue']:that.data.formData.parentGroupLst[e.detail.value]
       })
     }else{
-      this.setData({
-        ['formData.parentGroupValue']:that.data.formData.parentGroupLst[e.detail.value],
-        ['submitFormData.parentId']:that.data.formData.originGroupList[e.detail.value-1].groupId,
-        ['formData.userList']:that.data.formData.originGroupList[e.detail.value-1].groupUsers
-      })
-      that.data.formData.userList.filter((item)=>{
-        if( item.openId == app.globalData.openId ){
-            item.checked = true;
-            item.isAddMember =true;
-            this.setData({
-              ['formData.userList']:that.data.formData.userList
-            })
+      that.data.formData.originGroupList.filter((value)=>{
+        if( value.groupName == that.data.formData.parentGroupLst[e.detail.value] ){
+          this.setData({
+            ['formData.parentGroupValue']:that.data.formData.parentGroupLst[e.detail.value],
+            ['submitFormData.parentId']:value.groupId,
+            ['formData.userList']:that.data.formData.originGroupList[e.detail.value-1].groupUsers
+          })
+          that.data.formData.userList.filter((item)=>{
+            if( item.openId == app.globalData.openId ){
+                item.checked = true;
+                item.isAddMember =true;
+                this.setData({
+                  ['formData.userList']:that.data.formData.userList
+                })
+            }
+          })
         }
       })
     }

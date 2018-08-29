@@ -99,12 +99,13 @@
                             <view class="talkContent" wx:if="{{ item.msgType == 30 }}" style="width:80%;">
                               <ui-row space-bottom="" style="height:30px;line-height:26px;">
                                   <ui-col align="left" vertical-align="top">
-                                      <text style="font-size:13px;color:#333333;">服务评价</text>
+                                      <text style="font-size:13px;color:#333333;">项目办结消息提醒</text>
                                   </ui-col>
                               </ui-row>
                               <ui-row style="border-top:1px solid #ddd;border-bottom:1px solid #ddd;padding:10px 0 20px 0;">
                                   <ui-col align="left" vertical-align="top">
-                                      <text style="font-size:13px;color:#333333;text-align:right;display:block;width:100%;font-size:13px;">{{ item.fromUserName }}邀请你对本次服务进行评价。</text>
+                                      <!-- <text style="font-size:13px;color:#333333;text-align:right;display:block;width:100%;font-size:13px;">{{ item.fromUserName }}邀请你对本次服务进行评价。</text> -->
+                                      <text style="font-size:13px;color:#333333;text-align:right;display:block;width:100%;font-size:13px;">尊降的客户你好，你的项目已经完结请对我们的服务进行评价。</text>
                                   </ui-col>
                               </ui-row>   
                               <ui-row>
@@ -345,6 +346,10 @@ export default {
       users:[],
       act:'',
       actType:""
+    },
+    pageMsg:{
+      "_curPage":"",//当前页面
+      "pageList":[]//页面栈
     }
   },
   onLoad(options){
@@ -353,6 +358,8 @@ export default {
     console.log( "options" , options )
     let _item = JSON.parse( options.item );
     let _tabBar = JSON.parse( options.tabBar );
+    let _currentPage = getCurrentPages();
+    let _curPage = _currentPage[ _currentPage.length - 1 ].route;
     if( _tabBar.actItem == 2 ){//是历史群组不显示底部栏
       this.setData({
         ["transmit.tabBar"]:_tabBar,
@@ -401,6 +408,8 @@ export default {
         ['sendInputMsg.groupId']:_item.group.groupId,
         ['sendInputMsg.position']:_item.user.position || app.globalData.userMsgReq.position,
         ['sendInputMsg.headImgUrl']:_item.user.headImgUrl || app.globalData.userMsgReq.headImgUrl,
+        ["pageMsg._curPage"]:_curPage,
+        ["pageMsg.pageList"]:_currentPage,
       })
       that.setData({
         ['sendInputMsg.isGroupManager']: _item.user.openId == _item.group.managerId ? true : false
@@ -452,21 +461,23 @@ export default {
         function set(){
           console.log( "发送语音消息");
           if( data.groupId == that.data.sendInputMsg.groupId ){//非转发消息push进消息队列......
+            if( that.data.pageMsg._curPage == "pages/groupChat/index" ){
+              that.setData({
+                scrollTop:10000
+              })
+              if(  data.msgType == 20 || data.msgType == 21 || data.msgType == 22 || data.msgType == 11){
+                setTimeout(() => {
+                  that.sendReadedReceipt();
+                }, 2000);
+              }else{
+                that.sendReadedReceipt();
+              }
+            }
             that.data.chatData.push( data );
             that.setData({
               chatData:that.data.chatData,
               ["sendInputMsg.msgType"]:0
             })
-            that.setData({
-              scrollTop:10000
-            })
-            if(  data.msgType == 20 || data.msgType == 21 || data.msgType == 22 ){
-              setTimeout(() => {
-                that.sendReadedReceipt();                
-              }, 2000);
-            }else{
-              that.sendReadedReceipt();
-            }
           }else{//转发消息返回的消息，说明转发成功了
             if(data.fromUser == app.globalData.openId){
               system.stateMsg({title:"消息转发成功",icon:"success",time:1000})
@@ -485,7 +496,9 @@ export default {
             that.setData({
               scrollTop:10000
             })
-            that.sendReadedReceipt();
+            if( that.data.pageMsg._curPage == "pages/groupChat/index"){
+              that.sendReadedReceipt();
+            }
         }
         if( data.cmd == 1 ){//撤回消息...
           that.data.chatData.forEach((val,i,arr) => {
@@ -502,9 +515,7 @@ export default {
             data.content = data.content.split('(@\`-\`@)').join(" ");
           }else if( data.msgType == 20 || data.msgType == 21 || data.msgType == 22 ){//需求
             data.content = JSON.parse(data.content);
-            let _time = new Date( data.content.createAt );
-            let endTime = `${_time.getFullYear()}-${_time.getUTCMonth() + 1}-${_time.getUTCDate()}`;
-            data.content.createAt = endTime;
+            data.content.createAt = system.formatTime( data.content.createAt );
             that.data.chatData.filter((val)=>{
               if( val.msgId == data.content.disableMsgId ){
                 val.content.disableMsgId = false
@@ -550,9 +561,19 @@ export default {
           }
         }else if( data.cmd == 2 ){//系统推送消息.
           set2();
-          if( onFirst == 1 ){
+          if( onFirst == 1 && data.msgType != 11 ){
             app.globalData.socketTask.send({"data":dataMsg ,success(res){},fail(res){}});
             onFirst ++ ;
+          }
+          if( data.msgType == 11 ){
+            system.msgTip({
+              title:"该群已解散",
+              icon:"none",
+              time:1500
+            })
+            setTimeout(()=>{
+              that.navigateBack();
+            },1500)
           }
         }else if( data.cmd == 3 ){//已读消息提醒.....
           that.data.chatData.forEach((val,i,arr)=>{
@@ -569,7 +590,12 @@ export default {
     })//resolve函数结束....
   },
   onUnload(e){
-    
+    // let prePage = this.data.pageMsg.pageList[this.data.pageMsg.pageList.length - 2].route
+    // if( prePage == "pages/home/index" && wx.IS_ANDROID){
+    //   wx.redirectTo({
+    //     url: '/pages/home/index'
+    //   })
+    // }
   },
   evaluateMe(e){//评价消息
     let that = this;
@@ -977,9 +1003,7 @@ export default {
               val.content = val.content.split('(@\`-\`@)').join(' ');
             }else if( val.msgType == 20 || val.msgType == 22 || val.msgType == 21){
               val.content = JSON.parse( val.content )
-              let _time = new Date( val.content.createAt );
-              let endTime = `${_time.getFullYear()}-${_time.getUTCMonth() + 1}-${_time.getUTCDate()}`;
-              val.content.createAt = endTime;
+              val.content.createAt = system.formatTime( val.content.createAt );
             }
           })
           that.data.chatData.splice(0,0,...res.data.data.rows);

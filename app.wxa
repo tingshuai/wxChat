@@ -22,7 +22,8 @@ export default {
       'pages/historyMsg/index',
       'pages/CreateRequirement/index',
       'pages/evaluate/index',
-      'pages/../packages/cc-grouplist/index.wxc'
+      'pages/../packages/cc-grouplist/index.wxc',
+      'pages/groupList/index'
     ],
     plugins: {
       WechatSI: {

@@ -1,8 +1,20 @@
 <template>
+    <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#267AFC',color:'#fff'} }}">
+        <ui-row height="40">
+            <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
+                <icon class="iconfont myWx-iconfontqianjin2" style="font-size:20px;"></icon>
+            </ui-col>
+            <ui-col vertical-align="middle" align="center">
+                选择群组
+            </ui-col>
+            <ui-col vertical-align="middle" align="center" width="80">
+            </ui-col>
+        </ui-row>
+    </ui-nav-bar>
             <view class="popup1">
                 <text class="title0">选择要转发到的群组</text>
                 <scroll-view scroll-y style="height:{{modelHeight}};border-top:1px solid #ddd;">
-                <ui-accordion bindchange="slide" wx:for="{{ groupList }}" header-height="50" wx:key="index" show-arrow="{{ item.children.length != 0 }}">
+                <ui-accordion bindchange="slide" wx:for="{{ transmit.groupList }}" header-height="50" wx:key="index" show-arrow="{{ item.children.length != 0 }}">
                     <view slot="header" class="accorHeader">
                         <ui-row height="80" class="top_tip" border-bottom style="padding-right:35px;" data-parentItem="0" data-isaite="false" data-index="{{ index }}" data-item="{{ item }}" bindtap="selGroup">
                             <ui-col width="80" align="center" vertical-align="middle" data-item="{{ item }}">
@@ -48,34 +60,111 @@
                 </ui-accordion>
                 </scroll-view>
                 <view class="button-sp-area">
-                <button bindtap="cancelSelect" plain type="default">取消</button>
-                <button bindtap="transMsg" plain type="primary">确定</button>
+                <button bindtap="navigateBack" type="default">取消</button>
+                <button bindtap="transMsg" type="primary" class="myBtnSuccess">确定</button>
                 </view>
             </view>
 </template>
 <script>
+import system from '../../static/utils/system'
+var app = getApp();
 export default {
-  data: {
-    msg: 'This is a test msg!'
-  },
-  properties:{
-    groupList:{
-      type: Array, // 类型（必填），目前接受的类型包括：String, Number, Boolean, Object, Array, null（表示任意类型）
-      value: '', // 属性初始值（可选），如果未指定则会根据类型选择一个
-      observer: function (newVal, oldVal) { 
-        console.log("newVal" , newVal )
-      }
-    }
-  },
-  methods: {
+    data: {
+      transmit:{
+          transData:[],
+          isTransmit:false,
+          groupList:[],
+          selMe:""
+      },
+      chatData:[],
+      modelHeight:wx.DEFAULT_CONTENT_HEIGHT - 148 + 'px',
+    },
+    onLoad(option){
+      let _option = JSON.parse( option.obj );
+      let that = this;
+      this.setData({
+        chatData:_option.chatData,
+        ["transmit.transData"]:_option.transData
+      })
+      this.reqGroupList();
+    },
+    reqGroupList(e){
+        let that = this;
+        system.http({ url:`chat/groups/tree`, method:"get",param:{openId:app.globalData.openId} ,header:{'content-type': 'application/x-www-form-urlencoded'},scb(res){
+            res.data.data.rows[0].act = true;
+            that.setData({
+                ['transmit.groupList']:res.data.data.rows,
+                ['transmit.selMe']:res.data.data.rows[0]
+            })
+            console.log( res.data.data.rows.length , "length")
+        }})
+    },  
+    navigateBack() {
+        wx.navigateBack()
+    },  
+    transMsg(){ //选择完转发消息后跳转到群组列表页面
+        let that = this;
+        let _sendMsg = {"fromUser": "","fromUserName": "","toUser": "","cmd": 0,"msgType": 0,"chatType": 0,"groupId": "","attachUrl": '',"createAt": "","content": "","headImgUrl": "","post": "","position": "","checked": false,"groupName": ""};
+        let _me = app.globalData.userMsgReq;
+        this.data.chatData.forEach(( val,i,arr )=>{
+        this.data.transmit.transData.forEach((value,ii,array)=>{
+            if( val.msgId == value ){
+              _sendMsg.groupId = that.data.transmit.selMe.groupId;
+              _sendMsg.groupName = that.data.transmit.selMe.groupName;
+              _sendMsg.fromUser = _me.openId;
+              _sendMsg.position = _me.position;
+              _sendMsg.content = val.content;
+              _sendMsg.fromUserName = _me.username;
+              _sendMsg.headImgUrl = _me.headImgUrl;
+              _sendMsg.attachUrl = val.attachUrl;
+              _sendMsg.msgType = val.msgType;
+              app.globalData.socketTask.send({
+                  data: JSON.stringify( _sendMsg ),
+                  success(res){
+                    if( that.data.transmit.transData.length == ii + 1){
+                      system.stateMsg({title:"消息转发成功",icon:"success",time:1000})
+                      setTimeout(() => {
+                        that.navigateBack();
+                      }, 1200);
+                    }
+                  },
+                  fail(res){}
+              })
+            }
+        })
+        })
+    },    
+    selGroup(e){//选择群组.....
+        let _item = e.currentTarget.dataset;
+        let that = this;
+        // that.data.theGroupMsg.groupId != _item.item.groupId //是否是本群的提示
+        this.data.transmit.groupList.forEach((val,i,arr)=>{
+            if(val.groupId == _item.item.groupId){
+                val.act = true;
+            }else{
+                val.act = false;
+            }
+            if( val.children.length > 0 ){
+                val.children.forEach((value,ii,array)=>{
+                    if( value.groupId == _item.item.groupId ){
+                        value.act = true;
+                    }else{
+                        value.act = false;
+                    }
+                })
+            }
+        })
+        this.setData({
+            ['transmit.groupList']:that.data.transmit.groupList,
+            ['transmit.selMe']:_item.item
+        })
+    },      
     handleTap () {
       console.log(this.data.msg)
     }
-  }
 }
 </script>
 <style lang="less">
-  @import '../styles/mixins.less';
   .popup1{
     height: 100%;
     padding:0 20rpx;

@@ -15,7 +15,7 @@
       <view class="loadingData" style="top:{{ loadingMsg.top }}">
         <icon class="iconfont myWx-unif032" style="color:{{ loadingMsg.color }};font-size:32px;"></icon>
       </view>
-
+      <!-- 转发按钮 -->
       <ui-fixed-view top="120" right="50" class="groupMsgBtn" wx:if="{{ transmit.isTransmit }}">
         <button bindtap="showModel" class="seeGroupMsg cBtn0">转发</button>
       </ui-fixed-view>
@@ -26,10 +26,6 @@
                 <view><icon class="iconfont myWx-xiangyou" style="font-size:16px;color:white;line-height:35px;"></icon></view>
             </view>
         </view>
-        <!-- <view class="groupMsgBtn" wx:if="{{ transmit.isTransmit }}">
-          <button bindtap="groupMsg" wx:if="{{ !transmit.isTransmit }}" class="seeGroupMsg cBtn0"> 群信息 </button>
-          <button bindtap="showModel" class="seeGroupMsg cBtn0">转发</button>
-        </view> -->
         <scroll-view scroll-y="true" bindscroll="scrllView" id="viewport" style="height: {{ transmit.tabBar.actItem == 0 ? (scrollHeight - 103) : (scrollHeight - 53)}}px;overflow:hidden;top:-2px;position:relative;" scroll-into-view="{{toView}}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden"><!-- bindscrolltoupper="bindscrolltoupper"，，，，catch:touchstart="loadTouchstart" catch:touchend="loadTouchend" catch:touchmove="loadTouchmove"-->
           <view class="content" id="content">
             <checkbox-group bindchange="checkboxChange">
@@ -195,65 +191,8 @@
           </scroll-view>
         </view>
       </ui-fixed-view>
-      <!-- 全屏弹窗.... -->
-      <ui-popup show="{{ model.show }}" height="100%">
-          <view class="popup1">
-            <text class="title0">选择要转发到的群组</text>
-            <scroll-view scroll-y style="height:{{modelHeight}};border-top:1px solid #ddd;">
-              <ui-accordion bindchange="slide" wx:for="{{ transmit.groupList }}" header-height="50" wx:key="index" show-arrow="{{ item.children.length != 0 }}">
-                  <view slot="header" class="accorHeader">
-                      <ui-row height="80" class="top_tip" border-bottom style="padding-right:35px;" data-parentItem="0" data-isaite="false" data-index="{{ index }}" data-item="{{ item }}" bindtap="selGroup">
-                        <ui-col width="80" align="center" vertical-align="middle" data-item="{{ item }}">
-                            <view class="left_icon left_icon1" style="">
-                                <image src="{{ item.icon || defaultHeadImg }}"></image>
-                                <!-- <text class="angleIcon" wx:if="{{ item.unreadCount != 0 }}">{{ item.unreadCount >= 100 ? '99+' : item.unreadCount }}</text> -->
-                            </view>
-                        </ui-col>
-                        <ui-col class="text" align="left" vertical-align="middle" space="20" data-item="{{ item }}">
-                            <view style="width: 100%;">
-                                <ui-row height="22">
-                                    <ui-col align="left" vertical-align="middle">
-                                        <text>{{ item.groupName }}</text>
-                                    </ui-col>
-                                </ui-row>
-                                <view class="txt">{{ item.groupDesc ? item.groupDesc : "" }}</view>
-                            </view>
-                        </ui-col>
-                        <icon class="angleIcon" type="success" wx:if="{{ item.act }}" size="23"></icon>
-                    </ui-row>
-                  </view>
-                  <view slot="content" class="accorContent" v-if="{{ item.children.length != 0 }}">
-                      <ui-row height="70" style="padding-right:0;" class="top_tip" border-bottom wx:key="{{indexTow}}" wx:for="{{item.children}}" bindtap="selGroup" data-parentItem="{{ item }}" wx:for-item="itemChidren" data-item="{{itemChidren}}" wx:for-index="indexTow">
-                        <ui-col space-left="25" width="80" align="center" vertical-align="middle" data-item="{{ itemChidren }}">
-                            <view class="left_icon left_icon1" style="">
-                                <image src="{{ itemChidren.icon || defaultHeadImg}}"></image>
-                                <text class="angleIcon angleIcon2" wx:if="{{ itemChidren.unreadCount != 0 }}">{{ itemChidren.unreadCount >= 100 ? '99+' : itemChidren.unreadCount }}</text>
-                            </view>
-                        </ui-col>
-                        <ui-col space-left="25" class="text" align="left" vertical-align="middle" space="20" data-item="{{ itemChidren }}">
-                            <view style="width: 100%;">
-                                <ui-row height="24">
-                                    <ui-col align="left" vertical-align="middle">
-                                        <text>{{ itemChidren.groupName }}</text>
-                                    </ui-col>
-                                </ui-row>
-                                <view class="txt">{{ itemChidren.groupDesc ? itemChidren.groupDesc : "" }}</view>
-                            </view>
-                        </ui-col>
-                        <icon class="angleIcon" type="success" wx:if="{{ itemChidren.act }}" size="23"></icon>
-                      </ui-row>
-                  </view>
-              </ui-accordion>
-            </scroll-view>
-            <view class="button-sp-area">
-              <button bindtap="cancelSelect" plain type="default">取消</button>
-              <button bindtap="transMsg" plain type="primary">确定</button>
-            </view>
-          </view>
-      </ui-popup>
   </view>
 </template>
-
 <script>
 import system from '../../static/utils/system'
 var app = getApp();
@@ -291,7 +230,6 @@ export default {
       faceColor:3
     },
     inputVal:"",//消息输入框的值......
-    modelHeight:wx.DEFAULT_CONTENT_HEIGHT - 128 + 'px',
     scrollHeight:wx.DEFAULT_CONTENT_HEIGHT + 15,
     sendInputMsg :{
       fromUser:app.globalData.openId,//发送人ID
@@ -663,12 +601,6 @@ export default {
     })
     console.log( "chatData",that.data.chatData)
   },
-  cancelSelect(){//取消消息选择......
-    this.setData({
-      ['model.show']:false,
-      ['transmit.isTransmit']:false
-    })
-  },
   creatRequirement(e){//新增需求......
     let that = this;
     let _item  = e.currentTarget.dataset;
@@ -677,72 +609,23 @@ export default {
     })
   },
   showModel(){
-    this.setData({
-      ["model.show"]:true,
-      ["transmit.isTransmit"]:false
-    })
-  },
-  selGroup(e){//选择群组.....
-      let _item = e.currentTarget.dataset;
-      let that = this;
-      this.data.transmit.groupList.forEach((val,i,arr)=>{
-          if( val.groupId == _item.item.groupId ){
-              val.act = true;
-          }else{
-              val.act = false;
-          }
-          if( val.children.length > 0 ){
-              val.children.forEach((value,ii,array)=>{
-                if( value.groupId == _item.item.groupId ){
-                    value.act = true;
-                }else{
-                    value.act = false;
-                }
-              })
-          }
-      })
-      this.setData({
-          ['transmit.groupList']:that.data.transmit.groupList,
-          ['selUser.selMe']:_item.item
-      })
-  },
-  transMsg(){//选择完转发消息后跳转到群组列表页面
-    let that = this;
-    this.data.transmit.transData;
-    let _sendMsg = {"fromUser": "","fromUserName": "","toUser": "","cmd": 0,"msgType": 0,"chatType": 0,"groupId": "","attachUrl": '',"createAt": "","content": "","headImgUrl": "","post": "","position": "","checked": false,"groupName": ""};
-    let _me = app.globalData.userMsgReq;
-    this.data.chatData.forEach(( val,i,arr )=>{
-      this.data.transmit.transData.forEach((value,ii,array)=>{
-        if( val.msgId == value ){
-          _sendMsg.groupId = that.data.selUser.selMe.groupId;
-          _sendMsg.groupName = that.data.selUser.selMe.groupName;
-          _sendMsg.fromUser = _me.openId;
-          _sendMsg.position = _me.position;
-          _sendMsg.content = val.content;
-          _sendMsg.fromUserName = _me.username;
-          _sendMsg.headImgUrl = _me.headImgUrl;
-          _sendMsg.attachUrl = val.attachUrl;
-          _sendMsg.msgType = val.msgType;
-          app.globalData.socketTask.send({
-            data: JSON.stringify( _sendMsg ),
-            success(res){
-              system.stateMsg({title:"消息转发成功",icon:"success",time:1000})
-              that.data.chatData.filter(( item )=>{
-                if( item.checked == true ){
-                  item.checked = false;
-                }
-              })
-              that.setData({
-                ["model.show"]:false,
-                ["transmit.isTransmit"]:false,
-                "chatData": that.data.chatData
-              })
-            },
-            fail(res){}
-          })
+        let that = this;
+        let _obj = {
+            chatData:that.data.chatData,
+            transData:that.data.transmit.transData
         }
-      })
-    })
+        wx.navigateTo({
+            url:`/pages/groupList/index?obj=${JSON.stringify(_obj)}`
+        })
+        that.data.chatData.filter(( item )=>{
+            if( item.checked == true ){
+              item.checked = false;
+            }
+        })
+        that.setData({
+            ["transmit.isTransmit"]:false,
+            "chatData": that.data.chatData
+        })
   },
   previewImage: function(e){//图片预览.....
     var imgUrl = e.currentTarget.dataset.item.attachUrl;
@@ -1551,18 +1434,6 @@ export default {
       -o-transform:rotate(360deg);
     }
   }
-  .popup1{
-    height: 100%;
-    padding:0 20rpx;
-    padding-top:50px;
-    overflow: hidden;
-    .title0{
-      color:#333;
-      font-size:14px;
-      padding-left:13px;
-      line-height:50px;
-    }
-  }
   .angleIcon{
     position:absolute;
     z-index:10000;
@@ -1609,35 +1480,6 @@ export default {
         text-align: center;
         line-height: 50px;
     }
-    .top_tip{
-    background-color: #fff;
-    .left_icon{
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background-color:#FCB300; 
-        text-align: center;
-        line-height: 50px;
-    }
-    .text{
-        .ui-text{
-            font-size: 16px;
-            color: #313338;
-        }
-        .ui-view{
-            color: #9C9FA4;
-            font-size: 12px;
-            .mix-text-overflow();
-        }
-        .txt{
-          font-size:12px;
-          font-family:PingFang-SC-Medium;
-          color:rgba(102,102,102,1);
-          text-align: left;
-          .mix-text-overflow();
-        }
-    }
-}
 #container{
   height:100%;
   overflow:hidden;

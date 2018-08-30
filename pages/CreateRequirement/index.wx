@@ -94,7 +94,7 @@
         <view style="padding:5px 10px;background-color:white;margin-top:7px;">
             <ui-row style="margin-top:10px;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><ui-col>需求单{{ come_msg.item.content.demandNum }}</ui-col></ui-row>
             <view class="weui-cells__title" style="padding-left:0px;margin-top:1px;font-size:12px;">发起时间{{ come_msg.item.content.createAt }}</view>
-            <view class="weui-cells__title" style="padding-left:0px;font-size:12px;margin-top:20px;">发起人：{{ come_msg.item.fromUserName }}</view>
+            <view class="weui-cells__title" style="padding-left:0px;font-size:12px;margin-top:20px;">发起人：{{ come_msg.item.content.fromUserName }}</view>
             <view class="weui-cells__title" style="padding-left:0px;font-size:12px;margin-top:0px;">对接人：{{ come_msg.item.content.confirmUserName }}</view>
             <view class="weui-cells__title" style="padding-left:0px;font-size:12px;color:black;font-size:15px;">需求内容</view>
             <view style="display:block;color:#999;">
@@ -104,13 +104,13 @@
             <view style="height:90px;">
                 <block wx:for="{{ form.demandAttach }}" wx:key="*this" wx:if="{{ form.demandAttach.length > 0 }}">
                     <view class="weui-uploader__file" bindtap="previewImage2" id="{{item}}" style="position:relative;">
-                        <image class="weui-uploader__img" src="{{ item }}" mode="aspectFill" />
+                        <image class="weui-uploader__img" src="{{ item }}" mode="aspectFill"/>
                     </view>
                 </block>
             </view>         
         </view>
         <view class="btn-area" style="margin-top:35px;">
-            <button catchtap="editRequirement" wx:if="{{ come_msg.item.content.editable }}" type="primary" class="myBtnSuccess">修改需求</button>
+            <button catchtap="editRequirement" wx:if="{{ come_msg.item.content.editable }}" type="primary" class="myBtnSuccess" wx:if="{{ come_msg.item.toUser == userMsgReq.openId }}">修改需求</button>
             <button catchtap="confirmRequirement" style="margin-top:15px;" type="default" wx:if="{{ !come_msg.item.content.demandState && ( come_msg.item.toUser == userMsgReq.openId ) }}">确认需求</button>
         </view>
     </view>
@@ -190,7 +190,9 @@ let _promise1,_url;
       if( option.enterType == 1 ){//编辑。。。。
         if( _item.itemcontent.demandAttach != "" ){
             this.setData({
-                ["form.demandAttach"]:_item.itemcontent.demandAttach.split( ',' )
+                ["form.demandAttach"]:_item.itemcontent.demandAttach.split( ',' ),
+                ['form.fromUser']:_item.item.fromUser,
+                ['form.fromUserName']:_item.item.fromUserName,
             })
         }
         this.setData({
@@ -202,15 +204,25 @@ let _promise1,_url;
     editRequirement(e){
         let that = this;
         let _itemMsg = that.data.come_msg.itemMsg;
+        let _me = app.globalData.userMsgReq;
         this.setData({
             ["come_msg.enterType"]:0,
-            ["form.confirmUser"]:_itemMsg.item.toUser,
             ["form.demandText"]:_itemMsg.itemcontent.demandText,
             // ["form.fromUser"]:_itemMsg.item.fromUser,
             // ["form.fromUserName"]:_itemMsg.item.fromUserName,
             ["form.demandId"]:_itemMsg.itemcontent.demandId,
-            ["form.confirmUserName"]:_itemMsg.itemcontent.confirmUserName,
         })
+        if( _itemMsg.item.toUser== _me.openId ){//对接人是自己
+            this.setData({
+                ["form.confirmUserName"]:_itemMsg.item.fromUserName,
+                ["form.confirmUser"]:_itemMsg.item.fromUser,
+            })
+        }else{
+            this.setData({
+                ["form.confirmUserName"]:_itemMsg.item.content.confirmUserName,
+                ["form.confirmUser"]:_itemMsg.item.toUser,
+            })
+        }
         this.data.groupMsg.groupUsers.filter((val)=>{//重置确认人
             if( val.openId == _itemMsg.item.toUser ){
                 val.act = true;
@@ -232,7 +244,7 @@ let _promise1,_url;
         "fromUserName":_userMsg.username,
         "groupId":_itemMsg.item.groupId,
         "groupName":_itemMsg.item.groupName,
-        "headImgUrl":_itemMsg.item.headImgUrl,
+        "headImgUrl":_userMsg.headImgUrl,
         "msgId":_itemMsg.item.msgId,
         "position":_itemMsg.item.position
       }

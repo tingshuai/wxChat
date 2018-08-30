@@ -16,6 +16,9 @@
         <icon class="iconfont myWx-unif032" style="color:{{ loadingMsg.color }};font-size:32px;"></icon>
       </view>
 
+      <ui-fixed-view top="120" right="50" class="groupMsgBtn" wx:if="{{ transmit.isTransmit }}">
+        <button bindtap="showModel" class="seeGroupMsg cBtn0">转发</button>
+      </ui-fixed-view>
       <view class="article" style="height:{{ transmit.tabBar.actItem == 0 ? scrollHeight : ( scrollHeight + 50 ) }}px;">
         <view class="weui-cells weui-cells_after-title" style="height:40px;background-color:rgba(38,122,252,0.6);top:-1px;">
             <view class="weui-cell weui-cell_link" style="padding-left:10px;padding-right:5px;height:100%;" bindtap="groupMsg">
@@ -23,10 +26,10 @@
                 <view><icon class="iconfont myWx-xiangyou" style="font-size:16px;color:white;line-height:35px;"></icon></view>
             </view>
         </view>
-        <view class="groupMsgBtn">
-          <!-- <button bindtap="groupMsg" wx:if="{{ !transmit.isTransmit }}" class="seeGroupMsg cBtn0"> 群信息 </button> -->
-          <button bindtap="showModel" wx:if="{{ transmit.isTransmit }}" class="seeGroupMsg cBtn0">转发</button>
-        </view>
+        <!-- <view class="groupMsgBtn" wx:if="{{ transmit.isTransmit }}">
+          <button bindtap="groupMsg" wx:if="{{ !transmit.isTransmit }}" class="seeGroupMsg cBtn0"> 群信息 </button>
+          <button bindtap="showModel" class="seeGroupMsg cBtn0">转发</button>
+        </view> -->
         <scroll-view scroll-y="true" bindscroll="scrllView" id="viewport" style="height: {{ transmit.tabBar.actItem == 0 ? (scrollHeight - 103) : (scrollHeight - 53)}}px;overflow:hidden;top:-2px;position:relative;" scroll-into-view="{{toView}}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden"><!-- bindscrolltoupper="bindscrolltoupper"，，，，catch:touchstart="loadTouchstart" catch:touchend="loadTouchend" catch:touchmove="loadTouchmove"-->
           <view class="content" id="content">
             <checkbox-group bindchange="checkboxChange">
@@ -105,9 +108,9 @@
                               <ui-row style="border-top:1px solid #ddd;border-bottom:1px solid #ddd;padding:10px 0 20px 0;">
                                   <ui-col align="left" vertical-align="top">
                                       <!-- <text style="font-size:13px;color:#333333;text-align:right;display:block;width:100%;font-size:13px;">{{ item.fromUserName }}邀请你对本次服务进行评价。</text> -->
-                                      <text style="font-size:13px;color:#333333;text-align:right;display:block;width:100%;font-size:13px;">尊降的客户你好，你的项目已经完结请对我们的服务进行评价。</text>
+                                      <text style="font-size:13px;color:#333333;text-align:right;display:block;width:100%;font-size:13px;">尊敬的客户你好，你的项目已经完结请对我们的服务进行评价。</text>
                                   </ui-col>
-                              </ui-row>   
+                              </ui-row>
                               <ui-row>
                                   <ui-col align="right" vertical-align="top">
                                       <button style="color:white;font-size:15px;" class="myBtnSuccess" data-item="{{item}}" type="primary" size="mini" catchtap="evaluateMe">点击评价</button>
@@ -115,7 +118,7 @@
                               </ui-row>                           
                             </view>
                         </view>
-                        <view class="readMe" wx:if="{{ sendInputMsg.fromUser == item.fromUser }}" style="right:{{ sendInputMsg.fromUser == item.fromUser ? '5px' : '' }}">{{ item.readCount >= 0 ? theGroupMsg.groupUsers.length - item.readCount : item.msgType != 1 && item.msgType != 2 ? '发送失败' : item.progress + '%' }} {{ item.readCount >= 0 ? "人未读" : ''}}</view>
+                        <view class="readMe" wx:if="{{ sendInputMsg.fromUser == item.fromUser }}" style="right:{{ sendInputMsg.fromUser == item.fromUser ? '5px' : '' }}">{{ item.readCount >= 0 ? (theGroupMsg.groupUsers.length - item.readCount) > -1 ? theGroupMsg.groupUsers.length - item.readCount : 0 : item.msgType != 1 && item.msgType != 2 ? '发送失败' : item.progress + '%' }} {{ item.readCount >= 0 ? "人未读" : ''}}</view>
                     </ui-col>
                     <ui-col class="text" align="center" vertical-align="top" space-left="0" space-right="0" wx:if="{{ item.cmd == 1 }}">
                         <view class="historyLine">{{ item.fromUserName }} 撤回了一条消息</view>
@@ -126,7 +129,7 @@
                         </view>
                         <!-- 消息转发选项框...... -->
                     </ui-col>
-                    <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && transmit.isTransmit && item.msgType != 20 && item.msgType != 21 && item.msgType != 22 }}"><checkbox checked="{{ item.checked }}" class="checkbox" value="{{ item.msgId }}"/></view>
+                    <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && transmit.isTransmit && item.msgType != 20 && item.msgType != 21 && item.msgType != 22 && item.msgType != 30}}"><checkbox checked="{{ item.checked }}" class="checkbox" value="{{ item.msgId }}"/></view>
                 </ui-row>
               </checkbox-group>
           </view>
@@ -197,13 +200,13 @@
           <view class="popup1">
             <text class="title0">选择要转发到的群组</text>
             <scroll-view scroll-y style="height:{{modelHeight}};border-top:1px solid #ddd;">
-              <ui-accordion bindchange="slide" wx:for="{{ transmit.groupList }}" header-height="50" wx:key="index">
+              <ui-accordion bindchange="slide" wx:for="{{ transmit.groupList }}" header-height="50" wx:key="index" show-arrow="{{ item.children.length != 0 }}">
                   <view slot="header" class="accorHeader">
                       <ui-row height="80" class="top_tip" border-bottom style="padding-right:35px;" data-parentItem="0" data-isaite="false" data-index="{{ index }}" data-item="{{ item }}" bindtap="selGroup">
                         <ui-col width="80" align="center" vertical-align="middle" data-item="{{ item }}">
                             <view class="left_icon left_icon1" style="">
                                 <image src="{{ item.icon || defaultHeadImg }}"></image>
-                                <text class="angleIcon" wx:if="{{ item.unreadCount != 0 }}">{{ item.unreadCount >= 100 ? '99+' : item.unreadCount }}</text>
+                                <!-- <text class="angleIcon" wx:if="{{ item.unreadCount != 0 }}">{{ item.unreadCount >= 100 ? '99+' : item.unreadCount }}</text> -->
                             </view>
                         </ui-col>
                         <ui-col class="text" align="left" vertical-align="middle" space="20" data-item="{{ item }}">
@@ -461,6 +464,11 @@ export default {
         function set(){
           console.log( "发送语音消息");
           if( data.groupId == that.data.sendInputMsg.groupId ){//非转发消息push进消息队列......
+            that.data.chatData.push( data );
+            that.setData({
+              chatData:that.data.chatData,
+              ["sendInputMsg.msgType"]:0
+            })
             if( that.data.pageMsg._curPage == "pages/groupChat/index" ){
               that.setData({
                 scrollTop:10000
@@ -472,19 +480,21 @@ export default {
               }else{
                 that.sendReadedReceipt();
               }
-            }
-            that.data.chatData.push( data );
-            that.setData({
-              chatData:that.data.chatData,
-              ["sendInputMsg.msgType"]:0
-            })
-          }else{//转发消息返回的消息，说明转发成功了
-            if(data.fromUser == app.globalData.openId){
-              system.stateMsg({title:"消息转发成功",icon:"success",time:1000})
-              that.setData({
-                ["model.show"]:false,
-                ["transmit.isTransmit"]:false
+              that.data.chatData.filter( (item)=>{
+                let _is = that.data.transmit.transData.findIndex((it)=>{
+                  return it == item.msgId
+                })
+                if( _is != -1 ){
+                  item.checked = true;
+                }
               })
+              that.setData({
+                "chatData":that.data.chatData
+              })
+            }
+          }else{//转发消息返回的消息，说明转发成功了
+            if( data.fromUser == app.globalData.openId){
+              
             }
           }
         }
@@ -589,7 +599,7 @@ export default {
       })//onMessage结束...
     })//resolve函数结束....
   },
-  onUnload(e){
+  onUnload( e ){
     // let prePage = this.data.pageMsg.pageList[this.data.pageMsg.pageList.length - 2].route
     // if( prePage == "pages/home/index" && wx.IS_ANDROID){
     //   wx.redirectTo({
@@ -647,9 +657,11 @@ export default {
     })
   },
   checkboxChange(e){ //消息转发选项框选中事件......
+    let that = this;
     this.setData({
       ['transmit.transData']:e.detail.value
     })
+    console.log( "chatData",that.data.chatData)
   },
   cancelSelect(){//取消消息选择......
     this.setData({
@@ -666,25 +678,26 @@ export default {
   },
   showModel(){
     this.setData({
-      ["model.show"]:true
+      ["model.show"]:true,
+      ["transmit.isTransmit"]:false
     })
   },
   selGroup(e){//选择群组.....
       let _item = e.currentTarget.dataset;
       let that = this;
       this.data.transmit.groupList.forEach((val,i,arr)=>{
-          if(val.groupId == _item.item.groupId){
+          if( val.groupId == _item.item.groupId ){
               val.act = true;
           }else{
               val.act = false;
           }
           if( val.children.length > 0 ){
               val.children.forEach((value,ii,array)=>{
-              if( value.groupId == _item.item.groupId ){
-                  value.act = true;
-              }else{
-                  value.act = false;
-              }
+                if( value.groupId == _item.item.groupId ){
+                    value.act = true;
+                }else{
+                    value.act = false;
+                }
               })
           }
       })
@@ -695,22 +708,38 @@ export default {
   },
   transMsg(){//选择完转发消息后跳转到群组列表页面
     let that = this;
-    this.data.chatData.forEach((val,i,arr)=>{
+    this.data.transmit.transData;
+    let _sendMsg = {"fromUser": "","fromUserName": "","toUser": "","cmd": 0,"msgType": 0,"chatType": 0,"groupId": "","attachUrl": '',"createAt": "","content": "","headImgUrl": "","post": "","position": "","checked": false,"groupName": ""};
+    let _me = app.globalData.userMsgReq;
+    this.data.chatData.forEach(( val,i,arr )=>{
       this.data.transmit.transData.forEach((value,ii,array)=>{
-        val.groupId = that.data.selUser.selMe.groupId;
-        val.groupName = that.data.selUser.selMe.groupName;
-        val.fromUser = that.data.sendInputMsg.fromUser;
-        val.position = that.data.sendInputMsg.position;
-        val.fromUserName = that.data.sendInputMsg.fromUserName;
         if( val.msgId == value ){
-          delete val.readCount;
-          delete val.status;
-          delete val.readStatus;
-          delete val.msgId;
-          val.toUser = "";
-          val.content == null ? val.content = "" : null;
-          let a = JSON.stringify( val );
-          that.sendSocketMessage( JSON.stringify( val ) );
+          _sendMsg.groupId = that.data.selUser.selMe.groupId;
+          _sendMsg.groupName = that.data.selUser.selMe.groupName;
+          _sendMsg.fromUser = _me.openId;
+          _sendMsg.position = _me.position;
+          _sendMsg.content = val.content;
+          _sendMsg.fromUserName = _me.username;
+          _sendMsg.headImgUrl = _me.headImgUrl;
+          _sendMsg.attachUrl = val.attachUrl;
+          _sendMsg.msgType = val.msgType;
+          app.globalData.socketTask.send({
+            data: JSON.stringify( _sendMsg ),
+            success(res){
+              system.stateMsg({title:"消息转发成功",icon:"success",time:1000})
+              that.data.chatData.filter(( item )=>{
+                if( item.checked == true ){
+                  item.checked = false;
+                }
+              })
+              that.setData({
+                ["model.show"]:false,
+                ["transmit.isTransmit"]:false,
+                "chatData": that.data.chatData
+              })
+            },
+            fail(res){}
+          })
         }
       })
     })
@@ -758,7 +787,7 @@ export default {
     var list = [];
     let creatTime = '';
     if(item.createAt.toString().search('-') != -1){
-      creatTime = Date.parse(item.createAt.replace(/-/g,"/"))
+      creatTime = Date.parse(item.createAt.toString().replace(/-/g,"/"))
     }else{
       creatTime = item.createAt
     }
@@ -1023,6 +1052,7 @@ export default {
             })
           }
           wx.hideToast()
+          console.log( "history-------", res.data.data )
         }else{
           wx.hideToast()
           // system.stateMsg({title: res.data.message,time:1500,icon:"none",scb(){},ccb(){}})
@@ -1343,41 +1373,41 @@ export default {
   width:100%;
   padding-top:66px;
   overflow: hidden;
-  .groupMsgBtn{
-      position: absolute;
-      right:48px;
-      top:115px;
-      z-index: 1;
-      font-size: 14px;
-      border-radius: 12px;
-      background-color: #FFF7F7FA;
-      line-height: 24px;
-      overflow: hidden;
-      height:60rpx;
-      .cBtn0{
-        padding:0 30rpx;
+}
+    .groupMsgBtn{
+        position: relative;
+        // right:48px;
+        // top:115px;
+        z-index: 10000;
+        font-size: 14px;
+        border-radius: 12px;
+        background-color: #FFF7F7FA;
+        line-height: 24px;
+        overflow: hidden;
         height:60rpx;
-        line-height:60rpx;
-        font-size:24rpx;
-        margin:0;
-        background-color:#FFF7F7FA!important;
-        display:inline-block;
-        border-radius:0;
-        &::after{
-          border: none;
+        .cBtn0{
+          padding:0 30rpx;
+          height:60rpx;
+          line-height:60rpx;
+          font-size:24rpx;
+          margin:0;
+          background-color:#FFF7F7FA!important;
+          display:inline-block;
+          border-radius:13px;
+          &::after{
+            border: none;
+          }
+        }
+        .line_icon{
+          border-right:0.5px solid #DBD9D9;
+          height:40rpx;
+          position:relative;
+          top:-20rpx;
+        }
+        .cancelSelect,.toGroupList{
+          font-size: 34rpx;
         }
       }
-      .line_icon{
-        border-right:0.5px solid #DBD9D9;
-        height:40rpx;
-        position:relative;
-        top:-20rpx;
-      }
-      .cancelSelect,.toGroupList{
-        font-size: 34rpx;
-      }
-    }
-}
 .sentType0{
   padding: 20rpx 0;
   .mix-1px(0, 0, 1, 0, #ccc);

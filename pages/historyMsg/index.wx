@@ -13,7 +13,6 @@
         </ui-row>
     </ui-nav-bar>
     <view style="height:66px;width:100%;"></view>
-
     <view class="fixed-view-content">
         <view class="weui-search-bar">
             <view class="weui-search-bar__form">
@@ -62,9 +61,9 @@
         </view> 
     </view>   
     <view style="position:relative;">
-        <view class="groupMsgBtn">
-            <button bindtap="showModel" wx:if="{{ transmit.isTransmit }}" class="seeGroupMsg cBtn0">转发</button>
-        </view>
+        <ui-fixed-view top="160" right="50" class="groupMsgBtn" wx:if="{{ transmit.isTransmit }}">
+            <button bindtap="showModel" class="seeGroupMsg cBtn0">转发</button>
+        </ui-fixed-view>
         <scroll-view scroll-y="true" id="viewport" style="height:{{ scrollHeight }}px;" bindscrolltolower="bindscrolltoupper" style="overflow:hidden;" scroll-into-view="{{ toView }}" upper-threshold="0" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden">
           <view class="content" id="content">
             <checkbox-group bindchange="checkboxChange">
@@ -80,7 +79,7 @@
                         <view style="width: 100%; text-align:{{ sendInputMsg.fromUser == item.fromUser ? 'right' : 'left' }};">
                             <ui-row height="20" wx:if="{{ sendInputMsg.fromUser != item.fromUser }}">
                                 <ui-col align="{{ sendInputMsg.fromUser == item.fromUser ? 'right' : 'left'}}" vertical-align="top">
-                                    <view class="userMsg"><text class="name">{{ item.fromUserName }}</text><text decode="true">&nbsp;&nbsp;</text><text class="job">{{ item.position }}</text></view>
+                                    <view class="userMsg"><text class="name">{{ item.fromUserName || ""}}</text><text decode="true">&nbsp;&nbsp;</text><text class="job">{{ item.position || "" }}</text></view>
                                 </ui-col>
                             </ui-row>
                             <!--文本类型-->
@@ -95,13 +94,13 @@
                                     <image mode="aspectFit" src="../../static/img/Group6Copy@2x.png"></image>
                                   </ui-col>
                                   <ui-col style="font-size:12px;padding-left:10px;">
-                                    <view style="white-space:nowrap;text-overflow:ellipsis;overflow:hidden;height:30px;">需求单{{ item.content.demandId }}</view>
-                                    <view style="white-space:nowrap;height:30px;line-height:40px;" wx:if="{{ sendInputMsg.fromUser == item.content.createUser && (item.content.demandState == false) }}">发起人<text>@</text>{{ item.fromUserName }}</view>
-                                    <view style="white-space:nowrap;height:30px;line-height:40px;" wx:else="{{ sendInputMsg.fromUser == item.toUser && ( item.content.demandState == false )}}">确认人<text style="color: #FF9D44;">@{{ item.content.confirmUserName }}</text></view>
+                                    <view style="white-space:nowrap;text-overflow:ellipsis;overflow:hidden;height:30px;">需求单{{ item.content.demandNum || ""}}</view>
+                                    <view style="white-space:nowrap;height:30px;line-height:40px;" wx:if="{{ sendInputMsg.fromUser == item.content.createUser && (item.content.demandState == false) }}">发起人<text>@</text>{{ item.fromUserName || ""}}</view>
+                                    <view style="white-space:nowrap;height:30px;line-height:40px;" wx:else="{{ sendInputMsg.fromUser == item.toUser && ( item.content.demandState == false )}}">确认人<text style="color: #FF9D44;">@{{ item.content.confirmUserName || ""}}</text></view>
                                   </ui-col>
                               </ui-row>
                               <ui-row>
-                                    <ui-col style="white-space:nowrap;font-size:12px;" wx:if="{{ item.content.demandState == true }}">确认日期{{ item.content.createAt }}</ui-col>
+                                    <ui-col style="white-space:nowrap;font-size:12px;" wx:if="{{ item.content.demandState == true }}">确认日期{{ item.content.createAt || ""}}</ui-col>
                               </ui-row>
                             </view>
                             <!--图片类型-->
@@ -137,19 +136,20 @@
                             <view class="talkContent" wx:if="{{ item.msgType == 30 }}" style="width:80%;">
                               <ui-row space-bottom="" style="height:30px;line-height:26px;">
                                   <ui-col align="left" vertical-align="top">
-                                      <text style="font-size:13px;color:#333333;">服务评价</text>
+                                      <text style="font-size:13px;color:#333333;">项目办结消息提醒</text>
                                   </ui-col>
                               </ui-row>
                               <ui-row style="border-top:1px solid #ddd;border-bottom:1px solid #ddd;padding:10px 0 20px 0;">
                                   <ui-col align="left" vertical-align="top">
-                                      <text style="font-size:13px;color:#333333;text-align:right;display:block;width:100%;font-size:13px;">{{ item.fromUserName }}邀请你对本次服务进行评价。</text>
+                                      <!-- <text style="font-size:13px;color:#333333;text-align:right;display:block;width:100%;font-size:13px;">{{ item.fromUserName }}邀请你对本次服务进行评价。</text> -->
+                                      <text style="font-size:13px;color:#333333;text-align:right;display:block;width:100%;font-size:13px;">尊敬的客户你好，你的项目已经完结请对我们的服务进行评价。</text>
                                   </ui-col>
-                              </ui-row>   
+                              </ui-row>
                               <ui-row>
                                   <ui-col align="right" vertical-align="top">
                                       <button style="color:white;font-size:15px;" class="myBtnSuccess" data-item="{{item}}" type="primary" size="mini" catchtap="evaluateMe">点击评价</button>
                                   </ui-col>
-                              </ui-row>        
+                              </ui-row>
                             </view>
                         </view>
                         <view class="readMe" wx:if="{{ sendInputMsg.fromUser == item.fromUser }}" style="right:{{ sendInputMsg.fromUser == item.fromUser ? '5px' : '' }}">{{ item.readCount >= 0 ? theGroupMsg.groupUsers.length - item.readCount : item.msgType != 1 && item.msgType != 2 ? '发送失败' : item.progress + '%' }} {{ item.readCount >= 0 ? "人未读" : ''}}</view>
@@ -163,24 +163,25 @@
                         </view>
                         <!-- 消息转发选项框...... -->
                     </ui-col>
-                    <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && item.msgType != 20 && item.msgType != 21 && item.msgType != 22 && tabBar.actItem == 0 }}"><checkbox checked="{{ item.checked }}" class="checkbox" value="{{ item.msgId }}"/></view>
+                    <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && item.msgType != 20 && item.msgType != 21 && item.msgType != 22 && tabBar.actItem == 0 && item.msgType != 30 }}"><checkbox checked="{{ item.checked }}" class="checkbox" value="{{ item.msgId }}"/></view>
                 </ui-row>
               </checkbox-group>
               <view wx:if="{{ chatData.length == 0 }}" class="historyLine">无匹配内容</view>
           </view>
         </scroll-view>
+        <cc-groupList></cc-groupList>
         <!-- 全屏弹窗.... -->
         <ui-popup show="{{ model.show }}" height="100%">
             <view class="popup1">
                 <text class="title0">选择要转发到的群组</text>
                 <scroll-view scroll-y style="height:{{modelHeight}};border-top:1px solid #ddd;">
-                <ui-accordion bindchange="slide" wx:for="{{ transmit.groupList }}" header-height="50" wx:key="index">
+                <ui-accordion bindchange="slide" wx:for="{{ transmit.groupList }}" header-height="50" wx:key="index" show-arrow="{{ item.children.length != 0 }}">
                     <view slot="header" class="accorHeader">
                         <ui-row height="80" class="top_tip" border-bottom style="padding-right:35px;" data-parentItem="0" data-isaite="false" data-index="{{ index }}" data-item="{{ item }}" bindtap="selGroup">
                             <ui-col width="80" align="center" vertical-align="middle" data-item="{{ item }}">
                                 <view class="left_icon left_icon1" style="">
                                     <image src="{{ item.icon || defaultHeadImg }}"></image>
-                                    <text class="angleIcon" wx:if="{{ item.unreadCount != 0 }}">{{ item.unreadCount >= 100 ? '99+' : item.unreadCount }}</text>
+                                    <!-- <text class="angleIcon" wx:if="{{ item.unreadCount != 0 }}">{{ item.unreadCount >= 100 ? '99+' : item.unreadCount }}</text> -->
                                 </view>
                             </ui-col>
                             <ui-col class="text" align="left" vertical-align="middle" space="20" data-item="{{ item }}">
@@ -261,6 +262,9 @@ var backgroundAudioManager = wx.getBackgroundAudioManager();
 var app = getApp();
 export default {
     config: {
+        usingComponents: {
+          'cc-grouplist': '../../packages/cc-grouplist'
+        },
         navigationBarTitleText: '聊天信息'
     },
     data: {
@@ -385,6 +389,7 @@ export default {
                 ['transmit.groupList']:res.data.data.rows,
                 ['selUser.selMe']:res.data.data.rows[0]
             })
+            console.log( res.data.data.rows.length , "length")
         }})
     },
     evaluateMe(e){//评价消息
@@ -535,8 +540,10 @@ export default {
     clearInput(e){
         this.setData({
             ["search.inputVal"]: "",
+            ["searchData.keywords"]: "",
             ["search.showInput"]:true
         });
+        this.getHistoryMsg(1);
     },
     checkboxChange(e){ //消息转发选项框选中事件......
         if( e.detail.value.length == 0 ){
@@ -564,38 +571,38 @@ export default {
     },
     transMsg(){ //选择完转发消息后跳转到群组列表页面
         let that = this;
-        this.data.chatData.forEach((val,i,arr)=>{
+        this.data.transmit.transData;
+        let _sendMsg = {"fromUser": "","fromUserName": "","toUser": "","cmd": 0,"msgType": 0,"chatType": 0,"groupId": "","attachUrl": '',"createAt": "","content": "","headImgUrl": "","post": "","position": "","checked": false,"groupName": ""};
+        let _me = app.globalData.userMsgReq;
+        this.data.chatData.forEach(( val,i,arr )=>{
         this.data.transmit.transData.forEach((value,ii,array)=>{
-            val.groupId = that.data.selUser.selMe.groupId;
-            val.groupName = that.data.selUser.selMe.groupName;
-            val.fromUser = app.globalData.openId;
-            val.position = app.globalData.userMsgReq.position;
-            val.fromUserName = app.globalData.userMsgReq.username;
             if( val.msgId == value ){
-                delete val.readCount;
-                delete val.status;
-                delete val.readStatus;
-                delete val.msgId;
-                val.toUser = "";
-                val.content == null ? val.content = "" : null;
-                let a = JSON.stringify( val );
-                app.globalData.socketTask.send({ data: JSON.stringify( val ) ,success(res){
-                    that.data.chatData.filter((val)=>{
-                        if( val.checked == true ){
-                            val.checked = false;
-                        }
-                    })
-                    that.setData({
-                        ["model.show"]:false,
-                        ["transmit.transData"]:[],
-                        "chatData":that.data.chatData
-                    })
-                },fail(res){
-                    that.stateMsg({
-                        title:"转发失败",
-                        icon:"none"
-                    })
-                }})
+            _sendMsg.groupId = that.data.selUser.selMe.groupId;
+            _sendMsg.groupName = that.data.selUser.selMe.groupName;
+            _sendMsg.fromUser = _me.openId;
+            _sendMsg.position = _me.position;
+            _sendMsg.content = val.content;
+            _sendMsg.fromUserName = _me.username;
+            _sendMsg.headImgUrl = _me.headImgUrl;
+            _sendMsg.attachUrl = val.attachUrl;
+            _sendMsg.msgType = val.msgType;
+            app.globalData.socketTask.send({
+                data: JSON.stringify( _sendMsg ),
+                success(res){
+                system.stateMsg({title:"消息转发成功",icon:"success",time:1000})
+                that.data.chatData.filter(( item )=>{
+                    if( item.checked == true ){
+                    item.checked = false;
+                    }
+                })
+                that.setData({
+                    ["model.show"]:false,
+                    ["transmit.isTransmit"]:false,
+                    "chatData": that.data.chatData
+                })
+                },
+                fail(res){}
+            })
             }
         })
         })
@@ -790,10 +797,10 @@ export default {
     padding-top: 40px;
 }
   .groupMsgBtn{
-      position: absolute;
+      position: relative;
       right: 56px;
       top: 13px;
-      z-index: 1;
+      z-index: 10000;
       font-size: 14px;
       border-radius: 12px;
       background-color: #FFF7F7FA;
@@ -808,7 +815,7 @@ export default {
         margin:0;
         background-color:#FFF7F7FA!important;
         display:inline-block;
-        border-radius:0;
+        border-radius:13px;
         &::after{
           border: none;
         }

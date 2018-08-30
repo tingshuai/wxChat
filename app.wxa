@@ -21,7 +21,8 @@ export default {
       'pages/fileList/index',
       'pages/historyMsg/index',
       'pages/CreateRequirement/index',
-      'pages/evaluate/index'
+      'pages/evaluate/index',
+      'pages/../packages/cc-grouplist/index.wxc'
     ],
     plugins: {
       WechatSI: {
@@ -47,7 +48,7 @@ export default {
   globalData: {
     socketHost: 'wss://www.china-cms.com', // 祝天洋 'wss://192.168.0.49', 沈鑫：192.168.0.56，线上：www.china-cms.com
     httpHost: 'https://www.china-cms.com', //'https://192.168.0.144',
-    httpUpload: "http://www.china-cms.com",//文件上传地址......
+    httpUpload: 'http://www.china-cms.com', //文件上传地址......
     userMsg: {},
     openId: '', //'oc6Hd1BHJF55T1jIWr2eC2AEYoUQ',
     sessionId: '',

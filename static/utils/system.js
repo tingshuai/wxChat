@@ -66,8 +66,8 @@ export default {
       }
     })
   },
-  formatTime(_timer){
-    let _time = new Date( _timer.replace(new RegExp("-","gm"),"/") );
+  formatTime( _timer ){
+    let _time = new Date( _timer.replace( new RegExp("-","gm"),"/") );
     return `${_time.getFullYear()}-${_time.getUTCMonth() + 1}-${_time.getUTCDate()}`;
   },
   searchUrl(obj={color:blue,str:''}) {

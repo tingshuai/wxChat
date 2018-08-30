@@ -237,6 +237,7 @@ export default {
             that.setData({
                 "userMsgReq":res.data
             })
+            console.log( "userMsgReq.canBuildGroup" , that.data.userMsgReq.canBuildGroup)
         }
     })
     this.getDefaultImg();
@@ -322,6 +323,7 @@ export default {
             'content-type': 'application/json' // 默认值
         },
         success: function(res) {
+            console.log( res.data.data.rows.length , "length")
             if(type == 'over'){
                 let newList = that.sortList( res.data.data.rows );
                 that.setData({

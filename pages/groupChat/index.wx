@@ -26,7 +26,7 @@
                 <view><icon class="iconfont myWx-xiangyou" style="font-size:16px;color:white;line-height:35px;"></icon></view>
             </view>
         </view>
-        <scroll-view scroll-y="true" bindscroll="scrllView" id="viewport" style="height: {{ transmit.tabBar.actItem == 0 ? (scrollHeight - 103) : (scrollHeight - 53)}}px;overflow:hidden;top:-2px;position:relative;" scroll-into-view="{{toView}}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden"><!-- bindscrolltoupper="bindscrolltoupper"，，，，catch:touchstart="loadTouchstart" catch:touchend="loadTouchend" catch:touchmove="loadTouchmove"-->
+        <scroll-view scroll-y="true" bindscroll="scrllView" id="viewport" style="height: {{ transmit.tabBar.actItem == 0 ? (scrollHeight - 103) : (scrollHeight - 53)}}px;overflow:hidden;top:-2px;position:relative;" scroll-into-view="{{ toView }}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden"><!-- bindscrolltoupper="bindscrolltoupper"，，，，catch:touchstart="loadTouchstart" catch:touchend="loadTouchend" catch:touchmove="loadTouchmove"-->
           <view class="content" id="content">
             <checkbox-group bindchange="checkboxChange">
               <ui-row hover-class="touchui-hover" class="talkItem" wx:for="{{ chatData }}" wx:key="index" id="the{{index}}">
@@ -47,7 +47,7 @@
                             <!--文本类型-->
                             <text selectable='true' class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 0 || item.msgType == 7}}" style="background-color: white;">{{ item.content }} </text>
                             <!--需求类型-->
-                            <view class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="retOrConfirm" wx:if="{{ item.msgType == 20 || item.msgType == 22 || item.msgType == 21}}" style="background-color: white;width:100%;">
+                            <view class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="retOrConfirm" wx:if="{{ item.msgType == 20 || item.msgType == 22 || item.msgType == 21 }}" style="background-color: white;width:100%;">
                               <ui-row style="border-bottom:1px solid rgba(0,0,0,0.1);">
                                   <ui-col style="color:{{ item.content.demandState ? '#4EBF62' : '#267AFC' }};font-size:12px;">{{ item.msgType == 20 || item.msgType == 21 ? "需求确认" : "修改需求确认" }}</ui-col>
                               </ui-row>
@@ -114,7 +114,7 @@
                               </ui-row>                           
                             </view>
                         </view>
-                        <view class="readMe" wx:if="{{ sendInputMsg.fromUser == item.fromUser }}" style="right:{{ sendInputMsg.fromUser == item.fromUser ? '5px' : '' }}">{{ item.readCount >= 0 ? (theGroupMsg.groupUsers.length - item.readCount) > -1 ? theGroupMsg.groupUsers.length - item.readCount : 0 : item.msgType != 1 && item.msgType != 2 ? '发送失败' : item.progress + '%' }} {{ item.readCount >= 0 ? "人未读" : ''}}</view>
+                        <view class="readMe" wx:if="{{ sendInputMsg.fromUser == item.fromUser }}" style="right:{{ sendInputMsg.fromUser == item.fromUser ? '5px' : '' }}">{{ item.isForward == true ?  theGroupMsg.groupUsers.length - item.readCount -1 || '0' : theGroupMsg.groupUsers.length - item.readCount || '0'}} {{ item.readCount >= 0 ? "人未读" : ''}}</view>
                     </ui-col>
                     <ui-col class="text" align="center" vertical-align="top" space-left="0" space-right="0" wx:if="{{ item.cmd == 1 }}">
                         <view class="historyLine">{{ item.fromUserName }} 撤回了一条消息</view>
@@ -362,29 +362,7 @@ export default {
         })
       })
       that.reqGroupList();//请求群列表
-      // 如果已经有socket 连接则先关闭.
-      // 连接sockey服务
-      if( app.globalData.socketTask.openType == false ){
-        app.globalData.socketTask = wx.connectSocket({
-          url: app.globalData.socketHost + `/websocket/${that.data.sendInputMsg.fromUser}`,//用户id
-          data:{},
-          header:{
-            'content-type': 'application/json'
-          },
-          success:function(msg){
-            that.getHistoryMsg( that.data.theGroupMsg.groupId, 10 , that.data.pageNum,true );
-          },
-          fail:function(msg){
-            system.stateMsg({title: '提示',content: res.errMsg,icon:"none",scb(){},ccb(){}})
-          }
-        })
-        //连接状态
-        app.globalData.socketTask.onOpen(function(res) { app.globalData.socketTask.openType = true ;console.log( 'socket open');})
-        //监听WebSocket错误。
-        app.globalData.socketTask.onError(function(res){
-          system.msgTip({title: '提示',content: "会话连接失败。请重新连接。",scb(){},ccb(){}})
-        })
-      }
+      that.getHistoryMsg( that.data.theGroupMsg.groupId, 10 , that.data.pageNum,true );
       app.globalData.socketTask.onMessage(function(res) {
         var data = JSON.parse( res.data );
         console.log( "接收消息" , data )
@@ -398,9 +376,8 @@ export default {
         }else{
             chatDataMsgId = data.msgId;
         }
-        var dataMsg =JSON.stringify( { "cmd" : 3, msgId:chatDataMsgId, "groupId":that.data.theGroupMsg.groupId ,"fromUser":data.fromUser } ) ;
+        var dataMsg =JSON.stringify( { "cmd" : 3, msgId:chatDataMsgId, "groupId":data.groupId ,"fromUser":data.fromUser } ) ;
         function set(){
-          console.log( "发送语音消息");
           if( data.groupId == that.data.sendInputMsg.groupId ){//非转发消息push进消息队列......
             that.data.chatData.push( data );
             that.setData({
@@ -432,7 +409,7 @@ export default {
             }
           }else{//转发消息返回的消息，说明转发成功了
             if( data.fromUser == app.globalData.openId){
-              
+               
             }
           }
         }
@@ -466,7 +443,7 @@ export default {
             data.content.createAt = system.formatTime( data.content.createAt );
             that.data.chatData.filter((val)=>{
               if( val.msgId == data.content.disableMsgId ){
-                val.content.disableMsgId = false
+                val.content.editable = false
               }
             })
             that.setData({
@@ -510,7 +487,10 @@ export default {
         }else if( data.cmd == 2 ){//系统推送消息.
           set2();
           if( onFirst == 1 && data.msgType != 11 ){
-            app.globalData.socketTask.send({"data":dataMsg ,success(res){},fail(res){}});
+            system.sendSocketMessage({
+              "_app":app.globalData,
+              "params":dataMsg
+            })
             onFirst ++ ;
           }
           if( data.msgType == 11 ){
@@ -554,9 +534,15 @@ export default {
   retOrConfirm(e){
     let _item  = e.currentTarget.dataset;
     let that = this;
-      wx.navigateTo({
-        url:`/pages/CreateRequirement/index?groupMsg=${JSON.stringify(that.data.theGroupMsg)}&item=${JSON.stringify(_item)}&enterType=1`//编辑进
-      })
+    let _obj = {
+      "groupMsg":that.data.theGroupMsg,
+      "item":_item,
+      "enterType":1
+    }
+    app.globalData._obj = JSON.stringify(_obj)
+    wx.navigateTo({
+      url:`/pages/CreateRequirement/index`//编辑进
+    })
   },
   handleShowMask (e) {
     let _item = e.currentTarget.dataset;
@@ -564,15 +550,6 @@ export default {
     this.setData({
       ['model.showMask']: false
     })
-  },  
-  // 发送socket消息
-  sendSocketMessage(msg) {
-    var that = this;
-      app.globalData.socketTask.send({
-        data: msg ,
-        success(res){},
-        fail(res){}
-      })
   },
   requireTextareaInputing(e){
     let that = this;
@@ -585,11 +562,14 @@ export default {
     this.data.chatData.forEach((val,i,arr)=>{
       wx.createSelectorQuery().select(`#the${i}`).boundingClientRect(function(rect){
         var a = that.data.chatData[i].readStatus;
-        if( (that.data.chatData[i].readStatus == 0 || (that.data.chatData[i].readStatus == 1 && that.data.chatData[i].fromUser == app.globalData.openId)) && rect.top >= 0 ){
-          app.globalData.socketTask.send({"data":JSON.stringify({msgId:that.data.chatData[i].msgId,cmd:'3',groupId:that.data.theGroupMsg.groupId,fromUser:that.data.chatData[i].fromUser}),
-            success(res){},
-            fail(res){}
-          });
+        let _IF1 = ( that.data.chatData[i].readStatus == 1 && that.data.chatData[i].fromUser == app.globalData.openId );//消息来自自己切已读..
+        if( that.data.chatData[i].readStatus == 0 && rect.top >= 0 ){
+          val.readStatus = 1;
+          let _params = JSON.stringify({msgId:that.data.chatData[i].msgId,cmd:'3',groupId:that.data.theGroupMsg.groupId,fromUser:that.data.chatData[i].fromUser});
+          system.sendSocketMessage({
+            "_app":app.globalData,
+            "params":_params
+          })
         }
       }).exec()
     })
@@ -604,8 +584,14 @@ export default {
   creatRequirement(e){//新增需求......
     let that = this;
     let _item  = e.currentTarget.dataset;
+    let _obj = {
+      "groupMsg":that.data.theGroupMsg,
+      "item":_item,
+      "enterType":0
+    }
+    app.globalData._obj = JSON.stringify(_obj)
     wx.navigateTo({
-      url:`/pages/CreateRequirement/index?groupMsg=${JSON.stringify(that.data.theGroupMsg)}&item=${JSON.stringify(_item)}&enterType=0`//新增进
+      url:`/pages/CreateRequirement/index`//新增进
     })
   },
   showModel(){
@@ -614,8 +600,9 @@ export default {
             chatData:that.data.chatData,
             transData:that.data.transmit.transData
         }
+        app.globalData._obj = JSON.stringify( _obj )
         wx.navigateTo({
-            url:`/pages/groupList/index?obj=${JSON.stringify(_obj)}`
+            url:`/pages/groupList/index`
         })
         that.data.chatData.filter(( item )=>{
             if( item.checked == true ){
@@ -711,7 +698,11 @@ export default {
           ['inputIn.isLeft']:true,
         })
       }else if( list[code] == "撤回" ){
-        app.globalData.socketTask.send({"data":JSON.stringify({msgId:item.msgId,cmd:'1',groupId:item.groupId,fromUser:item.fromUser,fromUserName:item.fromUserName})});
+        let _params = JSON.stringify({msgId:item.msgId,cmd:'1',groupId:item.groupId,fromUser:item.fromUser,fromUserName:item.fromUserName});
+        system.sendSocketMessage({
+          "_app":app.globalData,
+          "params":_params
+        })
       }
     }
     wx.showActionSheet({
@@ -967,7 +958,11 @@ export default {
                 var data = res.data;
                 if( type == 2 ){//发送语音
                   that.data.sendInputMsg.attachUrl = JSON.parse(data).data;
-                  that.sendSocketMessage( JSON.stringify( that.data.sendInputMsg),{upload:true} );
+                  let _params = JSON.stringify( that.data.sendInputMsg);
+                  system.sendSocketMessage({
+                    "_app":app.globalData,
+                    "params":_params
+                  })
                 }
                 resolve( res.data );
             },
@@ -998,7 +993,11 @@ export default {
           Promise.all(promises).then((obj_i) => {
               obj_i.forEach((val,i,arr)=>{
                 that.data.sendInputMsg.attachUrl = JSON.parse(val).data;
-                that.sendSocketMessage( JSON.stringify( that.data.sendInputMsg),{upload:true} );
+                let _params = JSON.stringify( that.data.sendInputMsg );
+                system.sendSocketMessage({
+                  "_app":app.globalData,
+                  "params":_params
+                })                
               })
           }).catch((err) => {
               console.log(err);
@@ -1032,7 +1031,11 @@ export default {
     }else{
       this.setData({['sendInputMsg.msgType']: 0,['sendInputMsg.content']: that.data.inputVal});
     }
-    this.sendSocketMessage( JSON.stringify( that.data.sendInputMsg) ,obj );
+    let _params = JSON.stringify( that.data.sendInputMsg );
+    system.sendSocketMessage({
+      "_app":app.globalData,
+      "params": _params
+    })
   },
   aite(e){
     let that = this;
@@ -1043,21 +1046,23 @@ export default {
     })
   },
   navigateBack () {
-    let page = getCurrentPages();
-    backgroundAudioManager.stop();
-    this.setData({
-      ['model.show']:false,
-      ['transmit.isTransmit']:false
-    })    
-    if(page.length > 1 && page.length < 8){//从登录页过来的。。。。
-      wx.redirectTo({
-        url: '/pages/home/index'
-      })
-    }else{
-      wx.reLaunch({
-        url: '/pages/home/index'
-      })
-    }
+    let that = this;
+    wx.navigateBack();
+    // let page = getCurrentPages();
+    // backgroundAudioManager.stop();
+    // this.setData({
+    //   ['model.show']:false,
+    //   ['transmit.isTransmit']:false
+    // })    
+    // if(page.length > 1 && page.length < 8){//从登录页过来的。。。。
+    //   wx.redirectTo({
+    //     url: '/pages/home/index'
+    //   })
+    // }else{
+    //   wx.reLaunch({
+    //     url: '/pages/home/index'
+    //   })
+    // }
   },
   comeOver(e){//这个是要发送办结消息.....
     let _me = this.data.sendInputMsg;

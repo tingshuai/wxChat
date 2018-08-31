@@ -4,66 +4,63 @@
             <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
                 <icon class="iconfont myWx-iconfontqianjin2" style="font-size:20px;"></icon>
             </ui-col>
-            <ui-col vertical-align="middle" align="center">
-                选择群组
-            </ui-col>
-            <ui-col vertical-align="middle" align="center" width="80">
-            </ui-col>
+            <ui-col vertical-align="middle" align="center">选择群组</ui-col>
+            <ui-col vertical-align="middle" align="center" width="80"></ui-col>
         </ui-row>
     </ui-nav-bar>
-            <view class="popup1">
-                <text class="title0">选择要转发到的群组</text>
-                <scroll-view scroll-y style="height:{{modelHeight}};border-top:1px solid #ddd;">
-                <ui-accordion bindchange="slide" wx:for="{{ transmit.groupList }}" header-height="50" wx:key="index" show-arrow="{{ item.children.length != 0 }}">
-                    <view slot="header" class="accorHeader">
-                        <ui-row height="80" class="top_tip" border-bottom style="padding-right:35px;" data-parentItem="0" data-isaite="false" data-index="{{ index }}" data-item="{{ item }}" bindtap="selGroup">
-                            <ui-col width="80" align="center" vertical-align="middle" data-item="{{ item }}">
-                                <view class="left_icon left_icon1" style="">
-                                    <image src="{{ item.icon || defaultHeadImg }}"></image>
-                                    <!-- <text class="angleIcon" wx:if="{{ item.unreadCount != 0 }}">{{ item.unreadCount >= 100 ? '99+' : item.unreadCount }}</text> -->
-                                </view>
-                            </ui-col>
-                            <ui-col class="text" align="left" vertical-align="middle" space="20" data-item="{{ item }}">
-                                <view style="width: 100%;">
-                                    <ui-row height="22">
-                                        <ui-col align="left" vertical-align="middle">
-                                            <text>{{ item.groupName }}</text>
-                                        </ui-col>
-                                    </ui-row>
-                                    <view class="txt">{{ item.groupDesc ? item.groupDesc : "" }}</view>
-                                </view>
-                            </ui-col>
-                            <icon class="angleIcon" type="success" wx:if="{{ item.act }}" size="23"></icon>
-                        </ui-row>
-                    </view>
-                    <view slot="content" class="accorContent" v-if="{{ item.children.length != 0 }}">
-                        <ui-row height="70" style="padding-right:0;" class="top_tip" border-bottom wx:key="{{indexTow}}" wx:for="{{item.children}}" bindtap="selGroup" data-parentItem="{{ item }}" wx:for-item="itemChidren" data-item="{{itemChidren}}" wx:for-index="indexTow">
-                            <ui-col space-left="25" width="80" align="center" vertical-align="middle" data-item="{{ itemChidren }}">
-                                <view class="left_icon left_icon1" style="">
-                                    <image src="{{ itemChidren.icon || defaultHeadImg}}"></image>
-                                    <text class="angleIcon angleIcon2" wx:if="{{ itemChidren.unreadCount != 0 }}">{{ itemChidren.unreadCount >= 100 ? '99+' : itemChidren.unreadCount }}</text>
-                                </view>
-                            </ui-col>
-                            <ui-col space-left="25" class="text" align="left" vertical-align="middle" space="20" data-item="{{ itemChidren }}">
-                                <view style="width: 100%;">
-                                    <ui-row height="24">
-                                        <ui-col align="left" vertical-align="middle">
-                                            <text>{{ itemChidren.groupName }}</text>
-                                        </ui-col>
-                                    </ui-row>
-                                    <view class="txt">{{ itemChidren.groupDesc ? itemChidren.groupDesc : "" }}</view>
-                                </view>
-                            </ui-col>
-                            <icon class="angleIcon" type="success" wx:if="{{ itemChidren.act }}" size="23"></icon>
-                        </ui-row>
-                    </view>
-                </ui-accordion>
-                </scroll-view>
-                <view class="button-sp-area">
-                <button bindtap="navigateBack" type="default">取消</button>
-                <button bindtap="transMsg" type="primary" class="myBtnSuccess">确定</button>
-                </view>
+    <view class="popup1">
+        <!-- <text class="title0">选择要转发到的群组</text> -->
+        <scroll-view scroll-y style="height:{{ modelHeight }};border-top:1px solid #ddd;">
+        <ui-accordion bindchange="slide" wx:for="{{ transmit.groupList }}" header-height="50" wx:key="index" show-arrow="{{ item.children.length != 0 }}">
+            <view slot="header" class="accorHeader">
+                <ui-row height="80" class="top_tip" border-bottom style="padding-right:35px;" data-parentItem="0" data-isaite="false" data-index="{{ index }}" data-item="{{ item }}" bindtap="selGroup">
+                    <ui-col width="80" align="center" vertical-align="middle" data-item="{{ item }}">
+                        <view class="left_icon left_icon1" style="">
+                            <image src="{{ item.icon || defaultHeadImg }}"></image>
+                            <!-- <text class="angleIcon" wx:if="{{ item.unreadCount != 0 }}">{{ item.unreadCount >= 100 ? '99+' : item.unreadCount }}</text> -->
+                        </view>
+                    </ui-col>
+                    <ui-col class="text" align="left" vertical-align="middle" space="20" data-item="{{ item }}">
+                        <view style="width: 100%;">
+                            <ui-row height="22">
+                                <ui-col align="left" vertical-align="middle">
+                                    <text>{{ item.groupName }}</text>
+                                </ui-col>
+                            </ui-row>
+                            <view class="txt">{{ item.groupDesc ? item.groupDesc : "" }}</view>
+                        </view>
+                    </ui-col>
+                    <icon class="angleIcon" type="success" wx:if="{{ item.act }}" size="23"></icon>
+                </ui-row>
             </view>
+            <view slot="content" class="accorContent" v-if="{{ item.children.length != 0 }}">
+                <ui-row height="70" style="padding-right:0;" class="top_tip" border-bottom wx:key="{{indexTow}}" wx:for="{{item.children}}" bindtap="selGroup" data-parentItem="{{ item }}" wx:for-item="itemChidren" data-item="{{itemChidren}}" wx:for-index="indexTow">
+                    <ui-col space-left="25" width="80" align="center" vertical-align="middle" data-item="{{ itemChidren }}">
+                        <view class="left_icon left_icon1" style="">
+                            <image src="{{ itemChidren.icon || defaultHeadImg}}"></image>
+                            <text class="angleIcon angleIcon2" wx:if="{{ itemChidren.unreadCount != 0 }}">{{ itemChidren.unreadCount >= 100 ? '99+' : itemChidren.unreadCount }}</text>
+                        </view>
+                    </ui-col>
+                    <ui-col space-left="25" class="text" align="left" vertical-align="middle" space="20" data-item="{{ itemChidren }}">
+                        <view style="width: 100%;">
+                            <ui-row height="24">
+                                <ui-col align="left" vertical-align="middle">
+                                    <text>{{ itemChidren.groupName }}</text>
+                                </ui-col>
+                            </ui-row>
+                            <view class="txt">{{ itemChidren.groupDesc ? itemChidren.groupDesc : "" }}</view>
+                        </view>
+                    </ui-col>
+                    <icon class="angleIcon" type="success" wx:if="{{ itemChidren.act }}" size="23"></icon>
+                </ui-row>
+            </view>
+        </ui-accordion>
+        </scroll-view>
+        <view class="button-sp-area">
+        <button bindtap="navigateBack" type="default">取消</button>
+        <button bindtap="transMsg" type="primary" class="myBtnSuccess">确定</button>
+        </view>
+    </view>
 </template>
 <script>
 import system from '../../static/utils/system'
@@ -77,26 +74,25 @@ export default {
           selMe:""
       },
       chatData:[],
-      modelHeight:wx.DEFAULT_CONTENT_HEIGHT - 148 + 'px',
+      modelHeight:wx.DEFAULT_CONTENT_HEIGHT - 100 + 'px',
     },
     onLoad(option){
-      let _option = JSON.parse( option.obj );
+      let _obj = JSON.parse( app.globalData._obj );
       let that = this;
       this.setData({
-        chatData:_option.chatData,
-        ["transmit.transData"]:_option.transData
+        chatData:_obj.chatData,
+        ["transmit.transData"]:_obj.transData
       })
       this.reqGroupList();
     },
     reqGroupList(e){
         let that = this;
-        system.http({ url:`chat/groups/tree`, method:"get",param:{openId:app.globalData.openId} ,header:{'content-type': 'application/x-www-form-urlencoded'},scb(res){
+        system.http({ url:`chat/groups/tree`, method:"get",param:{pageSize:0,openId:app.globalData.openId} ,header:{'content-type': 'application/x-www-form-urlencoded'},scb(res){
             res.data.data.rows[0].act = true;
             that.setData({
                 ['transmit.groupList']:res.data.data.rows,
                 ['transmit.selMe']:res.data.data.rows[0]
             })
-            console.log( res.data.data.rows.length , "length")
         }})
     },  
     navigateBack() {
@@ -113,22 +109,31 @@ export default {
               _sendMsg.groupName = that.data.transmit.selMe.groupName;
               _sendMsg.fromUser = _me.openId;
               _sendMsg.position = _me.position;
-              _sendMsg.content = val.content;
+              _sendMsg.content = val.content || "";
               _sendMsg.fromUserName = _me.username;
               _sendMsg.headImgUrl = _me.headImgUrl;
               _sendMsg.attachUrl = val.attachUrl;
               _sendMsg.msgType = val.msgType;
+              _sendMsg.isForward = true;
               app.globalData.socketTask.send({
                   data: JSON.stringify( _sendMsg ),
                   success(res){
                     if( that.data.transmit.transData.length == ii + 1){
-                      system.stateMsg({title:"消息转发成功",icon:"success",time:1000})
-                      setTimeout(() => {
-                        that.navigateBack();
-                      }, 1200);
+                        system.stateMsg({title:"消息转发成功",icon:"success",time:1000})
+                        setTimeout(() => {
+                            that.navigateBack();
+                        }, 1200);
                     }
                   },
                   fail(res){}
+              })
+              app.globalData.socketTask.onMessage((_data)=>{
+                    let _msg = JSON.parse( _data.data );
+                    let dataMsg =JSON.stringify( { "cmd" : 3, msgId: _msg.msgId, "groupId":_msg.groupId ,"fromUser":_msg.fromUser } ) ;
+                    system.sendSocketMessage({
+                        "_app":app.globalData,
+                        "params":dataMsg
+                    })
               })
             }
         })
@@ -167,7 +172,7 @@ export default {
 <style lang="less">
   .popup1{
     height: 100%;
-    padding:0 20rpx;
+    // padding:0 20rpx;
     padding-top:66px;
     overflow: hidden;
     .title0{

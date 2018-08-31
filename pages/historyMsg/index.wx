@@ -499,8 +499,9 @@ export default {
             chatData:that.data.chatData,
             transData:that.data.transmit.transData
         }
+        app.globalData._obj = JSON.stringify( _obj )
         wx.navigateTo({
-            url:`/pages/groupList/index?obj=${JSON.stringify(_obj)}`
+            url:`/pages/groupList/index`
         })
         that.data.chatData.filter(( item )=>{
             if( item.checked == true ){
@@ -510,7 +511,7 @@ export default {
         that.setData({
             ["transmit.isTransmit"]:false,
             "chatData": that.data.chatData
-        })        
+        })
     },
     previewImage: function(e){//图片预览.....
         var imgUrl = e.currentTarget.dataset.item.attachUrl;

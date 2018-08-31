@@ -68,7 +68,7 @@
             <view style="height:100%;width:100%;overflow:hidden;">
                 <view style="height:70px;"></view>
                 <scroll-view scroll-y style="height:100%;border-top:1px solid #ddd;">
-                    <ui-row height="55" wx:for="{{ groupMsg.groupUsers }}" wx:key="{{ index }}" class="top_tip" border-bottom style="padding-right:35px;" data-parentItem="0" data-isaite="false" data-index="{{ index }}" data-item="{{ item }}" bindtap="selUser">
+                    <ui-row height="55" wx:for="{{ groupMsg.groupUsers }}" wx:if="{{ item.openId != userMsgReq.openId }}" wx:key="{{ index }}" class="top_tip" border-bottom style="padding-right:35px;" data-parentItem="0" data-isaite="false" data-index="{{ index }}" data-item="{{ item }}" bindtap="selUser">
                         <ui-col width="55" align="center" vertical-align="middle" data-item="{{ item }}" style="padding:4px;">
                             <image mode="aspectFit" src="{{ item.headImgUrl }}" style="height:100%;"></image>
                         </ui-col>
@@ -111,7 +111,7 @@
         </view>
         <view class="btn-area" style="margin-top:35px;">
             <button catchtap="editRequirement" wx:if="{{ come_msg.item.content.editable }}" type="primary" class="myBtnSuccess" wx:if="{{ come_msg.item.toUser == userMsgReq.openId }}">修改需求</button>
-            <button catchtap="confirmRequirement" style="margin-top:15px;" type="default" wx:if="{{ !come_msg.item.content.demandState && ( come_msg.item.toUser == userMsgReq.openId ) }}">确认需求</button>
+            <button catchtap="confirmRequirement" style="margin-top:15px;" type="default" wx:if="{{ come_msg.item.content.editable == true && !come_msg.item.content.demandState && ( come_msg.item.toUser == userMsgReq.openId ) }}">确认需求</button>
         </view>
     </view>
   </view>
@@ -171,13 +171,14 @@ let _promise1,_url;
         wx.navigateBack();
     },
     onLoad(option){
-      let _groupMsg = JSON.parse( option.groupMsg );
       let that = this;
-      let _item = JSON.parse( option.item );
-      option.enterType == 1 ? _url = 'demand/edit' : _url = 'demand/add';
+      let _obj =  JSON.parse( app.globalData._obj );
+      let _groupMsg = _obj.groupMsg;
+      let _item = _obj.item;
+      _obj.enterType == 1 ? _url = 'demand/edit' : _url = 'demand/add';
       this.setData({
         groupMsg:_groupMsg,
-        ["come_msg.enterType"]:option.enterType,
+        ["come_msg.enterType"]:_obj.enterType,
         ["come_msg.itemMsg"]:_item,
         ['form.fromUser']:app.globalData.openId,
         ['form.fromUserName']:app.globalData.userMsgReq.username,
@@ -187,7 +188,7 @@ let _promise1,_url;
         ['form.position']:app.globalData.userMsgReq.position,
         "userMsgReq":app.globalData.userMsgReq
       });
-      if( option.enterType == 1 ){//编辑。。。。
+      if( _obj.enterType == 1 ){//编辑。。。。
         if( _item.itemcontent.demandAttach != "" ){
             this.setData({
                 ["form.demandAttach"]:_item.itemcontent.demandAttach.split( ',' ),
@@ -291,7 +292,6 @@ let _promise1,_url;
             }
         })
         _promise1.then(()=>{
-            that.data.form.demandAttach
             let _newDemand = Object.assign( that.data.form,{demandAttach: that.data.form.demandAttach.join( ',' )}) ;
             system.http({
                 url:_url,

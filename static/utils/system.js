@@ -70,6 +70,34 @@ export default {
     let _time = new Date( _timer.replace( new RegExp("-","gm"),"/") );
     return `${_time.getFullYear()}-${_time.getUTCMonth() + 1}-${_time.getUTCDate()}`;
   },
+  reqGroupList(obj){//请求群列表树
+    let that = this;
+    this.http({ url:`chat/groups/tree`, method:"get",param:{pageSize:0,openId:obj.openId} ,header:{'content-type': 'application/x-www-form-urlencoded'},scb(res){
+      return res.data.data.rows
+    }})
+  },
+  connectSocket(app,resolve){//连接socket.......
+    if( app.globalData.socketTask.openType == false ){
+      app.globalData.socketTask = wx.connectSocket({
+        url: app.globalData.socketHost + `/websocket/${ app.globalData.openId }`,//用户id
+        data:{},
+        header:{'content-type': 'application/json'},
+        success:function(msg){
+          setTimeout(()=>{
+            resolve();
+          },1000)
+        },
+        fail:function(msg){}
+      })
+    }
+  },
+  sendSocketMessage(obj) {//发送socket消息......
+      obj._app.socketTask.send({
+        data: obj.params ,
+        success(res){},
+        fail(res){}
+      })
+  },  
   searchUrl(obj={color:blue,str:''}) {
     var reg = /(http:\/\/|https:\/\/)((\w|=|\?|\.|\/|&|-)+)/g;
     //var reg = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;

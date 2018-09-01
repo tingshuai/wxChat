@@ -87,6 +87,9 @@
                 </ui-row>
             </view>
         </ui-accordion>
+        <!-- <scroll-view scroll-y style="height:{{modelHeight}};border-top:1px solid #ddd;">
+            <cc-grouplist groupList="{{ list1 }}"></cc-grouplist>
+        </scroll-view> -->
         <!-- 历史群组 -->
         <ui-accordion bindchange="slide" wx:for="{{ historyList }}" wx:key="{{ index }}" header-height="50" wx:if="{{ tabBar.actItem == 2 }}" show-arrow="{{ item.children.length != 0 }}">
             <view slot="header" class="accorHeader">
@@ -193,6 +196,9 @@ export default {
     navigationBarTitleText: '首页',
     backgroundColor: '#F4F4F4',
     navigationBarTextStyle: 'black',
+    usingComponents: {
+      'cc-grouplist': '../../packages/cc-grouplist/index'
+    }
     // "enablePullDownRefresh": true
   },
   data: {

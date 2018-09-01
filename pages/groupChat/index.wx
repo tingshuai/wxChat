@@ -114,7 +114,7 @@
                               </ui-row>                           
                             </view>
                         </view>
-                        <view class="readMe" wx:if="{{ sendInputMsg.fromUser == item.fromUser }}" style="right:{{ sendInputMsg.fromUser == item.fromUser ? '5px' : '' }}">{{ item.isForward == true ?  theGroupMsg.groupUsers.length - item.readCount -1 || '0' : theGroupMsg.groupUsers.length - item.readCount || '0'}} {{ item.readCount >= 0 ? "人未读" : ''}}</view>
+                        <view class="readMe" wx:if="{{ sendInputMsg.fromUser == item.fromUser }}" style="right:{{ sendInputMsg.fromUser == item.fromUser ? '5px' : '' }}">{{ item.isForward == true ?  theGroupMsg.groupUsers.length - item.readCount -1 || '0' : theGroupMsg.groupUsers.length - item.readCount -1 || '0'}} {{ item.readCount >= 0 ? "人未读" : ''}}</view>
                     </ui-col>
                     <ui-col class="text" align="center" vertical-align="top" space-left="0" space-right="0" wx:if="{{ item.cmd == 1 }}">
                         <view class="historyLine">{{ item.fromUserName }} 撤回了一条消息</view>
@@ -206,7 +206,7 @@ export default {
     "navigationStyle": "custom",
     "navigationBarTextStyle":"black",
     usingComponents: {
-      'cc-group-chat': '../../packages/cc-groupChat/index'
+      // 'cc-group-chat': '../../packages/cc-groupChat/index'
     }
   },
   data: {
@@ -504,14 +504,15 @@ export default {
             },1500)
           }
         }else if( data.cmd == 3 ){//已读消息提醒.....
-          that.data.chatData.forEach((val,i,arr)=>{
+          that.data.chatData.filter((val)=>{
             if( val.msgId == data.msgId ){
               val.readStatus = 1;
               val.readCount = data.readCount;
+              return val;
             }
           })
           that.setData({
-            chatData:that.data.chatData
+            chatData:that.data.chatData,
           })
         }
       })//onMessage结束...
@@ -563,7 +564,7 @@ export default {
       wx.createSelectorQuery().select(`#the${i}`).boundingClientRect(function(rect){
         var a = that.data.chatData[i].readStatus;
         let _IF1 = ( that.data.chatData[i].readStatus == 1 && that.data.chatData[i].fromUser == app.globalData.openId );//消息来自自己切已读..
-        if( that.data.chatData[i].readStatus == 0 && rect.top >= 0 ){
+        if( that.data.chatData[i].readStatus == 0 && rect.top >= 0 && that.data.chatData[i].fromUser != app.globalData.openId ){
           val.readStatus = 1;
           let _params = JSON.stringify({msgId:that.data.chatData[i].msgId,cmd:'3',groupId:that.data.theGroupMsg.groupId,fromUser:that.data.chatData[i].fromUser});
           system.sendSocketMessage({

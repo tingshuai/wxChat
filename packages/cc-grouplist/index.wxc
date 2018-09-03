@@ -2,36 +2,36 @@
             <view class="popup1">
                <view wx:for="{{ groupList }}" wx:key="index" show-arrow="{{ item.children.length != 0 }}" style="background-color:white;">
                    <view class="top_tip" style="" data-index="{{ index }}" data-item="{{ item }}" bindtap="selGroup">
-                       <view class="parentList list_0" style="height:80px;padding:15px;">
+                       <view class="parentList list_1" style="height:70px;padding:10px 15px;position:relative;" catchtap="toChat" data-item = "{{ item }}">
                            <view class="left_icon left_icon1" style="">
                                <image src="{{ item.icon || defaultHeadImg }}"></image>
                                <text class="angleIcon angleIcon1" wx:if="{{ item.unreadCount != 0 }}">{{ item.unreadCount >= 100 ? '99+' : item.unreadCount }}</text>
                            </view>
                            <view class="text" style="" vertical-align="middle" space="20" data-item="{{ item }}">
-                               <view align="left" vertical-align="middle">
+                               <view style="height:100%;line-height:50px;">
                                    <text>{{ item.groupName }}</text>
                                </view>
-                               <view class="txt">{{ item.groupDesc ? item.groupDesc : "" }}</view>
-                               <icon class="iconfont myWx-xiangyou" catchtap="slide" data-item="{{ item }}" data-index="{{ index }}"></icon>
+                               <!-- <view class="txt">{{ item.groupDesc ? item.groupDesc : "" }}</view> -->
+                               <icon class="iconfont myWx-xiangyou" style="{{ item.expand == true ? 'transform:rotate(90deg)' : 'transform:rotate(0deg)' }}" catchtap="slide" data-item="{{ item }}" data-index="{{ index }}" wx:if="{{ item.children.length != 0 }}"></icon>
                            </view>
                        </view>
-                       <view class="childList list_0 top_tip" style="height:{{  }};padding:10px;" wx:key="{{indexTow}}" wx:for="{{item.children}}" bindtap="selGroup" data-parentItem="{{ item }}" wx:for-item="itemChidren" data-item="{{itemChidren}}" wx:for-index="indexTow">
-                           <view class="left_icon left_icon1" style="">
-                               <image src="{{ itemChidren.icon || defaultHeadImg}}"></image>
-                               <text class="angleIcon angleIcon2" wx:if="{{ itemChidren.unreadCount != 0 }}">{{ itemChidren.unreadCount >= 100 ? '99+' : itemChidren.unreadCount }}</text>
-                           </view>
-                           <view class="text" style="">
-                               <view align="left" vertical-align="middle">
-                                   <text>{{ itemChidren.groupName }}</text>
+                       <view class="childList list_0 top_tip {{ item.children.length != 0 && item.expand == true ? 'expanded' : '' }}" style="height:0px;border-bottom:none;overflow:hidden;" wx:key="{{ indexTow }}" wx:for="{{ item.children }}" catchtap="toChat" data-parentItem="{{ item }}" wx:for-item="itemChidren" data-item="{{itemChidren}}" wx:for-index="indexTow">
+                               <!-- <image src="{{ itemChidren.icon || defaultHeadImg}}"></image> -->
+                               <view style="width:40px;height:40px;position:relative;">
+                                  <icon class="iconfont myWx-iconfont12" style="transform:rotate(-45deg);text-align:left;width:25px;height:100%;"></icon>
+                                  <text class="angleIcon angleIcon2" wx:if="{{ itemChidren.unreadCount != 0 }}">{{ itemChidren.unreadCount >= 100 ? '99+' : itemChidren.unreadCount }}</text>
                                </view>
-                               <view class="txt">{{ itemChidren.groupDesc ? itemChidren.groupDesc : "" }}</view>
-                           </view>
+                               <view style="position:absolute;left:50px;top:10px;bottom:10px;right:0px;">
+                                    <text style="height:100%;display:block;line-height:40px;font-size:15px;">{{ itemChidren.groupName }}</text>
+                                    <!-- <view class="txt">{{ itemChidren.groupDesc ? itemChidren.groupDesc : "" }}</view> -->
+                               </view>
                        </view>
                    </view>
                </view>
             </view>
 </template>
 <script>
+let app = getApp();
 export default {
   data: {
     msg: 'This is a test msg!'
@@ -40,15 +40,36 @@ export default {
     groupList:{
       type: Array, // 类型（必填），目前接受的类型包括：String, Number, Boolean, Object, Array, null（表示任意类型）
       value: '', // 属性初始值（可选），如果未指定则会根据类型选择一个
-      observer: function (newVal, oldVal) { 
-        console.log("newVal" , newVal )
+      observer: function (newVal, oldVal) {
+        console.log( "newVal" , newVal )
+      }
+    },
+    tabBar:{
+      type:Object,
+      value:{},
+      observer(n,o){
+
       }
     }
   },
   methods: {
-    handleTap () {
-      console.log(this.data.msg)
-    }
+    slide (e) {
+      let that = this;
+      let _data = e.currentTarget.dataset;
+      this.data.groupList[_data.index].expand = !this.data.groupList[_data.index].expand;
+      this.setData({
+        "groupList":that.data.groupList
+      })
+    },
+    toChat(event){//跳转到群聊页面.....
+      let item = {};
+      let that = this;
+      item.group = event.currentTarget.dataset.item ;
+      item.user = app.globalData.userMsgReq;
+      wx.navigateTo({
+        url: `/pages/groupChat/index?item=${JSON.stringify(item)}&tabBar=${JSON.stringify(that.data.tabBar)}`
+      })
+    },
   }
 }
 </script>
@@ -64,6 +85,11 @@ export default {
       line-height:50px;
     }
   }
+  .expanded{
+    height:60px!important;
+    padding:10px!important;
+    border-bottom:1px solid #ddd!important;
+  }
   .angleIcon{
     position:absolute;
     z-index:10000;
@@ -77,27 +103,24 @@ export default {
     color:white;
     line-height:45rpx;
     padding:2rpx;
-    width:20px;
+    width:auto;
   }
-  .list_0{
+  .list_1{
     box-sizing:border-box;
     border-bottom:1px solid #ddd;
   }
+  .list_0{
+    transition: all 0.3s;
+  }
   .angleIcon2{
-    left:0rpx;
-    top:9rpx;
+    left:26rpx;
+    top:-16rpx;
+    text-align:center;
+    padding:0px;
   }
   .angleIcon1{
-    left:0rpx;
-    top:9rpx;
-  }
-  .left_icon{
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background-color:#FCB300; 
-      text-align: center;
-      line-height: 50px;
+    left:65rpx;
+    top:-16rpx;
   }
   .top_tip{
     background-color: #fff;
@@ -109,15 +132,18 @@ export default {
         background-color:#FCB300; 
         text-align: center;
         line-height: 50px;
+        position: relative;
     }
+    .left_icon2{
+        width: 40px;
+        height: 40px;
+    }    
     .text{
         position:absolute;
-        width:100%;
-        padding-left:60px;
-        top:15px;
-        right:0;
-        padding:0px 0 0px 60px;
-        height:50px;
+        left:80px;
+        top:10px;
+        right:0px;
+        bottom:10px;
         .txt{
           font-size:12px;
           font-family:PingFang-SC-Medium;
@@ -136,5 +162,6 @@ export default {
     width:50px;
     line-height:50px;
     text-align:center;
+    transition: all 0.3s;
 }
 </style>

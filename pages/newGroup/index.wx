@@ -444,9 +444,7 @@ export default {
           if(res.data.status == 200){
             system.stateMsg({title: tip,icon:"success",time:1000});
             setTimeout(function(){
-              wx.reLaunch({
-                url: '/pages/home/index'
-              })
+              wx.navigateBack();
             },1000)
           }else{
             system.stateMsg({title:res.data.message,icon:"none",time:1000})

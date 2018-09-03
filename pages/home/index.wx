@@ -45,7 +45,7 @@
            <!-- !userMsgReq.canBuildGroup -->
            <!-- <icon wx:if="{{ userMsgReq.canBuildGroup }}" catchtap="addGroup" class="iconfont myWx-jia1" style="float:right;right:25rpx;position:relative;font-size:55rpx;"></icon> -->
         </view>
-        <ui-accordion bindchange="slide" wx:for="{{ list1 }}" wx:key="{{ index }}" header-height="50" wx:if="{{ tabBar.actItem == 0 }}" show-arrow="{{ item.children.length != 0 }}">
+        <!-- <ui-accordion bindchange="slide" wx:for="{{ list1 }}" wx:key="{{ index }}" header-height="50" wx:if="{{ tabBar.actItem == 0 }}" show-arrow="{{ item.children.length != 0 }}">
             <view slot="header" class="accorHeader">
                 <ui-row height="70" class="top_tip" border-bottom style="padding-right:35px;">
                   <ui-col width="80" align="center" vertical-align="middle" bindtap="toChat" data-item="{{ item }}">
@@ -86,10 +86,10 @@
                   </ui-col>
                 </ui-row>
             </view>
-        </ui-accordion>
-        <!-- <scroll-view scroll-y style="height:{{modelHeight}};border-top:1px solid #ddd;">
-            <cc-grouplist groupList="{{ list1 }}"></cc-grouplist>
-        </scroll-view> -->
+        </ui-accordion> -->
+        <scroll-view scroll-y style="height:{{modelHeight}};border-top:1px solid #ddd;">
+            <cc-grouplist wx:if="{{ tabBar.actItem == 0 }}" groupList="{{ list1 }}" bind:exData = "exData" tabBar="{{ tabBar }}"></cc-grouplist>
+        </scroll-view>
         <!-- 历史群组 -->
         <ui-accordion bindchange="slide" wx:for="{{ historyList }}" wx:key="{{ index }}" header-height="50" wx:if="{{ tabBar.actItem == 2 }}" show-arrow="{{ item.children.length != 0 }}">
             <view slot="header" class="accorHeader">
@@ -226,20 +226,21 @@ export default {
         key: 'openId',
         success: function(res) {
             app.globalData.openId = res.data;
-            that.requestGroupList( '/chat/groups/tree','over' );
             let promise = new Promise((resolve,reject)=>{
                 system.connectSocket(app,resolve)//连接socket.......
             })
             promise.then((obj)=>{
+                that.requestGroupList( '/chat/groups/tree','over',1);
                 //连接状态
                 app.globalData.socketTask.onOpen(function(res) { app.globalData.socketTask.openType = true ;console.log( 'socket open');})
                 //监听WebSocket错误。
                 app.globalData.socketTask.onError(function(res){
                     system.msgTip({title: '提示',content: "会话连接失败。请重新连接。",scb(){},ccb(){}})
+                    app.globalData.socketTask.openType = false;
                 })                   
                 that.homeSocket();//监听socket更新群列表...
             })
-            console.log( "SocketTask.readState" , app.globalData.socketTask)
+            console.log( "SocketTask.readState" , app.globalData.socketTask )
         },
         fail(res){
             wx.redirectTo({
@@ -260,7 +261,10 @@ export default {
     this.getDefaultImg();
   },
   onShow(e){
-      this.requestGroupList('/chat/groups/tree','over');
+      this.requestGroupList( '/chat/groups/tree','over',1);
+  },
+  exData(_data){
+      console.log( _data );
   },
   toggleTab(e){
     let _item = e.currentTarget.dataset;
@@ -270,7 +274,10 @@ export default {
             ['tabBar.actItem']:_item.index
         })
         system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:8000});
-        that.requestGroupList('/chat/groups/tree','over');
+        that.setData({
+            list1:that.data.list1
+        })
+        wx.hideToast();
     }else if( _item.index == 1 ){//添加群组
       wx.navigateTo({
           url:'/pages/newGroup/index?edit=false&addMenu=false',success(res){},fail(res){}
@@ -298,6 +305,7 @@ export default {
   sortList( resData ){
     let that = this;
     let head_message = resData.filter((item)=>{
+        item.expand = true;
         if( item.unreadCount > 0 ){
             return item;
         }else{
@@ -323,8 +331,29 @@ export default {
       let that = this;
       app.globalData.socketTask.onMessage((res)=>{
         var _data = JSON.parse( res.data );
-        if( _data.cmd == 0 || _data.cmd == 3 || _data.cmd == 2){
-            that.requestGroupList( '/chat/groups/tree','over' );
+        // if( ( _data.cmd == 0 && _data.fromUser != app.globalData.userMsgReq.openId ) || _data.cmd == 3 || _data.cmd == 2 ){//cmd == 2用户发送的消息..cmd == 2 系统推送消息 ，cmd == 3 消息回执......
+        //     debugger;
+        //     that.requestGroupList( '/chat/groups/tree','over' );
+        // }
+        switch (_data.cmd ) {
+            case 0://有人发消息过来
+                that.requestGroupList( '/chat/groups/tree','over',2,_data.groupId);
+                break;
+            case 2:
+                if( _data.msgType == 11 ){//有群解散.....
+                    let promise = new Promise((resolve,reject)=>{
+                        that.arrList1( _data.groupId , that.data.list1 ,resolve );
+                    })
+                    promise.then((_obj)=>{
+                        that.data.list1.splice(_obj._i,1);
+                        that.setData({
+                            "list1":that.data.list1
+                        })
+                    })
+                }
+                break;
+            default:
+                break;
         }
       })
   },
@@ -342,7 +371,7 @@ export default {
         }
     }})
   },
-  requestGroupList(search,type){
+  requestGroupList(search,type,cont = 0,_groupId){
     var that = this;
     wx.request({
         url: `${app.globalData.httpHost}${search}`, //请求已加入群组或者未加入群组
@@ -356,13 +385,31 @@ export default {
         },
         success: function(res) {
             if(type == 'over'){
-                let newList = that.sortList( res.data.data.rows );
+                let _newList ,_rows = res.data.data.rows;;
                 that.setData({
                     overList:[],
                 });
-                that.setData({
-                    list1:newList
-                });
+                if( cont == 1 ){//第一次进来.....
+                    _newList = that.sortList( _rows );
+                    wx.setStorage({
+                        key:"_groupList",
+                        data: _newList
+                    })
+                    that.setData({
+                        list1: _newList
+                    });
+                }else if( cont == 2 ){//有人发消息过来
+                    let promise = new Promise((resolve,reject)=>{
+                        that.arrList1( _groupId , _rows ,resolve );//排序未读消息....
+                    })
+                    promise.then(( _obj )=>{
+                        that.data.list1.splice(_obj._i,1);
+                        that.data.list1.unshift( _obj._me[0] );
+                        that.setData({
+                            list1:that.data.list1
+                        })                        
+                    })
+                }
             }else if( type == 'no' ){
                 that.setData({
                     overList:[]
@@ -388,14 +435,29 @@ export default {
         }
     })
   },
-  toChat(event){//跳转到群聊页面.....
-    let item = {};
+  arrList1(_groupId,_rows ,resolve){
     let that = this;
-    item.group = event.currentTarget.dataset.item ;
-    item.user = app.globalData.userMsgReq;
-    wx.navigateTo({
-      url: `/pages/groupChat/index?item=${JSON.stringify(item)}&tabBar=${JSON.stringify(that.data.tabBar)}`
+    let _me = _rows.filter((item)=>{
+        if( item.groupId == _groupId ){
+            item.expand = true;
+            return item;
+        }else{
+            item.children.filter((it)=>{
+                if(it.groupId == _groupId){
+                    item.expand = true;
+                    return item;
+                }
+            })
+        }
     })
+    let _i = that.data.list1.findIndex((item)=>{
+        return item.groupId == _me[0].groupId;
+    })
+    let _obj = {
+        "_me":_me,
+        "_i":_i
+    }
+    resolve( _obj )
   },
   toDetailPage(event){//跳转到群详情页面....
     var item = JSON.stringify( event.currentTarget.dataset.item );
@@ -427,7 +489,7 @@ export default {
     if( this.data.tabBar.actItem == 2 ){//历史。。。。
       this.requestGroupList( '/history/groups/tree','history')
     }else if( this.data.tabBar.actItem == 0 ){
-        that.requestGroupList('/chat/groups/tree','over');
+        that.requestGroupList('/chat/groups/tree','over',1);
         // if( that.data.inputVal == "" ){
         //   that.requestGroupList('/chat/groups/tree','over');
         // }else{

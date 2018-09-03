@@ -493,7 +493,7 @@ export default {
             })
             onFirst ++ ;
           }
-          if( data.msgType == 11 ){
+          if( data.msgType == 11 && that.data.pageMsg._curPage == "pages/groupChat/index"){
             system.msgTip({
               title:"该群已解散",
               icon:"none",

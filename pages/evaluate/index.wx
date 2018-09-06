@@ -202,9 +202,16 @@ export default {
               time:1500
             })
             setTimeout(() => {
-              wx.redirectTo({
-                url: '/pages/home/index'
-              })
+              let _currentPage = getCurrentPages();
+              if( _currentPage.length >= 2 ){
+                wx.navigateBack({
+                  delta: 2
+                })
+              }else{
+                wx.redirectTo({
+                  url: '/pages/home/index'
+                })
+              }
             }, 1500);
           }
         },

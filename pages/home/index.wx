@@ -40,7 +40,7 @@
     </view>
     <!-- //右滑菜单.........  -->
     <view class="listContainer" hidden="{{ overList.length != 0 }}">
-        <view class="sample_title" style="background-color:white;border-bottom:1px solid #E5E5E5;">
+        <view class="sample_title" style="background-color:white;">
            <text>{{ tabBar.actItem == 2 ? '历史群组' : '已加入' }}</text>
            <!-- !userMsgReq.canBuildGroup -->
            <!-- <icon wx:if="{{ userMsgReq.canBuildGroup }}" catchtap="addGroup" class="iconfont myWx-jia1" style="float:right;right:25rpx;position:relative;font-size:55rpx;"></icon> -->
@@ -232,12 +232,6 @@ export default {
             promise.then((obj)=>{
                 that.requestGroupList( '/chat/groups/tree','over',1);
                 //连接状态
-                app.globalData.socketTask.onOpen(function(res) { app.globalData.socketTask.openType = true ;console.log( 'socket open');})
-                //监听WebSocket错误。
-                app.globalData.socketTask.onError(function(res){
-                    system.msgTip({title: '提示',content: "会话连接失败。请重新连接。",scb(){},ccb(){}})
-                    app.globalData.socketTask.openType = false;
-                })                   
                 that.homeSocket();//监听socket更新群列表...
             })
             console.log( "SocketTask.readState" , app.globalData.socketTask )
@@ -266,6 +260,15 @@ export default {
   exData(_data){
       console.log( _data );
   },
+    toChat(event){//跳转到群聊页面.....
+      let item = {};
+      let that = this;
+      item.group = event.currentTarget.dataset.item ;
+      item.user = app.globalData.userMsgReq;
+      wx.navigateTo({
+        url: `/pages/groupChat/index?item=${JSON.stringify(item)}&tabBar=${JSON.stringify(that.data.tabBar)}`
+      })
+    },  
   toggleTab(e){
     let _item = e.currentTarget.dataset;
     let that = this;
@@ -331,13 +334,9 @@ export default {
       let that = this;
       app.globalData.socketTask.onMessage((res)=>{
         var _data = JSON.parse( res.data );
-        // if( ( _data.cmd == 0 && _data.fromUser != app.globalData.userMsgReq.openId ) || _data.cmd == 3 || _data.cmd == 2 ){//cmd == 2用户发送的消息..cmd == 2 系统推送消息 ，cmd == 3 消息回执......
-        //     debugger;
-        //     that.requestGroupList( '/chat/groups/tree','over' );
-        // }
         switch (_data.cmd ) {
             case 0://有人发消息过来
-                that.requestGroupList( '/chat/groups/tree','over',2,_data.groupId);
+                that.requestGroupList( '/chat/groups/tree','over',2, _data.groupId );
                 break;
             case 2:
                 if( _data.msgType == 11 ){//有群解散.....

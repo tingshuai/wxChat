@@ -31,13 +31,13 @@
                         <view class="weui-uploader">
                             <view class="weui-uploader__bd">
                                 <view class="weui-uploader__files" id="uploaderFiles">
-                                    <block wx:for="{{ form.demandAttach }}" wx:key="*this">
+                                    <block wx:for="{{ form.demandAttach }}" wx:key="*this" class="form_demandAttach">
                                         <view class="weui-uploader__file" bindtap="previewImage" id="{{item}}" style="position:relative;">
                                             <image class="weui-uploader__img" src="{{ item }}" mode="aspectFill" />
                                             <icon type="cancel" catchtap="cancle" data-index="{{ index }}" data-type="0" data-item="{{ item }}" size="23" style="position:absolute;top:-1px;right:-1px;z-index:100;"></icon>
                                         </view>
                                     </block>
-                                    <block wx:for="{{ come_msg.files }}" wx:key="*this">
+                                    <block wx:for="{{ come_msg.files }}" wx:key="*this" class="come_msg">
                                         <view class="weui-uploader__file" bindtap="previewImage" id="{{item}}" style="position:relative;">
                                             <image class="weui-uploader__img" src="{{ item }}" mode="aspectFill" />
                                             <icon type="cancel" catchtap="cancle" data-type="1" data-index="{{ index }}" data-item="{{ item }}" size="23" style="position:absolute;top:-1px;right:-1px;z-index:100;"></icon>
@@ -110,7 +110,7 @@
             </view>         
         </view>
         <view class="btn-area" style="margin-top:35px;">
-            <button catchtap="editRequirement" wx:if="{{ come_msg.item.content.editable }}" type="primary" class="myBtnSuccess" wx:if="{{ come_msg.item.toUser == userMsgReq.openId }}">修改需求</button>
+            <button catchtap="editRequirement" wx:if="{{ come_msg.item.content.editable && come_msg.item.toUser == userMsgReq.openId }}" type="primary" class="myBtnSuccess">修改需求</button>
             <button catchtap="confirmRequirement" style="margin-top:15px;" type="default" wx:if="{{ come_msg.item.content.editable == true && !come_msg.item.content.demandState && ( come_msg.item.toUser == userMsgReq.openId ) }}">确认需求</button>
         </view>
     </view>
@@ -145,6 +145,7 @@ let _promise1,_url;
         position :"",//
         confirmUserName:"",
         demandAttach :[],
+        demandAttachName :[],
         msgId:""
       },
       come_msg:{
@@ -191,9 +192,10 @@ let _promise1,_url;
       if( _obj.enterType == 1 ){//编辑。。。。
         if( _item.itemcontent.demandAttach != "" ){
             this.setData({
-                ["form.demandAttach"]:_item.itemcontent.demandAttach.split( ',' ),
+                ["form.demandAttach"]:_item.itemcontent.demandAttach.replace(/,$/gi,"").split( ',' ),
                 ['form.fromUser']:_item.item.fromUser,
                 ['form.fromUserName']:_item.item.fromUserName,
+                ['form.demandAttachName']:_item.itemcontent.demandAttachName.replace(/,$/gi,"").split( ',' ),
             })
         }
         this.setData({
@@ -215,8 +217,10 @@ let _promise1,_url;
         })
         if( _itemMsg.item.toUser== _me.openId ){//对接人是自己
             this.setData({
-                ["form.confirmUserName"]:_itemMsg.item.fromUserName,
-                ["form.confirmUser"]:_itemMsg.item.fromUser,
+                ["form.confirmUserName"]:_itemMsg.item.fromUserName || '',
+                ["form.confirmUser"]:_itemMsg.item.fromUser || '',
+                ["form.fromUser"]:_me.openId || '',
+                ["form.fromUserName"]:_me.username || '',
             })
         }else{
             this.setData({
@@ -225,7 +229,7 @@ let _promise1,_url;
             })
         }
         this.data.groupMsg.groupUsers.filter((val)=>{//重置确认人
-            if( val.openId == _itemMsg.item.toUser ){
+            if( val.openId == that.data.form.confirmUser ){
                 val.act = true;
                 that.setData({
                     ["groupMsg.groupUsers"]:that.data.groupMsg.groupUsers,
@@ -293,6 +297,7 @@ let _promise1,_url;
         })
         _promise1.then(()=>{
             let _newDemand = Object.assign( that.data.form,{demandAttach: that.data.form.demandAttach.join( ',' )}) ;
+            _newDemand.demandAttachName.join(',')
             system.http({
                 url:_url,
                 param:_newDemand,
@@ -377,8 +382,10 @@ let _promise1,_url;
         let _item = e.currentTarget.dataset;
         if( _item.type == "0" ){//
             that.data.form.demandAttach.splice(_item.index,1)
+            that.data.form.demandAttachName.splice(_item.index,1)
             that.setData({
-                ['form.demandAttach']: that.data.form.demandAttach
+                ['form.demandAttach']: that.data.form.demandAttach,
+                ['form.demandAttachName']: that.data.form.demandAttachName
             });
         }else if( _item.type == "1" ){
             that.data.come_msg.files.splice(_item.index,1)

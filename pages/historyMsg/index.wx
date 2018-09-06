@@ -95,8 +95,8 @@
                                   </ui-col>
                                   <ui-col style="font-size:12px;padding-left:10px;">
                                     <view style="white-space:nowrap;text-overflow:ellipsis;overflow:hidden;height:30px;">需求单{{ item.content.demandNum || ""}}</view>
-                                    <view style="white-space:nowrap;height:30px;line-height:40px;" wx:if="{{ sendInputMsg.fromUser == item.content.createUser && (item.content.demandState == false) }}">发起人<text>@</text>{{ item.fromUserName || ""}}</view>
-                                    <view style="white-space:nowrap;height:30px;line-height:40px;" wx:else="{{ sendInputMsg.fromUser == item.toUser && ( item.content.demandState == false )}}">确认人<text style="color: #FF9D44;">@{{ item.content.confirmUserName || ""}}</text></view>
+                                    <!-- <view style="white-space:nowrap;height:30px;line-height:40px;" wx:if="{{ sendInputMsg.fromUser == item.content.createUser && (item.content.demandState == false) }}">发起人<text>@</text>{{ item.fromUserName || ""}}</view> -->
+                                    <view style="white-space:nowrap;height:30px;line-height:40px;">确认人<text style="color: #FF9D44;">@{{ item.content.confirmUserName || ""}}</text></view>
                                   </ui-col>
                               </ui-row>
                               <ui-row>
@@ -157,7 +157,11 @@
                     <ui-col class="text" align="center" vertical-align="top" space-left="0" space-right="0" wx:if="{{ item.cmd == 1 }}">
                         <view class="historyLine">{{ item.fromUserName }} 撤回了一条消息</view>
                     </ui-col>
-                    <ui-col width="60" align="left" vertical-align="top" wx:if="{{ item.cmd != 'time' && (sendInputMsg.fromUser == item.fromUser) && item.cmd != 2 && item.cmd != 1 }}"><!--消息来自自己-->
+                    <!-- 办结消息 -->
+                    <ui-col class="text" align="center" vertical-align="top" space-left="0" space-right="0" wx:if="{{ item.cmd == 100 }}">
+                        <view class="historyLine">{{ item.content }} </view>
+                    </ui-col>                    
+                    <ui-col width="60" align="left" vertical-align="top" wx:if="{{ item.cmd != 'time' && (sendInputMsg.fromUser == item.fromUser) && item.cmd != 2 && item.cmd != 1 && item.cmd != 100 }}"><!--消息来自自己-->
                         <view class="left_icon left_icon1">
                             <image src="{{  userMsg.headImgUrl }}"/>
                         </view>
@@ -447,18 +451,19 @@ export default {
             })
         }
         wx.request({
-            url: `${app.globalData.httpHost}/chat/msg`,
+            url: `${app.globalData.httpHost}/chat/msg/getHisGroupMsg`,
             data: that.data.searchData,
             success: function(res) {
                 if( res.data.status == 200 ){
-                res.data.data.rows.forEach((val,i,arr)=>{//未读@信息......
+                let _rows = res.data.data.rows.reverse();
+                _rows.forEach((val,i,arr)=>{//未读@信息......
                     if(val.msgType == 7 && /(@\`-\`@)/.test(val.content) ){
                         val.content = val.content.split('(@\`-\`@)').join(' ');
                     }else if( val.msgType == 20 || val.msgType == 21 || val.msgType == 22 ){
                         val.content = JSON.parse( val.content );
                     }
                 })
-                that.data.chatData.splice(that.data.chatData.length,0,...res.data.data.rows);
+                that.data.chatData.splice(that.data.chatData.length,0,..._rows);
                 that.setData({
                     chatData:that.data.chatData,
                     ['searchData.pageNum']: pageNumber
@@ -669,14 +674,6 @@ export default {
 .fontMini{
     font-size: 12px;
 }
-.historyLine{
-    font-size:12px;
-    color:#333;
-    text-align:center;
-    height:60px;
-    line-height: 60px;
-    padding-top: 40px;
-}
   .groupMsgBtn{
       position: relative;
       right: 56px;
@@ -760,4 +757,13 @@ export default {
         }
     }
 }
+  .historyLine{
+    text-align: center;
+    background-color: #cccccc;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 10px;
+    margin: 10px 0;
+    color: white;
+  }
 </style>

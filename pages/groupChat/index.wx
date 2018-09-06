@@ -26,6 +26,7 @@
                 <view><icon class="iconfont myWx-xiangyou" style="font-size:16px;color:white;line-height:35px;"></icon></view>
             </view>
         </view>
+        <view wx:if="{{ transmit.tabBar.actItem == 2 }}" style="height:90%;width:100%;padding:0px 100px;"><image style="width:100%;" mode="aspectFit" src="../../static/img/nothing.png"></image></view>
         <scroll-view scroll-y="true" bindscroll="scrllView" id="viewport" style="height: {{ transmit.tabBar.actItem == 0 ? (scrollHeight - 103) : (scrollHeight - 53)}}px;overflow:hidden;top:-2px;position:relative;" scroll-into-view="{{ toView }}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden"><!-- bindscrolltoupper="bindscrolltoupper"，，，，catch:touchstart="loadTouchstart" catch:touchend="loadTouchend" catch:touchmove="loadTouchmove"-->
           <view class="content" id="content">
             <checkbox-group bindchange="checkboxChange">
@@ -57,8 +58,8 @@
                                   </ui-col>
                                   <ui-col style="font-size:12px;padding-left:10px;">
                                     <view style="white-space:nowrap;text-overflow:ellipsis;overflow:hidden;height:30px;">需求单{{ item.content.demandNum }}</view>
-                                    <view style="white-space:nowrap;height:30px;line-height:40px;" wx:if="{{ sendInputMsg.fromUser == item.content.createUser && (item.content.demandState == false) }}">发起人<text>@</text>{{ item.fromUserName }}</view>
-                                    <view style="white-space:nowrap;height:30px;line-height:40px;" wx:else="{{ sendInputMsg.fromUser == item.toUser && ( item.content.demandState == false )}}">确认人<text style="color: #FF9D44;">@{{ item.content.confirmUserName }}</text></view>
+                                    <!-- <view style="white-space:nowrap;height:30px;line-height:40px;" wx:if="{{ sendInputMsg.fromUser == item.content.createUser && (item.content.demandState == false) }}">发起人<text>@</text>{{ item.fromUserName }}</view> -->
+                                    <view style="white-space:nowrap;height:30px;line-height:40px;">确认人<text style="color: #FF9D44;">@{{ item.content.confirmUserName }}</text></view>
                                   </ui-col>
                               </ui-row>
                               <ui-row>
@@ -114,12 +115,16 @@
                               </ui-row>                           
                             </view>
                         </view>
-                        <view class="readMe" wx:if="{{ sendInputMsg.fromUser == item.fromUser }}" style="right:{{ sendInputMsg.fromUser == item.fromUser ? '5px' : '' }}">{{ item.isForward == true ?  theGroupMsg.groupUsers.length - item.readCount -1 || '0' : theGroupMsg.groupUsers.length - item.readCount -1 || '0'}} {{ item.readCount >= 0 ? "人未读" : ''}}</view>
+                        <view class="readMe" wx:if="{{ sendInputMsg.fromUser == item.fromUser }}" style="right:{{ sendInputMsg.fromUser == item.fromUser ? '5px' : '' }}">{{ theGroupMsg.groupUsers.length - item.readCount -1 >= 0 ? theGroupMsg.groupUsers.length - item.readCount -1 : '0'}} {{ item.readCount >= 0 ? "人未读" : ''}}</view>
                     </ui-col>
                     <ui-col class="text" align="center" vertical-align="top" space-left="0" space-right="0" wx:if="{{ item.cmd == 1 }}">
                         <view class="historyLine">{{ item.fromUserName }} 撤回了一条消息</view>
                     </ui-col>
-                    <ui-col width="60" align="left" vertical-align="top" wx:if="{{ item.cmd != 'time' && (sendInputMsg.fromUser == item.fromUser) && item.cmd != 2 && item.cmd != 1 }}"><!--消息来自自己-->
+                    <!-- 办结消息 -->
+                    <ui-col class="text" align="center" vertical-align="top" space-left="0" space-right="0" wx:if="{{ item.cmd == 100 }}">
+                        <view class="historyLine">{{ item.content }} </view>
+                    </ui-col>
+                    <ui-col width="60" align="left" vertical-align="top" wx:if="{{ item.cmd != 'time' && (sendInputMsg.fromUser == item.fromUser) && item.cmd != 2 && item.cmd != 1  && item.cmd != 100 }}"><!--消息来自自己-->
                         <view class="left_icon left_icon1">
                             <image src="{{  userMsg.headImgUrl }}"/>
                         </view>
@@ -317,7 +322,6 @@ export default {
                 app.globalData.userMsgReq = res.data;
               }
             })
-            system.closeSocket( getApp() , resolve );
             setTimeout(()=>{
               resolve();
             },200)
@@ -361,11 +365,11 @@ export default {
           ['selUser.users']:that.data.selUser.users
         })
       })
+      system.connectSocket(app)//连接socket.......
       that.reqGroupList();//请求群列表
       that.getHistoryMsg( that.data.theGroupMsg.groupId, 10 , that.data.pageNum,true );
       app.globalData.socketTask.onMessage(function(res) {
         var data = JSON.parse( res.data );
-        console.log( "接收消息" , data )
         var chatDataMsgId;
         if( onFirst == 1 ){
           that.data.chatData.forEach((val,ii,arr)=>{
@@ -482,7 +486,6 @@ export default {
             })
           }else{
             set();
-            // app.globalData.socketTask.send({"data": dataMsg ,success(res){},fail(res){}});
           }
         }else if( data.cmd == 2 ){//系统推送消息.
           set2();
@@ -664,9 +667,9 @@ export default {
     }
     function toggle(){
       if(new Date().getTime() - creatTime > 120000){
-        typeCode == 2 ? list = ['提醒查看','转发',"语音转文字"] : ( (typeCode == 20 || typeCode == 21 || typeCode == 22) ? list = ['提醒查看'] : list = ['提醒查看','转发']);
+        typeCode == 2 ? list = ['转发',"语音转文字"] : ( (typeCode == 20 || typeCode == 21 || typeCode == 22) ? list = [] : list = ['转发']);
       }else{
-        typeCode == 2 ? list = ['提醒查看','转发','撤回',"语音转文字"] : ( (typeCode == 20 || typeCode == 21 || typeCode == 22) ? list = ['提醒查看','撤回'] : list = ['提醒查看','转发','撤回']);
+        typeCode == 2 ? list = ['转发','撤回',"语音转文字"] : ( (typeCode == 20 || typeCode == 21 || typeCode == 22) ? list = ['撤回'] : list = ['转发','撤回']);
       }
     }
     if( item.fromUser == that.data.sendInputMsg.fromUser ){
@@ -684,8 +687,6 @@ export default {
     function _implement (code){
       if( list[code] == "语音转文字"){
         changeData();
-      }else if( list[code] == "提醒查看" ){
-        that.remind(item);
       }else if( list[code] == "转发" ){
         that.data.chatData.filter((item_0)=>{
           if(item_0.msgId == item.msgId){
@@ -706,12 +707,14 @@ export default {
         })
       }
     }
-    wx.showActionSheet({
-        itemList: list,
-        success: function(res) {
-            _implement(res.tapIndex);
-        }
-    });
+    if( list.length != 0 ){
+      wx.showActionSheet({
+          itemList: list,
+          success: function(res) {
+              _implement(res.tapIndex);
+          }
+      });
+    }
   },
   handleShow3(){
       this.setData({
@@ -1088,6 +1091,13 @@ export default {
           title:"发送评价成功",
           icon:"success",
           time:1500
+        })
+        that.data.sendInputMsg.cmd = 100;
+        that.data.sendInputMsg.content = "群主已发起办结"
+        let _params = JSON.stringify( that.data.sendInputMsg );
+        system.sendSocketMessage({
+          "_app":app.globalData,
+          "params":_params
         })
         setTimeout(()=>{
           that.navigateBack();

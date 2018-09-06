@@ -29,11 +29,18 @@ export default {
     })
   },
   closeSocket(app,fun){
-    if( app.globalData.socketTask.openType == true ){
       app.globalData.socketTask.close({success(res){
           app.globalData.socketTask.openType = false;
       },fail(res){}});
-    }
+  },
+  socketOnClose(app){
+    let that = this;
+    app.globalData.socketTask.onClose(()=>{
+      let _app = getApp();
+      that.closeSocket(_app);
+      app.globalData.socketTask.openType = false;
+      that.msgTip({title: '提示',content: "网络连接异常！请检查网络并重新进入小程序",scb(){},ccb(){}})
+    })
   },
   // 消息提示....
   msgTip(options={}){
@@ -77,27 +84,51 @@ export default {
     }})
   },
   connectSocket(app,resolve){//连接socket.......
+    let that = this;
     if( app.globalData.socketTask.openType == false ){
       app.globalData.socketTask = wx.connectSocket({
         url: app.globalData.socketHost + `/websocket/${ app.globalData.openId }`,//用户id
         data:{},
         header:{'content-type': 'application/json'},
         success:function(msg){
+          console.log( "SocketTask.readState" , app.globalData.socketTask )
           setTimeout(()=>{
-            resolve();
+            that.socketOnClose(getApp());
+            that.socketOnOpen(getApp());
+            that.socketOnError(getApp());
           },1000)
+          resolve();
         },
-        fail:function(msg){}
+        fail:function(msg){
+          that.msgTip({title: '提示',content: "会话连接失败！请检查网络并重新进入小程序",scb(){},ccb(){}})
+        }
       })
     }
   },
+  socketOnOpen(app){
+    app.globalData.socketTask.onOpen(function(res) {
+      app.globalData.socketTask.openType = true;
+      console.log( 'socket open' );
+    })
+  },
+  socketOnError(app,_tip){
+    //监听WebSocket错误。
+    let that = this;
+    app.globalData.socketTask.onError(function(res){
+        system.msgTip({title: '提示',content: _tip,scb(){},ccb(){}})
+        that.closeSocket(getApp());
+    })
+  },
   sendSocketMessage(obj) {//发送socket消息......
+      let that = this;
       obj._app.socketTask.send({
         data: obj.params ,
         success(res){},
-        fail(res){}
+        fail(res){
+          that.msgTip({title: '提示',content: "网络连接断开请检查网络，并重新进入小程序.",scb(){},ccb(){}})
+        }
       })
-  },  
+  },
   searchUrl(obj={color:blue,str:''}) {
     var reg = /(http:\/\/|https:\/\/)((\w|=|\?|\.|\/|&|-)+)/g;
     //var reg = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;

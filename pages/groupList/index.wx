@@ -127,14 +127,6 @@ export default {
                   },
                   fail(res){}
               })
-              app.globalData.socketTask.onMessage((_data)=>{
-                    let _msg = JSON.parse( _data.data );
-                    let dataMsg =JSON.stringify( { "cmd" : 3, msgId: _msg.msgId, "groupId":_msg.groupId ,"fromUser":_msg.fromUser } ) ;
-                    // system.sendSocketMessage({
-                    //     "_app":app.globalData,
-                    //     "params":dataMsg
-                    // })
-              })
             }
         })
         })

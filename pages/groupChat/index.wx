@@ -386,7 +386,8 @@ export default {
             that.data.chatData.push( data );
             that.setData({
               chatData:that.data.chatData,
-              ["sendInputMsg.msgType"]:0
+              ["sendInputMsg.msgType"]:0,
+              ["sendInputMsg.cmd"]:0
             })
             if( that.data.pageMsg._curPage == "pages/groupChat/index" ){
               that.setData({
@@ -485,6 +486,7 @@ export default {
               'isInputing': false
             })
           }else{
+            data.content.replace( /@.*(\(@`-`@\))/g , '' );
             set();
           }
         }else if( data.cmd == 2 ){//系统推送消息.
@@ -517,6 +519,8 @@ export default {
           that.setData({
             chatData:that.data.chatData,
           })
+        }else if( data.cmd == 100 ){
+          set();
         }
       })//onMessage结束...
     })//resolve函数结束....
@@ -911,6 +915,8 @@ export default {
             }else if( val.msgType == 20 || val.msgType == 22 || val.msgType == 21){
               val.content = JSON.parse( val.content )
               val.content.createAt = system.formatTime( val.content.createAt );
+            }else if( val.msgType == 0 ){
+              val.content = val.content.replace(/@.*(\(@`-`@\))/g,'')
             }
           })
           that.data.chatData.splice(0,0,...res.data.data.rows);
@@ -1085,7 +1091,8 @@ export default {
       scb(res){
         that.setData({
           "isHidden":true,
-          ["transmit.isAite"]:true
+          ["transmit.isAite"]:true,
+          scrollHeight:wx.DEFAULT_CONTENT_HEIGHT + 15
         })
         system.stateMsg({
           title:"发送评价成功",
@@ -1099,9 +1106,9 @@ export default {
           "_app":app.globalData,
           "params":_params
         })
-        setTimeout(()=>{
-          that.navigateBack();
-        },1500)
+        // setTimeout(()=>{
+        //   that.navigateBack();
+        // },1500)
       },
       fcb(res){
         system.stateMsg({

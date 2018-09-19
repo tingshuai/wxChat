@@ -39,7 +39,7 @@ export default {
       let _app = getApp();
       that.closeSocket(_app);
       app.globalData.socketTask.openType = false;
-      that.msgTip({title: '提示',content: "网络连接异常！请检查网络并重新进入小程序",scb(){},ccb(){}})
+      // that.msgTip({title: '提示',content: "网络连接异常！请检查网络并重新进入小程序",scb(){},ccb(){}})
     })
   },
   // 消息提示....

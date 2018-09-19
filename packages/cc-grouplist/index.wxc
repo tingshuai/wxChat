@@ -66,8 +66,9 @@ export default {
       let that = this;
       item.group = event.currentTarget.dataset.item ;
       item.user = app.globalData.userMsgReq;
+      item.tabBar = that.data.tabBar;
       wx.navigateTo({
-        url: `/pages/groupChat/index?item=${JSON.stringify(item)}&tabBar=${JSON.stringify(that.data.tabBar)}`
+        url: `/pages/groupChat/index?item=${JSON.stringify(item)}`
       })
     },
   }

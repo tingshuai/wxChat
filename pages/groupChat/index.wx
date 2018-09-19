@@ -301,16 +301,14 @@ export default {
   onLoad(options){
     var that = this;
     var onFirst = 1;
-    console.log( "options" , options )
+    console.log( "options" , options );
     let _item = JSON.parse( options.item );
-    let _tabBar = JSON.parse( options.tabBar );
+    console.log( "_item",_item)
     let _currentPage = getCurrentPages();
     let _curPage = _currentPage[ _currentPage.length - 1 ].route;
-    if( _tabBar.actItem == 2 ){//是历史群组不显示底部栏
-      this.setData({
-        ["transmit.tabBar"]:_tabBar,
-      })
-    }
+    this.setData({
+      ["transmit.tabBar"]:_item.tabBar,
+    })
     let loadPromise = new Promise((resolve,reject)=>{
       wx.getStorage({
         key: 'openId',
@@ -1057,22 +1055,14 @@ export default {
   },
   navigateBack () {
     let that = this;
-    wx.navigateBack();
-    // let page = getCurrentPages();
-    // backgroundAudioManager.stop();
-    // this.setData({
-    //   ['model.show']:false,
-    //   ['transmit.isTransmit']:false
-    // })    
-    // if(page.length > 1 && page.length < 8){//从登录页过来的。。。。
-    //   wx.redirectTo({
-    //     url: '/pages/home/index'
-    //   })
-    // }else{
-    //   wx.reLaunch({
-    //     url: '/pages/home/index'
-    //   })
-    // }
+    let page = getCurrentPages();
+    if(page.length > 1 && page.length < 8){//从登录页过来的。。。。
+      wx.navigateBack();
+    }else{//从公众号过来的.....
+      wx.redirectTo({
+        url: '/pages/home/index'
+      })
+    }
   },
   comeOver(e){//这个是要发送办结消息.....
     let _me = this.data.sendInputMsg;

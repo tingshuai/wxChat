@@ -135,13 +135,11 @@ page {
 }
 
 .ui-nav-bar {
-  padding-top: 28px; // .myWx-iconfontqianjin2{
-  //   top:2px;
-  //   position: relative;
-  // }
-  // .title{
-  //   top: 2px;
-  //   position: relative;
-  // }
+  padding-top: 28px;
+}
+.jingjingBtn{
+  height:45px;
+  line-height:45px;
+  font-size:17px;
 }
 </style>

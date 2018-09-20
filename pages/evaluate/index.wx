@@ -11,27 +11,36 @@
               <ui-col vertical-align="middle" align="center" width="80"></ui-col>
           </ui-row>
       </ui-nav-bar>
-      <ui-row style="margin:30px 0 10px 0">
-        <ui-col align="{{ item.align }}" wx:for="{{ face.list }}" wx:key="{{ index }}">
-          <icon class="iconfont {{ item.icon }}" data-facecolor="{{ index }}" style="font-size:60px;color:{{ item.faceColor ? 'rgba(200,200,0,1)' : 'black'}};" catchtap="tapFace"></icon>
-          <text style="padding:0px 9px;">{{ item.name }}</text>
-        </ui-col>
-      </ui-row>
-      <scroll-view scroll-x style="white-space:nowrap;height:22px;">
-          <text class="{{ item.bgColor ? 'myGreen' : ''}}" wx:for="{{ face.evaluateList }}" data-index="{{ index }}" wx:key="{{ index }}" style="display:inline-block;width:auto;white-space:nowrap; }};padding:0px 9px;border-radius:7px;margin:0 5px;" data-item="{{ item }}" bindtap="selEvaluate">{{ item.labelName }}</text>
-      </scroll-view>
-      <ui-tags data="{{ search.list00 }}" id="tags0" bindchange="singleTap"></ui-tags>
+      <view style="margin:20px 0 10px 0;background-color:white;padding:40px 10px 25px 10px">
+        <ui-row>
+          <ui-col align="center" wx:for="{{ face.list }}" wx:key="{{ index }}" style="padding:0 10px;">
+            <view class="logoImg">
+              <image mode="aspectFit" src="../../static/img/{{item.src}}_{{item.faceColor ? 'blue' : 'gray' }}.png" data-facecolor="{{ index }}" catchtap="tapFace"></image>
+            </view>
+            <text style="padding:0px 9px;color:{{ item.faceColor ? '#267AFC' : '#BCC2C6' }};font-size:12px;margin-top:10px;">{{ item.name }}</text>
+          </ui-col>
+        </ui-row>
+        <view style="text-align:center;margin:20px 0 20px 0;" wx:if="{{ face.evaluateList.length != 0 && face.index == 3}}">
+          <text style="color:#8B969C;font-size:12px;">请选择不满意的原因(必选)</text>
+        </view>
+        <scroll-view scroll-x style="white-space:nowrap;height:30px;margin-top:{{face.index == 3 ? '0px' : '25px'}};" wx:if="{{ face.evaluateList.length != 0 }}">
+            <text class="actt {{ item.bgColor ? 'myBlue' : ''}}" wx:for="{{ face.evaluateList }}" data-index="{{ index }}" wx:key="{{ index }}" data-item="{{ item }}" bindtap="selEvaluate">{{ item.labelName }}</text>
+        </scroll-view>
+      </view>
+      <!-- <ui-tags data="{{ search.list00 }}" id="tags0" bindchange="singleTap"></ui-tags> -->
 
       <view class="weui-cells__title">评论内容</view>
       <view class="weui-cells weui-cells_after-title">
           <view class="weui-cell">
               <view class="weui-cell__bd">
-                  <textarea fixed="{{ true }}" show-confirm-bar="{{ false }}" style="background-color:white;min-height:200px;font-size:13px;box-sizing:border-box;position:relative;" value="{{ face.value }}" class="weui-textarea" bindinput="requireTextareaInputing"/>
+                  <textarea fixed="{{ true }}" placeholder-style="font-size:16px;color: #BCC2C6" placeholder="给我们一些鼓励吧~" show-confirm-bar="{{ false }}" value="{{ face.reviewText }}" class="weui-textarea" bindinput="requireTextareaInputing"/>
               </view>
           </view>
       </view>
-      <button class="btn1 btn" data-show="{{ false }}" data-type="0" bindtap="navigateBack">取消</button>
-      <button class="btn2 btn" data-show="{{ false }}" data-type="1" bindtap="submit">确定</button>
+      <view class="" style="padding:0 20px;margin-top:40px;">
+        <button type="" class="btn2 jingjingBtn myBtnSuccess" data-show="{{ false }}" data-type="1" bindtap="submit" style="margin-bottom:10px;color:white;">确定</button>
+        <button type="default" class="btn1 jingjingBtn" data-show="{{ false }}" data-type="0" bindtap="navigateBack">取消</button>
+      </view>
   </view>
 </template>
 
@@ -69,30 +78,39 @@ export default {
     navigationBarTitleText: ''
   },
   data: {
+    title:"评价",
     theGroupMsg:{},
     face:{
       faceColor:3,
+      index:0,
       list:[
         {
-          "name": "非常差",
-          "id": -1,
-          "icon":"myWx-pingjiacha",
-          "align":"right",
+          "name": "非常满意",
+          "id": 2,
+          "align":"left",
+          "faceColor":true,
+          "src":"verySatisfied"
+        },
+        {
+          "name": "满意",
+          "id": 1,
+          "src":"satisfied",
+          "align":"center",
           "faceColor":false
         },
         {
           "name": "一般",
           "id": 0,
-          "icon":"myWx-pingjia-zhongpingx",
+          "src":"commonly",
           "align":"center",
           "faceColor":false
         },
         {
-          "name": "超赞",
-          "id": 1,
-          "align":"left",
-          "faceColor":false,
-          "icon":"myWx-pingjiahao"
+          "name": "不满意",
+          "id": -1,
+          "src":"dissatisfied",
+          "align":"right",
+          "faceColor":false
         }
       ],
       evaluateList:[],//标签列表....
@@ -109,7 +127,7 @@ export default {
   },
   requireTextareaInputing(e){
     this.setData({
-      "reviewText":e.detail.value
+      ["face.reviewText"]:e.detail.value
     })
   },
   tapFace(e){
@@ -124,7 +142,8 @@ export default {
       }
     })
     this.setData({
-      [`face.list`]:that.data.face.list
+      [`face.list`]:that.data.face.list,
+      ['face.index']:_item.facecolor
     })
   },
   selEvaluate(e){
@@ -169,16 +188,24 @@ export default {
         }
       });
       _face = this.data.face.list.filter((val)=>{
-         return val.faceColor == true 
+         return val.faceColor == true
       });
-      if( _face.length != 0 ){
-        resolve();
+      if( _face.length != 0 ){//选择了评价.....
+        if( that.data.face.index == 3 ){//选择不满意......
+            if( _selLebal.length == 0 ){//不满意且没有选择不满意原因
+              system.stateMsg({ title:"请选择不满意原因",icon:"none",time:1500 } )
+            }else{//选择了原因
+              if( that.data.face.reviewText == '' ){//评价内容为空
+                  system.stateMsg({ title:"评价内容不能为空",icon:"none",time:1500 } )
+              }else{//评价内容不为空
+                resolve();
+              }
+            }
+        }else{//选择其他满意度
+          resolve();
+        }
       }else{
-        system.stateMsg({
-          title:"请选择评价",
-          icon:"none",
-          time:1500
-        })
+        system.stateMsg({ title:"请选择评价",icon:"none",time:1500})
       }
     })
     _promise.then(()=>{
@@ -186,7 +213,7 @@ export default {
         "labels":_lebal,
         "openId":app.globalData.openId,
         "groupId":that.data.theGroupMsg.groupId,
-        "reviewText":that.data.reviewText || "",
+        "reviewText":that.data.face.reviewText || "",
         "reviewType": _face[0].id
       }
       system.http({
@@ -232,4 +259,29 @@ export default {
 </script>
 
 <style lang="less">
+.logoImg{
+  height:50px;
+  width:100%;
+}
+.actt{
+  background-color:white;
+  font-size:11px;
+  box-sizing:border-box;
+  position:relative;
+  height:30px;
+  display:inline-block;
+  padding:5px 10px;
+  margin-left:5px;
+  border:1px solid #CCCDD0;
+  border-radius:2px;
+  color:#8B969C;
+}
+.weui-textarea{
+  height:auto;
+  min-height:80px;
+}
+.myBlue{
+  background-color:#EFF5FE!important;
+  color:#267AFC!important;
+}
 </style>

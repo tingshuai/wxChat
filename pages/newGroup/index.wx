@@ -68,22 +68,24 @@
           <view class="weui-search-bar__box">
               <icon class="weui-icon-search_in-box" type="search" size="14"></icon>
               <input style="height:90rpx;" adjust-position="false" bindblur="inputBlur" type="text" class="weui-search-bar__input" placeholder="搜索群成员" value="{{formData.inputVal}}" bindinput="inputTyping" />
-              <view class="weui-icon-clear" wx:if="{{inputVal.length > 0}}" bindtap="clearInput">
+              <view class="weui-icon-clear" wx:if="{{ inputVal.length > 0 }}" bindtap="clearInput">
                   <icon type="clear" size="14"></icon>
               </view>
           </view>
       </view>
+
       <view class="weui-cells weui-cells_after-title">
           <checkbox-group bindchange="checkboxChange" name="{{ formData.selUser }}">
               <view class="weui-cell" wx:for="{{ formData.userList }}" wx:key="index" hidden="{{ item.hidden }}">
                  <image wx:if="{{ userMsg.openId == item.openId }}" data-item="{{ item }}" data-index="{{ index }}" class="headImg" mode="aspectFit" src="{{ item.headImgUrl }}"></image>
                  <image wx:else bindtap="tabHead" data-item="{{ item }}" data-index="{{ index }}" class="headImg" mode="aspectFit" src="{{ item.headImgUrl }}"></image>
                  <icon type="success" size="15" class="figure" wx:if="{{ item.isAddMember }}"></icon>
-                 <view class="weui-cell__bd userNickName" data-item="{{ item }}" data-index="{{ index }}">{{ item.username || item.nickname }}</view>
+                 <view bindtap="{{ userMsg.openId == item.openId ? '' : 'tabHead' }}" class="weui-cell__bd userNickName" data-item="{{ item }}" data-index="{{ index }}">{{ item.username || item.nickname }}</view>
                  <checkbox disabled="{{ userMsg.openId == item.openId }}" class="weui-check nickCheckbox" disabled="{{ submitFormData.managerId == item.openId }}" value="{{ item.openId }}" checked="{{ item.checked }}"/>
               </view>
           </checkbox-group>
       </view>
+      <view style="margin-top:30px;text-align:center;" wx:if="{{ formData.userList.length == 0 }}">无成员信息</view>
       
       <ui-fixed-view bottom="0" left="0" right="0">
         <view class="fixed-view-content" style="padding:0 35rpx;">
@@ -312,21 +314,20 @@ export default {
     })
     e.detail.value.forEach((val,i,arr)=>{
       list = this.data.formData.userList.filter((item)=>{
-        if(item.openId == val){
+        if( item.openId == val ){
           return item;
         }
       })
-      that.data.formData.userList.forEach((value,ii,array)=>{
-          if( val == value.openId ){
-            array[ii].checked = true;
-          }
+      that.data.formData.userList.forEach(( value,ii,array )=>{
+        if( val == value.openId ){
+          array[ii].checked = true;
+        }
       })
     })
     that.data.formData.userList.filter((item)=>{
       item.checked == false ? item.isAddMember = false : null;
     })
     this.setData({
-      ['submitFormData.openIds']:e.detail.value,
       ['formData.originUserList']:list,
       ['formData.userList']:that.data.formData.userList
     })
@@ -358,15 +359,6 @@ export default {
         }
       })
     }
-  },
-  bindUpChange(e){//选择群主.....
-    let that = this;
-    let  selUserLebal = that.data.formData.originUserList;
-    let  managerId = that.data.submitFormData.openIds
-    this.setData({
-      ['submitFormData.managerId']:managerId[e.detail.value],
-      ['formData.selUserLebal']:selUserLebal[e.detail.value].username || selUserLebal[e.detail.value].nickname
-    })
   },
   reqGroupList(resolve2){
     let that = this;
@@ -406,6 +398,17 @@ export default {
   },
   submitGroupData(e){
     let that = this;
+    this.setData({
+      ["submitFormData.openIds"]:[]
+    })
+    that.data.formData.userList.filter((item)=>{
+      if( item.checked ){
+        that.data.submitFormData.openIds.push(item.openId);
+      }
+    })
+    this.setData({
+      ["submitFormData.openIds"]:that.data.submitFormData.openIds
+    })    
     let promise = new Promise((resolve,reject)=>{
       if( !that.data.formRuler.groupName.require && !that.data.formRuler.deadline.require ){
         if( that.data.submitFormData.openIds.length < 3 ){
@@ -461,8 +464,8 @@ export default {
     })
   },
   navigateBack () {
-        wx.navigateBack()
-    },
+    wx.navigateBack()
+  },
   reqUserList(keywords="",resolve){///请求用户列表.
     let that = this;
     system.http({

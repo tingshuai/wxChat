@@ -5,7 +5,7 @@
               <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
                   <icon class="iconfont myWx-iconfontqianjin2" style="font-size:25px;"></icon>
               </ui-col>
-              <ui-col vertical-align="middle" align="center" class="title">
+              <ui-col vertical-align="middle" align="center" class="title center">
                   {{ title }}
               </ui-col>
               <ui-col vertical-align="middle" align="center" width="80"></ui-col>

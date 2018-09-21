@@ -4,7 +4,7 @@
             <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
                 <icon class="iconfont myWx-iconfontqianjin2" style="font-size:20px;"></icon>
             </ui-col>
-            <ui-col vertical-align="middle" align="center">选择群组</ui-col>
+            <ui-col vertical-align="middle" align="center" class="center">选择群组</ui-col>
             <ui-col vertical-align="middle" align="center" width="80"></ui-col>
         </ui-row>
     </ui-nav-bar>

@@ -5,7 +5,7 @@
               <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
                   <icon class="iconfont myWx-iconfontqianjin2" style="font-size:25px;"></icon>
               </ui-col>
-              <ui-col vertical-align="middle" align="center" class="title">
+              <ui-col vertical-align="middle" align="center" class="title center">
                   {{ title }}
               </ui-col>
               <ui-col vertical-align="middle" align="center" width="80"></ui-col>
@@ -1254,9 +1254,9 @@ export default {
     text-indent: 10px;
     padding-left: 5px;
   }
-  .myWx-ai01 , .myWx-jia ,.myWx-jianpan,.myWx-unif032{
-    font-size: 33px;
-    color: #666666;
+  .myWx-ai01 , .myWx-jia ,.myWx-jianpan,.myWx-unif032,.myWx-yuyintonghua{
+    font-size: 38px;
+    color: #555;
     &:active{
       opacity: 0.8;
     }
@@ -1381,9 +1381,6 @@ export default {
   position:absolute;
   bottom:0px;
   left:0;
-}
-.myWx-yuyintonghua{
-  font-size: 30px;
 }
 .loadingData{
   text-align:center;

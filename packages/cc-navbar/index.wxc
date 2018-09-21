@@ -1,0 +1,24 @@
+<template>
+    <view height="40">
+        <view style="display:inline-block;width:33%;">
+            <!-- <icon class="iconfont myWx-iconfontqianjin2" style="font-size:20px;"></icon> -->
+        </view>
+        <view style="display:inline-block;width:33%;">首页</view>
+        <view style="display:inline-block;width:33%;"></view>
+    </view>
+</template>
+
+<script>
+export default {
+  config: {
+    navigationBarTitleText: ''
+  },
+  properties:{
+
+  },
+  data: {}
+}
+</script>
+
+<style lang="less">
+</style>

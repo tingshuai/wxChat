@@ -18,12 +18,12 @@
         <view class="weui-cells weui-cells_after-title" style="display:block;">
             <view class="weui-cell" style="padding:0;">
                 <view class="weui-cell__bd">
-                    <textarea wx:if="{{ !model.show }}" fixed="{{ true }}" maxlength="-1" show-confirm-bar="{{ false }}" id="reqMsg" auto-height="{{ true }}" style="min-height:110px;box-sizing:border-box;position:relative;padding:5px 10px;font-size:14px;" value="{{ form.demandText }}" data-index="{{ index }}" class="weui-textarea" bindinput="inputing"/>
+                    <textarea placeholder="建议使用1,2,3点来列举需求" placeholder-style="font-size:16px;color:#ddd;" wx:if="{{ !model.show }}" fixed="{{ true }}" maxlength="-1" show-confirm-bar="{{ false }}" id="reqMsg" auto-height="{{ true }}" style="min-height:80px;box-sizing:border-box;position:relative;padding:11px 16px;font-size:14px;height:auto;" value="{{ form.demandText }}" data-index="{{ index }}" class="weui-textarea" bindinput="inputing"/>
                 </view>
             </view>
         </view>
         <!-- 上传附件 -->
-        <view class="weui-cells__title">上传图片</view>
+        <view class="weui-cells__title" style="padding:2px 15px;">图片添加</view>
         <view class="page__bd">
             <view class="weui-cells" style="margin:0;">
                 <view class="weui-cell">
@@ -57,12 +57,12 @@
         <view class="weui-cells weui-cells_after-title" style="margin-top:20px;">
             <navigator class="weui-cell weui-cell_access" url="" catchtap="sendTo" hover-class="weui-cell_active">
                 <view class="weui-cell__bd">对接人</view>
-                <view class="weui-cell__ft weui-cell__ft_in-access">{{ form.confirmUserName || "" }}</view>
+                <view class="weui-cell__ft weui-cell__ft_in-access">{{ form.confirmUserName || "选择需求对接人" }}</view>
             </navigator>
         </view>
 
         <view class="btn-area">
-            <button catchtap="submit" type="primary" class="myBtnSuccess">提交需求</button>
+            <button catchtap="submit" type="primary" class="myBtnSuccess jingjingBtn">提交需求</button>
         </view>
         <ui-popup show="{{ model.show }}" height="100%">
             <view style="height:100%;width:100%;overflow:hidden;">
@@ -110,8 +110,8 @@
             </view>         
         </view>
         <view class="btn-area" style="margin-top:35px;">
-            <button catchtap="editRequirement" wx:if="{{ come_msg.item.content.editable && come_msg.item.toUser == userMsgReq.openId }}" type="primary" class="myBtnSuccess">修改需求</button>
-            <button catchtap="confirmRequirement" style="margin-top:15px;" type="default" wx:if="{{ come_msg.item.content.editable == true && !come_msg.item.content.demandState && ( come_msg.item.toUser == userMsgReq.openId ) }}">确认需求</button>
+            <button catchtap="editRequirement" wx:if="{{ come_msg.item.content.editable && come_msg.item.toUser == userMsgReq.openId }}" type="primary" class="myBtnSuccess jingjingBtn">修改需求</button>
+            <button class="jingjingBtn" catchtap="confirmRequirement" style="margin-top:15px;" type="default" wx:if="{{ come_msg.item.content.editable == true && !come_msg.item.content.demandState && ( come_msg.item.toUser == userMsgReq.openId ) }}">确认需求</button>
         </view>
     </view>
   </view>
@@ -488,7 +488,11 @@ let _promise1,_url;
         z-index:100;
         border-radius:50%;
         background-color:#267AFC;
-        width:25px;
-        height:25px;
+        width:20px;
+        height:20px;
+    }
+    .weui-uploader__input-box,.weui-uploader__img{
+        width:55px;
+        height:55px;
     }
 </style>

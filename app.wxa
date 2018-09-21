@@ -22,8 +22,8 @@ export default {
       'pages/historyMsg/index',
       'pages/CreateRequirement/index',
       'pages/evaluate/index',
-      'pages/../packages/cc-grouplist/index.wxc',
-      'pages/groupList/index'
+      'pages/groupList/index',
+      'pages/../packages/cc-navbar/index'
     ],
     plugins: {
       WechatSI: {
@@ -58,7 +58,7 @@ export default {
     defaultImg: '', //默认群头像...
     socketTask: {
       openType: false,
-      timeOuter:""
+      timeOuter: ''
     },
     registerState: ''
   },
@@ -137,9 +137,18 @@ page {
 .ui-nav-bar {
   padding-top: 28px;
 }
-.jingjingBtn{
-  height:45px;
-  line-height:45px;
-  font-size:17px;
+
+.jingjingBtn {
+  height: 45px;
+  line-height: 45px;
+  font-size: 17px;
+}
+.nav_bar{
+  .center{
+    font-size:18px;
+  }
+  .title{
+    font-size: 18px;
+  }
 }
 </style>

@@ -5,7 +5,7 @@
             <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
                 <icon class="iconfont myWx-iconfontqianjin2" style="font-size:20px;"></icon>
             </ui-col>
-            <ui-col vertical-align="middle" align="center">
+            <ui-col vertical-align="middle" align="center" class="center">
                 聊天信息
             </ui-col>
             <ui-col vertical-align="middle" align="center" width="80">

@@ -208,8 +208,6 @@ var backgroundAudioManager=wx.getBackgroundAudioManager();
 export default {
   config: {
     navigationBarTitleText: "欢迎进入群聊",
-    "navigationStyle": "custom",
-    "navigationBarTextStyle":"black",
     usingComponents: {
       // 'cc-group-chat': '../../packages/cc-groupChat/index'
     }

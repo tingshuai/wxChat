@@ -13,7 +13,7 @@
         </ui-row>
     </ui-nav-bar>
     <view style="height:66px;width:100%;"></view>
-    <view class="fixed-view-content">
+    <view class="fixed-view-content" style="background-color:white;">
         <view class="weui-search-bar">
             <view class="weui-search-bar__form">
                 <view class="weui-search-bar__box">
@@ -32,7 +32,7 @@
         </view>
     </view>
     
-    <ui-row height="60">
+    <ui-row height="60" style="background-color:white;">
         <ui-col align="center" vertical-align="middle" wx:for="{{ search.list00 }}" wx:key="{{ index }}">
             <view class="tag" style="color:{{ item.checked ? '#dd0000' : 'black'}}" data-item="{{ item }}" bindtap="singleTap" data-index="{{ index }}">{{ item.text }}</view>
         </ui-col>
@@ -170,7 +170,7 @@
                     <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && item.msgType != 20 && item.msgType != 21 && item.msgType != 22 && tabBar.actItem == 0 && item.msgType != 30 }}"><checkbox checked="{{ item.checked }}" class="checkbox" value="{{ item.msgId }}"/></view>
                 </ui-row>
               </checkbox-group>
-              <view wx:if="{{ chatData.length == 0 }}" class="historyLine">无匹配内容</view>
+              <view wx:if="{{ chatData.length == 0 }}" style="color:#555;text-align:center;padding:20px 0;">无匹配内容</view>
           </view>
         </scroll-view>
         <!-- 全屏弹窗.... -->
@@ -600,7 +600,10 @@ export default {
     //   margin:5px 10px;
     }
     .fixed-view-content{
-    
+        .weui-search-bar{
+            border-bottom: 0px!important;
+            background-color: rgba(0,0,0,0)!important;
+        }
     }
   .popup1{
     height: 100%;

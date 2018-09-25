@@ -40,7 +40,7 @@
                                     <block wx:for="{{ come_msg.files }}" wx:key="*this" class="come_msg">
                                         <view class="weui-uploader__file imgWrap" bindtap="previewImage" id="{{ item }}" style="position:relative;">
                                             <image class="weui-uploader__img" src="{{ item }}" mode="aspectFill" />
-                                            <image class="chaImg" src="../../static/img/remove.png" catchtap="cancle" data-index="{{ index }}" data-type="0" data-item="{{ item }}" mode="aspectFill" />
+                                            <image class="chaImg" src="../../static/img/remove.png" catchtap="cancle" data-index="{{ index }}" data-type="1" data-item="{{ item }}" mode="aspectFill" />
                                         </view>
                                     </block>
                                 </view>
@@ -327,21 +327,26 @@ let _promise1,_url;
     },
     upload(obj){
         let that = this;
+        debugger;
         return new Promise((resolve, reject) => {
             let uploadTask =  wx.uploadFile({
                 url: `${app.globalData.httpUpload}/fileSystem/uploadFile`, //仅为示例，非真实的接口地址
                 filePath: obj.val,
                 name: 'file',
                 success(res){
-                    let _resData = JSON.parse( res.data );
-                    if( _resData.errorCode == 0 ){
-                        that.data.form.demandAttach.push( _resData.model );
-                        that.setData({
-                            ["form.demandAttach"]:that.data.form.demandAttach,
-                        })
-                        resolve(obj.i)
+                    if( res.statusCode == 200 ){
+                        let _resData = JSON.parse( res.data );
+                        if( _resData.errorCode == 0 ){
+                            that.data.form.demandAttach.push( _resData.model );
+                            that.setData({
+                                ["form.demandAttach"]:that.data.form.demandAttach,
+                            })
+                            resolve(obj.i)
+                        }else{
+                            system.stateMsg( {title: _resData.message, icon:"none", time:1000} )
+                        }
                     }else{
-                        system.stateMsg( {title: _resData.message, icon:"none", time:1000} )
+                        system.stateMsg( {title: "图片上传失败", icon:"none", time:1000 } )
                     }
                 },
                 fail(res){

@@ -90,8 +90,8 @@
       <ui-fixed-view bottom="0" left="0" right="0">
         <view class="fixed-view-content" style="padding:0 35rpx;">
           <view class="btn-area">
-            <button type="primary" formType="submit" class="myBtnSuccess">{{ btnTitle.title0 }}</button>
-            <button formType="reset">取消</button>
+            <button type="primary" formType="submit" class="myBtnSuccess jingjingBtn">{{ btnTitle.title0 }}</button>
+            <button formType="reset" class="jingjingBtn">取消</button>
           </view>
         </view>
       </ui-fixed-view>
@@ -549,7 +549,7 @@ export default {
 .pageContainer{
   padding-top:5px;
   width:100%;
-  padding-bottom:100px;
+  padding-bottom:130px;
 }
 .warnXing{
   color: red;

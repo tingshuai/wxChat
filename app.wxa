@@ -34,9 +34,9 @@ export default {
     window: {
       backgroundTextStyle: 'dark',
       backgroundColor: '#efefef',
-      navigationBarBackgroundColor: '#ffffff',
+      navigationBarBackgroundColor: '#267AFC',
       navigationBarTitleText: 'TouchUI',
-      navigationBarTextStyle: 'black',
+      navigationBarTextStyle: 'white',
       navigationStyle: 'custom'
     },
     networkTimeout: {

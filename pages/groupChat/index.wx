@@ -26,8 +26,8 @@
                 <view><icon class="iconfont myWx-xiangyou" style="font-size:16px;color:white;line-height:35px;"></icon></view>
             </view>
         </view>
-        <view wx:if="{{ transmit.tabBar.actItem == 2 }}" style="height:90%;width:100%;padding:0px 100px;"><image style="width:100%;" mode="aspectFit" src="../../static/img/nothing.png"></image></view>
-        <scroll-view scroll-y="true" bindscroll="scrllView" id="viewport" style="height: {{ transmit.tabBar.actItem == 0 ? (scrollHeight - 103) : (scrollHeight - 53)}}px;overflow:hidden;top:-2px;position:relative;" scroll-into-view="{{ toView }}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden"><!-- bindscrolltoupper="bindscrolltoupper"，，，，catch:touchstart="loadTouchstart" catch:touchend="loadTouchend" catch:touchmove="loadTouchmove"-->
+        <!-- <view wx:if="{{ transmit.tabBar.actItem == 2 }}" style="height:90%;width:100%;padding:0px 100px;"><image style="width:100%;" mode="aspectFit" src="../../static/img/nothing.png"></image></view> -->
+        <scroll-view scroll-y="true" bindscroll="scrllView" id="viewport" style="height: {{ transmit.tabBar.actItem == 0  ? (scrollHeight - 103) : (scrollHeight - 53)}}px;overflow:hidden;top:-2px;position:relative;" scroll-into-view="{{ toView }}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden"><!-- bindscrolltoupper="bindscrolltoupper"，，，，catch:touchstart="loadTouchstart" catch:touchend="loadTouchend" catch:touchmove="loadTouchmove"-->
           <view class="content" id="content">
             <checkbox-group bindchange="checkboxChange">
               <ui-row hover-class="touchui-hover" class="talkItem" wx:for="{{ chatData }}" wx:key="index" id="the{{index}}">
@@ -96,23 +96,24 @@
                               <view class="myProgress" wx:if="{{ item.progress }}" style="height:1px;width:{{ item.progress }}px;background-color: {{ item.progress == 100 ? '#49CC8D' : 'rgba(255,100,100,0.8)' }}"></view>
                             </view>
                             <!-- 评价 -->
-                            <view class="talkContent" wx:if="{{ item.msgType == 30 }}" style="width:80%;">
+                            <view class="talkContent" wx:if="{{ item.msgType == 30 || item.msgType == 100 }}" style="width:80%;">
                               <ui-row space-bottom="" style="height:30px;line-height:26px;">
                                   <ui-col align="left" vertical-align="top">
-                                      <text style="font-size:13px;color:#333333;">项目办结消息提醒</text>
+                                      <text style="font-size:14px;color:#333333;">项目办结消息提醒</text>
                                   </ui-col>
                               </ui-row>
-                              <ui-row style="border-top:1px solid #ddd;border-bottom:1px solid #ddd;padding:10px 0 20px 0;">
+                              <ui-row style="border-bottom:1px solid #EFEFEF;padding:0px 0 10px 0;">
                                   <ui-col align="left" vertical-align="top">
                                       <!-- <text style="font-size:13px;color:#333333;text-align:right;display:block;width:100%;font-size:13px;">{{ item.fromUserName }}邀请你对本次服务进行评价。</text> -->
-                                      <text style="font-size:13px;color:#333333;text-align:right;display:block;width:100%;font-size:13px;">尊敬的客户你好，你的项目已经完结请对我们的服务进行评价。</text>
+                                      <text style="font-size:12px;color:#5C6466;text-align:left;display:block;width:100%;font-size:13px;">尊敬的客户你好，你的项目已经完结请对我们的服务进行评价。</text>
                                   </ui-col>
                               </ui-row>
                               <ui-row>
-                                  <ui-col align="right" vertical-align="top">
-                                      <button style="color:white;font-size:15px;" class="myBtnSuccess" data-item="{{item}}" type="primary" size="mini" catchtap="evaluateMe">点击评价</button>
+                                  <ui-col align="center" vertical-align="top">
+                                      <text wx:if="{{ item.toUser == sendInputMsg.fromUser}}" style="font-size:12px;color:#2A79FB;padding:9px 0;" catchtap="evaluateMe">点击评价</text>
+                                      <text wx:else style="font-size:12px;color:#bbb;padding:9px 0;" catchtap="evaluateMe">点击评价</text>
                                   </ui-col>
-                              </ui-row>                           
+                              </ui-row>
                             </view>
                         </view>
                         <view class="readMe" wx:if="{{ sendInputMsg.fromUser == item.fromUser }}" style="right:{{ sendInputMsg.fromUser == item.fromUser ? '5px' : '' }}">{{ theGroupMsg.groupUsers.length - item.readCount -1 >= 0 ? theGroupMsg.groupUsers.length - item.readCount -1 : '0'}} {{ item.readCount >= 0 ? "人未读" : ''}}</view>
@@ -121,9 +122,9 @@
                         <view class="historyLine">{{ item.fromUserName }} 撤回了一条消息</view>
                     </ui-col>
                     <!-- 办结消息 -->
-                    <ui-col class="text" align="center" vertical-align="top" space-left="0" space-right="0" wx:if="{{ item.cmd == 100 }}">
+                    <!-- <ui-col class="text" align="center" vertical-align="top" space-left="0" space-right="0" wx:if="{{ item.cmd == 100 }}">
                         <view class="historyLine">{{ item.content }} </view>
-                    </ui-col>
+                    </ui-col> -->
                     <ui-col width="60" align="left" vertical-align="top" wx:if="{{ item.cmd != 'time' && (sendInputMsg.fromUser == item.fromUser) && item.cmd != 2 && item.cmd != 1  && item.cmd != 100 }}"><!--消息来自自己-->
                         <view class="left_icon left_icon1">
                             <image src="{{  userMsg.headImgUrl }}"/>
@@ -895,7 +896,7 @@ export default {
   getHistoryMsg(id,size,num,isFirst,event){
     var that= this;
     wx.request({
-      url: `${app.globalData.httpHost}/chat/msg/getGroupMsg`,
+      url: `${app.globalData.httpHost}/chat/msg/${ that.data.transmit.tabBar.actItem == 2 ? 'getHisGroupMsg' : 'getGroupMsg'}`,
       data: {
          groupId : id ,//群ID
          pageSize : size,//一页几条

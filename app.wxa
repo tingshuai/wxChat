@@ -139,8 +139,8 @@ page {
 }
 
 .jingjingBtn {
-  height: 45px;
-  line-height: 45px;
+  height: 48px;
+  line-height: 48px;
   font-size: 17px;
 }
 .nav_bar{

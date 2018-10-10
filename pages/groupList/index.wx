@@ -24,13 +24,13 @@
                         <view style="width: 100%;">
                             <ui-row height="22">
                                 <ui-col align="left" vertical-align="middle">
-                                    <text>{{ item.groupName }}</text>
+                                    <text style="color:{{ item.act ? '#267AFC' : '' }}">{{ item.groupName }}</text>
                                 </ui-col>
                             </ui-row>
-                            <view class="txt">{{ item.groupDesc ? item.groupDesc : "" }}</view>
+                            <view class="txt" style="color:{{ item.act ? '#267AFC' : '' }}">{{ item.groupDesc ? item.groupDesc : "" }}</view>
                         </view>
                     </ui-col>
-                    <icon class="angleIcon" type="success" wx:if="{{ item.act }}" size="23"></icon>
+                    <icon class="iconfont myWx-dui3" wx:if="{{ item.act }}" size="23"></icon>
                 </ui-row>
             </view>
             <view slot="content" class="accorContent" v-if="{{ item.children.length != 0 }}">
@@ -51,7 +51,7 @@
                             <view class="txt">{{ itemChidren.groupDesc ? itemChidren.groupDesc : "" }}</view>
                         </view>
                     </ui-col>
-                    <icon class="angleIcon" type="success" wx:if="{{ itemChidren.act }}" size="23"></icon>
+                    <icon class="iconfont myWx-dui3" wx:if="{{ itemChidren.act }}" size="23"></icon>
                 </ui-row>
             </view>
         </ui-accordion>
@@ -230,5 +230,16 @@ export default {
           .mix-text-overflow();
         }
     }
+}
+.myWx-dui3{
+    display:inline-block;
+    height:25px;
+    width:25px;
+    color:#267AFC;
+    line-height:25px;
+    border-radius:50%;
+    margin-top:25px;
+    box-sizing:border-box;
+    font-size:30px;
 }
 </style>

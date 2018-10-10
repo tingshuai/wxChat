@@ -87,11 +87,11 @@
       </view>
       <view style="margin-top:30px;text-align:center;" wx:if="{{ formData.userList.length == 0 }}">无成员信息</view>
       
-      <ui-fixed-view bottom="0" left="0" right="0">
-        <view class="fixed-view-content" style="padding:0 35rpx;">
+      <ui-fixed-view bottom="0" left="0" right="0" class="fixBtn">
+        <view class="fixed-view-content" style="padding:10px 35rpx;background-color:white;border-top:1px solid #efefef;">
           <view class="btn-area">
             <button type="primary" formType="submit" class="myBtnSuccess jingjingBtn">{{ btnTitle.title0 }}</button>
-            <button formType="reset" class="jingjingBtn">取消</button>
+            <!-- <button formType="reset" class="jingjingBtn">取消</button> -->
           </view>
         </view>
       </ui-fixed-view>
@@ -458,7 +458,7 @@ export default {
           }
         },
         fcb(res){
-          system.stateMsg({title:that.data.edit == 'true' ? "修改群组成功" : '新增群组成功',icon:"none",time:1000})
+          system.stateMsg({title:that.data.edit == 'true' ? "修改群组失败" : '新增群组失败',icon:"none",time:1000})
         }
       })
     })

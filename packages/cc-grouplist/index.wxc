@@ -15,7 +15,7 @@
                                <icon class="iconfont myWx-xiangyou" style="{{ item.expand == true ? 'transform:rotate(90deg)' : 'transform:rotate(0deg)' }}" catchtap="slide" data-item="{{ item }}" data-index="{{ index }}" wx:if="{{ item.children.length != 0 }}"></icon>
                            </view>
                        </view>
-                       <view class="childList list_0 top_tip {{ item.children.length != 0 && item.expand == true ? 'expanded' : '' }}" style="height:0px;border-bottom:1px solid rgba(200,200,200,0);overflow:hidden;" wx:key="{{ indexTow }}" wx:for="{{ item.children }}" catchtap="toChat" data-parentItem="{{ item }}" wx:for-item="itemChidren" data-item="{{itemChidren}}" wx:for-index="indexTow">
+                       <view class="childList list_0 top_tip {{ item.children.length != 0 && item.expand == true ? 'expanded' : '' }}" style="height:0px;border-bottom:1px solid #efefef;overflow:hidden;" wx:key="{{ indexTow }}" wx:for="{{ item.children }}" catchtap="toChat" data-parentItem="{{ item }}" wx:for-item="itemChidren" data-item="{{itemChidren}}" wx:for-index="indexTow">
                                <!-- <image src="{{ itemChidren.icon || defaultHeadImg}}"></image> -->
                                <view style="width:40px;height:40px;position:relative;">
                                   <icon class="iconfont myWx-iconfont12" style="transform:rotate(-45deg);text-align:left;width:25px;height:100%;"></icon>
@@ -89,7 +89,7 @@ export default {
   .expanded{
     height:60px!important;
     padding:10px!important;
-    border-bottom:1px solid #ddd!important;
+    // border-bottom:1px solid #ddd!important;
   }
   .angleIcon{
     position:absolute;
@@ -108,7 +108,7 @@ export default {
   }
   .list_1{
     box-sizing:border-box;
-    border-bottom:1px solid #ddd;
+    border-bottom:1px solid #efefef;
   }
   .list_0{
     transition: all 0.3s;

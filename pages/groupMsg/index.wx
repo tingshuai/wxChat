@@ -26,7 +26,7 @@
             <!-- <icon type="success" size="15" class="figure" wx:if="{{ item.authAddMember }}"></icon> -->
         </view>
         <view class="mycol" style="vertical-align:top;" bindtap="editGroup" wx:if="{{ canAddMenuber && tabBar.actItem == 0 }}">
-          <icon class="iconfont myWx-jia4" style="color:#ccc;font-size:37px;border:1px solid #ccc;width:50px;height:50px;line-height:50px;text-align:center;"></icon>
+          <icon class="iconfont myWx-jia4" style="color:#ccc;font-size:37px;border:1px solid #ccc;width:45px;height:45px;line-height:45px;text-align:center;"></icon>
         </view>
     </view>
     <ui-row class="groupName" vertical-align="middle">
@@ -37,23 +37,21 @@
       <ui-col vertical-align="middle" span="3" space-left="10" align="left" class="txtLeft" span="2">群描述</ui-col>
       <ui-col vertical-align="middle" space-right="10" align="left" class="txtRight">{{ groupMsg.groupDesc ? groupMsg.groupDesc : '' }}</ui-col>
     </ui-row>
-    <view class="weui-cells weui-cells_after-title">
-        <view class="weui-cell weui-cell_link" style="padding-left:10px;line-height:21px;padding-right:5px;" bindtap="selChatList">
-            <view class="weui-cell__bd txtLeft" style="color:black;" >查找聊天记录</view>
-            <view><icon class="iconfont myWx-xiangyou" style="font-size:20px;"></icon></view>
-        </view>
+    <view style="padding-left:10px;line-height:21px;padding-right:5px;background-color:white;height:40px;line-height:40px;" bindtap="selChatList">
+        <view class="txtLeft" style="color:black;width:40%;display:inline-block;" >查找聊天记录</view>
+        <view style="width:60%;display:inline-block;text-align:right;"><icon class="iconfont myWx-xiangyou" style="font-size:20px;"></icon></view>
     </view>
     <!--退群按钮-->
-      <view class="fixed-view-content" style="padding:0 35rpx;padding-top:100px;">
-        <view class="btn-area">
-          <button type="warn" class="fixed_bottom jingjingBtn" wx:if="{{ userMsg.openId == groupMsg.managerId  }}" data-disband="true" bindtap="exitGroup">解散群组</button>
-          <button type="warn" class="fixed_bottom jingjingBtn" wx:else data-disband="false" bindtap="exitGroup">退出群组</button>
-          <!-- <button type="primary" class="fixed_bottom" bindtap="confirm" wx:if="{{ isEdit }}">确定</button> -->
-          <!-- <button type="primary" class="fixed_bottom" bindtap="cancel" wx:if="{{ isEdit }}">取消</button> -->
-          <button wx:if="{{ groupMsg.managerId == userMsg.openId }}" type="default" class="fixed_bottom jingjingBtn" bindtap="editGrou">编辑</button>
-          <button wx:if="{{ canAddMenuber && groupMsg.managerId != userMsg.openId}}" type="default" class="fixed_bottom jingjingBtn" bindtap="addMenuber">添加成员</button>
-        </view>
+    <view class="fixed-view-content" style="padding:0 35rpx;padding-top:100px;">
+      <view class="btn-area">
+        <button type="warn" class="fixed_bottom jingjingBtn" wx:if="{{ userMsg.openId == groupMsg.managerId  }}" data-disband="true" bindtap="exitGroup">解散群组</button>
+        <button type="warn" class="fixed_bottom jingjingBtn" wx:else data-disband="false" bindtap="exitGroup">退出群组</button>
+        <!-- <button type="primary" class="fixed_bottom" bindtap="confirm" wx:if="{{ isEdit }}">确定</button> -->
+        <!-- <button type="primary" class="fixed_bottom" bindtap="cancel" wx:if="{{ isEdit }}">取消</button> -->
+        <button wx:if="{{ groupMsg.managerId == userMsg.openId }}" type="default" style="margin-top:12px;" class="fixed_bottom jingjingBtn" bindtap="editGroup">编辑</button>
+        <button wx:if="{{ canAddMenuber && groupMsg.managerId != userMsg.openId}}" type="default" class="fixed_bottom jingjingBtn" bindtap="addMenuber">添加成员</button>
       </view>
+    </view>
   </view>
 </template>
 
@@ -202,7 +200,7 @@
     .groupName,.groupDescribe{
       background-color:white;
       height: 40px;
-      margin: 20px 0;
+      margin: 18px 0;
       .txtLeft{
         font-size: 32rpx;
         width:30px;
@@ -221,10 +219,10 @@
       height: auto;
       min-height: 40px;
       .txtLeft{
-        top:4px;
+        top:7px;
       }
       .txtRight{
-        padding:5px 0;
+        padding:7px 0 0 0;
       }
     }
     .fixed_bottom{
@@ -239,15 +237,15 @@
       background-color:white;
     }
     .left_icon{
-        width: 50px;
-        height: 50px;
+        width: 45px;
+        height: 45px;
         border-radius: 50%;
         background-color:#FCB300; 
         text-align: center;
         line-height: 50px;
         display: inline-block;
         >image{
-          border-radius: 7px;
+          border-radius: 5px;
         }
         &:active{
         opacity: 0.8;

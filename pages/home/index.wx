@@ -6,7 +6,7 @@
                 <!-- <icon class="iconfont myWx-iconfontqianjin2" style="font-size:20px;"></icon> -->
             </ui-col>
             <ui-col vertical-align="middle" align="center" class="center">
-                首页
+                库蚂蚁沟通
             </ui-col>
             <ui-col vertical-align="middle" align="center" width="80">
             </ui-col>
@@ -25,7 +25,7 @@
                       </view>
                   </view>
               </view>
-              <view class="weui-search-bar__cancel-btn" bindtap="clearInput" wx:if="{{ inputVal.length > 0 }}">取消</view>
+              <view class="weui-search-bar__cancel-btn" bindtap="clearInput" wx:if="{{ inputVal.length > 0 }}" style="color:#267AFC;">取消</view>
               <label class="weui-search-bar__label" bindtap="showInput" wx:if="{{ showInput }}" style="position:absolute;top:8px;background-color:rgba(0,0,0,0);">
                   <icon class="weui-icon-search" type="search" size="14" style="top:2px;position:relative;"></icon>
                   <view class="weui-search-bar__text">搜索</view>
@@ -40,7 +40,7 @@
     </view>
     <!-- //右滑菜单.........  -->
     <view class="listContainer" hidden="{{ overList.length != 0 }}">
-        <scroll-view scroll-y style="height:{{modelHeight}};border-top:1px solid #ddd;">
+        <scroll-view scroll-y style="height:{{modelHeight}};">
             <cc-grouplist wx:if="{{ tabBar.actItem == 0 }}" groupList="{{ list1 }}" bind:exData = "exData" tabBar="{{ tabBar }}"></cc-grouplist>
         </scroll-view>
         <!-- 历史群组 -->
@@ -146,7 +146,7 @@ var app = getApp();
 import system from '../../static/utils/system'
 export default {
   config: {
-    navigationBarTitleText: '首页',
+    navigationBarTitleText: '库蚂蚁沟通',
     usingComponents: {
       'cc-grouplist': '../../packages/cc-grouplist/index'
     }

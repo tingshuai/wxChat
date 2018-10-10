@@ -61,7 +61,7 @@
         </view> 
     </view>   
     <view style="position:relative;">
-        <ui-fixed-view top="160" right="50" class="groupMsgBtn" wx:if="{{ transmit.isTransmit }}">
+        <ui-fixed-view bottom="20" right="40" class="groupMsgBtn" wx:if="{{ transmit.isTransmit }}">
             <button bindtap="showModel" class="seeGroupMsg cBtn0">转发</button>
         </ui-fixed-view>
         <scroll-view scroll-y="true" id="viewport" style="height:{{ scrollHeight }}px;" bindscrolltolower="bindscrolltoupper" style="overflow:hidden;" scroll-into-view="{{ toView }}" upper-threshold="0" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden">
@@ -136,18 +136,19 @@
                             <view class="talkContent" wx:if="{{ item.msgType == 30 }}" style="width:80%;">
                               <ui-row space-bottom="" style="height:30px;line-height:26px;">
                                   <ui-col align="left" vertical-align="top">
-                                      <text style="font-size:13px;color:#333333;">项目办结消息提醒</text>
+                                      <text style="font-size:14px;color:#333333;">项目办结消息提醒</text>
                                   </ui-col>
                               </ui-row>
-                              <ui-row style="border-top:1px solid #ddd;border-bottom:1px solid #ddd;padding:10px 0 20px 0;">
+                              <ui-row style="border-bottom:1px solid #EFEFEF;padding:0px 0 10px 0;">
                                   <ui-col align="left" vertical-align="top">
                                       <!-- <text style="font-size:13px;color:#333333;text-align:right;display:block;width:100%;font-size:13px;">{{ item.fromUserName }}邀请你对本次服务进行评价。</text> -->
-                                      <text style="font-size:13px;color:#333333;text-align:right;display:block;width:100%;font-size:13px;">尊敬的客户你好，你的项目已经完结请对我们的服务进行评价。</text>
+                                      <text style="font-size:12px;color:#5C6466;text-align:left;display:block;width:100%;font-size:13px;">尊敬的客户你好，你的项目已经完结请对我们的服务进行评价。</text>
                                   </ui-col>
                               </ui-row>
                               <ui-row>
-                                  <ui-col align="right" vertical-align="top">
-                                      <button style="color:white;font-size:15px;" class="myBtnSuccess" data-item="{{item}}" type="primary" size="mini" catchtap="evaluateMe">点击评价</button>
+                                  <ui-col align="center" vertical-align="top">
+                                      <text wx:if="{{ item.toUser == sendInputMsg.fromUser}}" style="font-size:12px;color:#2A79FB;padding:9px 0;">点击评价</text>
+                                      <text wx:else style="font-size:12px;color:#bbb;padding:9px 0;">点击评价</text>
                                   </ui-col>
                               </ui-row>
                             </view>

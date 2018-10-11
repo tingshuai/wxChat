@@ -56,10 +56,20 @@
             </view>
         </ui-accordion>
         </scroll-view>
-        <view class="button-sp-area">
-        <button bindtap="navigateBack" type="default">取消</button>
-        <button bindtap="transMsg" type="primary" class="myBtnSuccess">确定</button>
-        </view>
+        <!-- <view class="button-sp-area">
+            <button bindtap="navigateBack" type="default">取消</button>
+            <button bindtap="transMsg" type="primary" class="myBtnSuccess">确定</button>
+        </view> -->
+        <ui-fixed-view bottom="0" left="0" right="0" class="fixBtn">
+            <view class="fixed-view-content" style="padding:10px 35rpx;background-color:white;border-top:1px solid #efefef;">
+            <view class="btn-area">
+                <!-- <button type="primary" formType="submit" class="myBtnSuccess jingjingBtn">{{ btnTitle.title0 }}</button> -->
+                <!-- <button formType="reset" class="jingjingBtn">取消</button> -->
+                <button bindtap="navigateBack" type="default" class="jingjingBtn">取消</button>
+                <button bindtap="transMsg" type="primary" class="myBtnSuccess jingjingBtn">确定</button>
+            </view>
+            </view>
+        </ui-fixed-view>        
     </view>
 </template>
 <script>

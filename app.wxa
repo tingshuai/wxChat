@@ -23,7 +23,8 @@ export default {
       'pages/CreateRequirement/index',
       'pages/evaluate/index',
       'pages/groupList/index',
-      'pages/../packages/cc-navbar/index'
+      'pages/../packages/cc-navbar/index',
+      'pages/userList/index'
     ],
     plugins: {
       WechatSI: {
@@ -143,11 +144,12 @@ page {
   line-height: 48px;
   font-size: 17px;
 }
-.nav_bar{
-  .center{
-    font-size:18px;
+
+.nav_bar {
+  .center {
+    font-size: 18px;
   }
-  .title{
+  .title {
     font-size: 18px;
   }
 }

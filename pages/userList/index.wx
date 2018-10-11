@@ -1,0 +1,126 @@
+<template>
+  <view>
+    <view>
+        <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#267AFC',color:'#fff'} }}">
+            <ui-row height="40">
+                <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
+                    <icon class="iconfont myWx-iconfontqianjin2" style="font-size:20px;"></icon>
+                </ui-col>
+                <ui-col vertical-align="middle" align="center" class="center">
+                    群成员
+                </ui-col>
+                <ui-col vertical-align="middle" align="center" width="80">
+                </ui-col>
+            </ui-row>
+        </ui-nav-bar>    
+        <view style="height:66px;width:100%;"></view>
+
+        <scroll-view class="view_H" scroll-y style="width: 100%;height:{{ scrollHeight }};">
+          <ui-row class="radio-group" height="50" bindtap="radioChange" wx:for="{{ userList }}" space="10" id="{{ item.openId }}" data-index="{{ index }}">
+              <ui-col vertical-align="middle" align="center" width="50">
+                <text wx:if="{{ item.checked }}" class="iconfont myWx-dui3"></text>
+                <text wx:else class="iconfont"></text>
+              </ui-col>
+              <ui-col vertical-align="middle" align="left" width="50">
+                  <image mode="aspectFit" src="{{  item.headImgUrl }}"/>
+              </ui-col>
+              <ui-col space-left="15" vertical-align="middle" align="left">{{ item.username }}</ui-col>
+          </ui-row>
+        </scroll-view>
+        <ui-fixed-view bottom="0" left="0" right="0" class="fixBtn">
+          <view class="fixed-view-content" style="padding:3px 35rpx;background-color:{{ scrollHeight == 'auto' ? 'rgba(0,0,0,0)' : 'white' }};border-top:1px solid {{ scrollHeight == 'auto' ? 'rgba(0,0,0,0)' : '#efefef' }};">
+            <view class="btn-area">
+              <button type="primary" class="myBtnSuccess jingjingBtn" bindtap="callMe">沟通</button>
+            </view>
+          </view>
+        </ui-fixed-view>
+    </view>
+  </view>
+</template>
+
+<script>
+var app = getApp();
+import system from '../../static/utils/system'
+export default {
+  config: {
+    navigationBarTitleText: ''
+  },
+  data: {
+    userList:[],
+    bottomHeight:148,
+    scrollHeight:'',
+    selOpenId:""
+  },
+  onLoad(options){
+    let userList = JSON.parse( options.userList );
+    userList.filter( item => {
+      item.checked = false;
+    });
+    userList.length * 50 > wx.WIN_HEIGHT - this.data.bottomHeight ? this.data.scrollHeight = wx.WIN_HEIGHT - this.data.bottomHeight + 'px': this.data.scrollHeight = 'auto';
+    this.setData({
+      "userList":userList,
+      "scrollHeight":this.data.scrollHeight
+    })
+  },
+  navigateBack () {
+    wx.navigateBack()
+  },
+  radioChange(e){
+    let that = this;
+    let _curItem = e.currentTarget.dataset;
+    let _openId = e.currentTarget.id;
+    this.data.userList.filter((item)=>{
+      if( item.openId == _openId ){
+        item.checked = true;
+      }else{
+        item.checked = false;
+      }
+    })
+    this.setData({
+      "userList":that.data.userList,
+      "selOpenId":_openId
+    })
+  },
+  callMe(e){
+    let that = this;
+    system.http({
+      url:'/axb/binding',
+      method:"post",
+      param:{
+        "fromOpenId": app.globalData.openId,
+        "toOpenId": that.data.selOpenId
+      },
+      scb(res){
+        if( res.data.status == 200 ){
+          wx.makePhoneCall({
+            phoneNumber:res.data.data.telX
+          })
+        }
+      }
+    });
+  }
+}
+</script>
+
+<style lang="less">
+  .radio-group{
+    padding:5px 0;
+    border-bottom:1px solid #efefef;
+    .iconfont{
+      display:inline-block;
+      width:20px;
+      height:20px;
+      border:1px solid #BCC2C6;
+      line-height:20px;
+    }
+    .myWx-dui3{
+      background-color:#267AFC;
+      border:1px solid #267AFC!important;
+      color:white;
+    }
+  }
+  .view_H{
+    background-color:white;
+    margin-top:15px;
+  }
+</style>

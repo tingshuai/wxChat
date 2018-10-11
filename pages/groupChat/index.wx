@@ -185,6 +185,11 @@
             <ui-col class="sentType_col" width="58" align="center" vertical-align="middle" wx:if="{{ sendInputMsg.isGroupManager }}">
               <text class="iconfont myWx-banjie2" bindtap="aite" data-type="8" style=""></text>
             </ui-col>
+            <!-- 电话 -->
+            <ui-col class="sentType_col" width="58" align="center" vertical-align="middle">
+              <image src="../../static/img/call.png" bindtap="callMe" style="width:50px;height:50px;"></image>   
+            </ui-col>
+            <ui-col width="1" align="center" vertical-align="middle"></ui-col>
           </ui-row>
           <scroll-view scroll-x class="sentType" hidden="{{ transmit.isAite }}" style="height:100px;white-space:nowrap;">
              <!-- hidden="{{ item.openId == theGroupMsg.managerId }}" -->
@@ -534,6 +539,11 @@ export default {
     let that = this;
     wx.navigateTo({
       url:`/pages/evaluate/index?groupMsg=${ JSON.stringify( that.data.theGroupMsg ) }`
+    })
+  },
+  callMe(e){
+    wx.navigateTo({
+      url:`/pages/userList/index?userList=${ JSON.stringify( this.data.theGroupMsg.groupUsers ) }`
     })
   },
   retOrConfirm(e){

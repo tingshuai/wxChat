@@ -23,7 +23,6 @@ export default {
       'pages/CreateRequirement/index',
       'pages/evaluate/index',
       'pages/groupList/index',
-      'pages/../packages/cc-navbar/index',
       'pages/userList/index'
     ],
     plugins: {
@@ -55,6 +54,9 @@ export default {
     openId: '', //'oc6Hd1BHJF55T1jIWr2eC2AEYoUQ',
     sessionId: '',
     userMsgReq: {},
+    promise:{
+      upDataGroupMsg:""
+    },
     wxImg: '',
     defaultImg: '', //默认群头像...
     socketTask: {

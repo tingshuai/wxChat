@@ -32,13 +32,13 @@
             <checkbox-group bindchange="checkboxChange">
               <ui-row hover-class="touchui-hover" class="talkItem" wx:for="{{ chatData }}" wx:key="index" id="the{{index}}">
                     <view class="historyLine" wx:if="{{ (item.cmd == 'time' || item.cmd == '2') && item.content }}">{{ item.content }}</view>
-                    <ui-col width="60" align="left" vertical-align="top" wx:if="{{ item.cmd == 0 &&  (sendInputMsg.fromUser != item.fromUser)}}"><!--消息来自别人-->
+                    <ui-col width="60" align="left" vertical-align="top" wx:if="{{ (item.cmd == 0 || item.cmd == 100) && (sendInputMsg.fromUser != item.fromUser)}}"><!--消息来自别人-->
                         <view class="left_icon left_icon1">
                             <image src="{{  item.headImgUrl }}"/>
                         </view>
                     </ui-col>
                     <!-- <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && (sendInputMsg.fromUser == item.fromUser) && transmit.isTransmit }}"><checkbox-group data-item="{{ item }}" bindchange="checkboxChange"><label><checkbox class="checkbox" value="{{item.msgId}}"/></label></checkbox-group></view>消息转发选项框...... -->
-                    <ui-col class="text" align="left" vertical-align="top" space-left="0" space-right="5" wx:if="{{ item.cmd == 0 }}">
+                    <ui-col class="text" align="left" vertical-align="top" space-left="0" space-right="5" wx:if="{{ item.cmd == 0 || item.cmd == 100}}">
                         <view style="width: 100%; text-align:{{ sendInputMsg.fromUser == item.fromUser ? 'right' : 'left' }};">
                             <ui-row height="20" wx:if="{{ sendInputMsg.fromUser != item.fromUser }}">
                                 <ui-col align="{{ sendInputMsg.fromUser == item.fromUser ? 'right' : 'left'}}" vertical-align="top">
@@ -46,7 +46,7 @@
                                 </ui-col>
                             </ui-row>
                             <!--文本类型-->
-                            <text selectable='true' class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 0 || item.msgType == 7}}" style="background-color: white;">{{ item.content }} </text>
+                            <text selectable='true' class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ ( item.msgType == 0 && item.cmd != 100 ) || item.msgType == 7}}" style="background-color: white;">{{ item.content }} </text>
                             <!--需求类型-->
                             <view class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="retOrConfirm" wx:if="{{ item.msgType == 20 || item.msgType == 22 || item.msgType == 21 }}" style="background-color: white;width:100%;">
                               <ui-row style="border-bottom:1px solid rgba(0,0,0,0.1);">
@@ -96,7 +96,7 @@
                               <view class="myProgress" wx:if="{{ item.progress }}" style="height:1px;width:{{ item.progress }}px;background-color: {{ item.progress == 100 ? '#49CC8D' : 'rgba(255,100,100,0.8)' }}"></view>
                             </view>
                             <!-- 评价 -->
-                            <view class="talkContent" wx:if="{{ item.msgType == 30 || item.msgType == 100 }}" style="width:80%;">
+                            <view class="talkContent" wx:if="{{ item.cmd == 100 || item.msgType == 30  }}" style="width:80%;">
                               <ui-row space-bottom="" style="height:30px;line-height:26px;">
                                   <ui-col align="left" vertical-align="top">
                                       <text style="font-size:14px;color:#333333;">项目办结消息提醒</text>
@@ -111,7 +111,7 @@
                               <ui-row>
                                   <ui-col align="center" vertical-align="top">
                                       <text wx:if="{{ item.toUser == sendInputMsg.fromUser}}" style="font-size:12px;color:#2A79FB;padding:9px 0;" catchtap="evaluateMe">点击评价</text>
-                                      <text wx:else style="font-size:12px;color:#bbb;padding:9px 0;" catchtap="evaluateMe">点击评价</text>
+                                      <text wx:else style="font-size:12px;color:#bbb;padding:9px 0;">点击评价</text>
                                   </ui-col>
                               </ui-row>
                             </view>
@@ -125,13 +125,13 @@
                     <!-- <ui-col class="text" align="center" vertical-align="top" space-left="0" space-right="0" wx:if="{{ item.cmd == 100 }}">
                         <view class="historyLine">{{ item.content }} </view>
                     </ui-col> -->
-                    <ui-col width="60" align="left" vertical-align="top" wx:if="{{ item.cmd != 'time' && (sendInputMsg.fromUser == item.fromUser) && item.cmd != 2 && item.cmd != 1  && item.cmd != 100 }}"><!--消息来自自己-->
+                    <ui-col width="60" align="left" vertical-align="top" wx:if="{{ item.cmd != 'time' && (sendInputMsg.fromUser == item.fromUser) && item.cmd != 2 && item.cmd != 1 }}"><!--消息来自自己-->
                         <view class="left_icon left_icon1">
                             <image src="{{  userMsg.headImgUrl }}"/>
                         </view>
                         <!-- 消息转发选项框...... -->
                     </ui-col>
-                    <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && transmit.isTransmit && item.msgType != 20 && item.msgType != 21 && item.msgType != 22 && item.msgType != 30}}"><checkbox checked="{{ item.checked }}" class="checkbox" value="{{ item.msgId }}"/></view>
+                    <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && transmit.isTransmit && item.msgType != 20 && item.msgType != 21 && item.msgType != 22 && item.msgType != 30}}"><checkbox color="#267AFC" checked="{{ item.checked }}" class="checkbox" value="{{ item.msgId }}"/></view>
                 </ui-row>
               </checkbox-group>
           </view>
@@ -147,7 +147,7 @@
       <!-- <ccGroupChat></ccGroupChat> -->
       <!--底部输入工具-->
       <ui-fixed-view bottom="0" left="0" right="0" wx:if="{{ transmit.tabBar.actItem == 0 }}">
-        <view class="fixed_bottom" style="background-color:rgba(0,0,0,0);border-top:1px solid #ddd;">
+        <view class="fixed_bottom">
           <ui-row class="rowInputs" height="50" border-top border-bottom>
             <ui-col width="50" style="font-size:14px;" align="center" vertical-align="middle"><text class="iconfont {{ msgType == 0 ? 'myWx-jianpan' : 'myWx-yuyintonghua' }}" bindtap="toggleMsgType"></text></ui-col>
             <ui-col vertical-align="middle" hidden="{{ msgType == 0 }}"><input cursor-spacing="6" class="myInput" focus="{{inputIn.inputFocus}}" bindinput="onInput" value="{{ inputVal }}" style="background-color:white;"/></ui-col>
@@ -155,48 +155,53 @@
             <ui-col width="50" style="font-size:14px;" align="center" vertical-align="middle" hidden="{{ isInputing }}"><text class="iconfont myWx-jia" bindtap="toggleIsHidden"></text></ui-col>
             <ui-col width="55" vertical-align="middle" hidden="{{ !isInputing }}" class="sendBtn" space-left="3" space-right="3"><button type="primary" bindtap="sendMsg">发送</button></ui-col>
           </ui-row>
-          <ui-row height="100" class="sentType" hidden="{{ isHidden }}" style="justify-content:flex-start;overflow:auto;">
+          <ui-row height="70" class="sentType" hidden="{{ isHidden }}" style="justify-content:flex-center;">
             <!-- 发送图片 -->
-            <ui-col style="display:inline-block;" class="sentType_col" width="58" align="center" vertical-align="middle">
+            <ui-col style="display:inline-block;" class="sentType_col" span="2" align="center" vertical-align="bottom">
               <!-- <text class="iconfont myWx-zhaopian1" bindtap="chooseFile" data-type="1" data-watermark = "false"></text> -->
               <image src="../../static/img/GroupCopy@2x.png" style="width:50px;height:50px;" bindtap="chooseFile" data-type="1" data-watermark = "false"></image>
             </ui-col>
             <!-- 发送水印图片 -->
-            <ui-col style="display:inline-block;" class="sentType_col" width="58" align="center" vertical-align="middle">
+            <ui-col style="display:inline-block;" class="sentType_col" span="2" align="center" vertical-align="bottom">
               <!-- <text class="iconfont myWx-tupianshuiyinshezhi" bindtap="chooseFile" data-type="1" data-watermark = "true" style="font-size:"></text> -->
               <image src="../../static/img/Group2Copy@2x.png" style="width:50px;height:50px;" bindtap="chooseFile" data-type="1" data-watermark = "true"></image>
             </ui-col>
             <!-- 查看文件 -->
-            <ui-col class="sentType_col" width="58" align="center" vertical-align="middle">
+            <ui-col class="sentType_col" span="2" align="center" vertical-align="bottom">
               <!-- <text class="iconfont myWx-wenjian1" bindtap="chooseFile" data-type="6"></text> -->
               <image src="../../static/img/Group3Copy@2x.png" bindtap="chooseFile" data-type="6" style="width:50px;height:50px;"></image>              
             </ui-col>
             <!-- @成员 -->
-            <ui-col class="sentType_col" width="58" align="center" vertical-align="middle">
+            <ui-col class="sentType_col" span="2" align="center" vertical-align="bottom">
               <!-- <text class="iconfont myWx-xiazai" bindtap="aite" data-type="9"></text> -->
               <image src="../../static/img/Group4Copy@2x.png" bindtap="aite" data-type="9" style="width:50px;height:50px;"></image>              
             </ui-col>
             <!-- 创建需求 -->
-            <ui-col class="sentType_col" width="58" align="center" vertical-align="middle">
+            <ui-col class="sentType_col" span="2" align="center" vertical-align="bottom">
               <!-- <text class="iconfont myWx-bianji" bindtap="creatRequirement" data-type="7"></text> -->
               <image src="../../static/img/Group5Copy@2x.png" bindtap="creatRequirement" data-type="7" style="width:50px;height:50px;"></image>              
             </ui-col>
-            <!-- 办结 -->
-            <ui-col class="sentType_col" width="58" align="center" vertical-align="middle" wx:if="{{ sendInputMsg.isGroupManager }}">
-              <text class="iconfont myWx-banjie2" bindtap="aite" data-type="8" style=""></text>
-            </ui-col>
+          </ui-row>
+          <ui-row height="80" class="sentType" hidden="{{ isHidden }}" style="justify-content:flex-center;">
             <!-- 电话 -->
-            <ui-col class="sentType_col" width="58" align="center" vertical-align="middle">
+            <ui-col class="sentType_col" span="2" align="center" vertical-align="middle">
               <image src="../../static/img/call.png" bindtap="callMe" style="width:50px;height:50px;"></image>   
             </ui-col>
-            <ui-col width="1" align="center" vertical-align="middle"></ui-col>
+            <!-- 办结 -->
+            <ui-col class="sentType_col" span="2" align="center" vertical-align="middle">
+              <image src="../../static/img/pingjia.png" bindtap="aite" data-type="8" style="width:50px;height:50px;" wx:if="{{ sendInputMsg.isGroupManager }}"></image>   
+              <!-- <text class="iconfont myWx-banjie2" style=""></text> -->
+            </ui-col>
+            <ui-col class="sentType_col" span="2" align="center" vertical-align="middle"></ui-col>
+            <ui-col class="sentType_col" span="2" align="center" vertical-align="middle"></ui-col>
+            <ui-col class="sentType_col" span="2" align="center" vertical-align="middle"></ui-col>
           </ui-row>
           <scroll-view scroll-x class="sentType" hidden="{{ transmit.isAite }}" style="height:100px;white-space:nowrap;">
              <!-- hidden="{{ item.openId == theGroupMsg.managerId }}" -->
             <view style="display:{{ item.openId == sendInputMsg.fromUser ? 'none' : 'inline-block' }}" class="sentType_col" width="58" align="center" vertical-align="middle" data-isaite="true" data-index="{{ index }}" data-item="{{ item }}" wx:key="index" catchtap="selUser" wx:for="{{ theGroupMsg.groupUsers }}">
               <image mode="aspectFit" style="height:72px;" src="{{ item.headImgUrl == null ? defaultImg : item.headImgUrl }}"></image>
               <text style="text-align:center;" class="txt9">{{ item.username }}</text>
-              <icon class="angleIcon angleIcon2" type="success" wx:if="{{ item.act }}" size="23"></icon>
+              <text class="angleIcon angleIcon2 iconfont myWx-dui3" wx:if="{{ item.act }}"></text>
               <icon class="iconfont myWx-fenxiang-copy" catchtap="comeOver" style="left:0px;position:absolute;background-color:white;top:10px;font-size:37px;width:42px;border:none;border-radius:0px;" wx:if="{{ item.act && selUser.actType == 8 }}" size="23"></icon>
             </view>
           </scroll-view>
@@ -428,7 +433,7 @@ export default {
             that.setData({
               scrollTop:10000
             })
-            if( that.data.pageMsg._curPage == "pages/groupChat/index"){
+            if( that.data.pageMsg._curPage == "pages/groupChat/index" && data.msgType != 13 ){//data.msgType != 13 不是更新群信息
               that.sendReadedReceipt();
             }
         }
@@ -1059,7 +1064,8 @@ export default {
     this.setData({
       ['isHidden']:!that.data.isHidden,
       ['transmit.isAite']:!that.data.transmit.isAite,
-      ["selUser.actType"]:e.currentTarget.dataset.type
+      ["selUser.actType"]:e.currentTarget.dataset.type,
+      "scrollHeight": wx.DEFAULT_CONTENT_HEIGHT - 85,
     })
   },
   navigateBack () {
@@ -1164,7 +1170,7 @@ export default {
         ['transmit.isAite']:true
       })
       this.setData({
-        scrollHeight: !this.data.isHidden ?wx.DEFAULT_CONTENT_HEIGHT - 85 : wx.DEFAULT_CONTENT_HEIGHT + 15,
+        scrollHeight: !this.data.isHidden ? wx.DEFAULT_CONTENT_HEIGHT - 135 : wx.DEFAULT_CONTENT_HEIGHT + 15,
       })
       this.setData({
         scrollTop:10000000
@@ -1239,6 +1245,7 @@ export default {
     }
   }
   .sentType{
+    transition: all 0.2s;
     .sentType_col{
       margin:0 5px;
       display:inline-block;
@@ -1271,7 +1278,8 @@ export default {
     }
   }
   .fixed_bottom{
-    background: #EFEFF4;
+    background-color:#F7F7FA;
+    border-top:1px solid #ddd;
   }
 .article{
   position: relative;
@@ -1333,8 +1341,12 @@ export default {
     // display: inline-block;
   }
 }
+#viewport{
+  transition: all 0.2s;
+}
 .content{
     padding:0px 8px 0px 8px;
+    transition: all 0.2s;
     .talkItem{
       padding:15px 0;
       margin-bottom:6px;
@@ -1535,5 +1547,17 @@ view {
     height: 100%;
     .mix-flex-center();
   }
+}
+.myWx-dui3{
+  background-color:#267AFC!important;
+  border:1px solid #267AFC!important;
+  color:white!important;
+  width:25px;
+  height:25px;
+  box-sizing:border-box;
+  text-align:center;
+  line-height:25px;
+  font-size:16px!important;
+  padding:0!important;
 }
 </style>

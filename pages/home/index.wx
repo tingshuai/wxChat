@@ -658,4 +658,7 @@ page{
         color: #267AFC;
     }
 }
+.weui-search-bar__form{
+    background-color: #F5F5F5;
+}
 </style>

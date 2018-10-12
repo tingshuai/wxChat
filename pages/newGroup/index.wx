@@ -81,7 +81,7 @@
                  <image wx:else bindtap="tabHead" data-item="{{ item }}" data-index="{{ index }}" class="headImg" mode="aspectFit" src="{{ item.headImgUrl }}"></image>
                  <icon type="success" size="15" class="figure" wx:if="{{ item.isAddMember }}"></icon>
                  <view bindtap="{{ userMsg.openId == item.openId ? '' : 'tabHead' }}" class="weui-cell__bd userNickName" data-item="{{ item }}" data-index="{{ index }}">{{ item.username || item.nickname }}</view>
-                 <checkbox disabled="{{ userMsg.openId == item.openId }}" class="weui-check nickCheckbox" disabled="{{ submitFormData.managerId == item.openId }}" value="{{ item.openId }}" checked="{{ item.checked }}"/>
+                 <checkbox color="#267AFC" disabled="{{ userMsg.openId == item.openId }}" class="weui-check nickCheckbox" disabled="{{ submitFormData.managerId == item.openId }}" value="{{ item.openId }}" checked="{{ item.checked }}"/>
               </view>
           </checkbox-group>
       </view>
@@ -156,6 +156,7 @@ export default {
   onLoad(option){
     let time = new Date();
     let that = this,promise, msg;
+    system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:8000});
     time.setDate(time.getDate()+1)
     let startTime = `${time.getFullYear()}-${time.getUTCMonth() + 1}-${time.getUTCDate()}`
     that.setData({
@@ -397,6 +398,7 @@ export default {
     }
   },
   submitGroupData(e){
+    system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:8000});
     let that = this;
     this.setData({
       ["submitFormData.openIds"]:[]
@@ -412,7 +414,8 @@ export default {
     let promise = new Promise((resolve,reject)=>{
       if( !that.data.formRuler.groupName.require && !that.data.formRuler.deadline.require ){
         if( that.data.submitFormData.openIds.length < 3 ){
-          system.stateMsg({title:"成员人数不能小于3人",icon:"none",time:1500})
+          system.stateMsg({title:"成员人数不能小于3人",icon:"none",time:1500});
+          wx.hideToast();
         }else{
           resolve();
         }
@@ -447,12 +450,14 @@ export default {
         header:{'content-type': 'application/x-www-form-urlencoded'},
         param: formData,
         scb(res){
+          wx.hideToast();
           let tip = that.data.edit == 'true' ? "修改群组成功" : '新增群组成功';
           if(res.data.status == 200){
             system.stateMsg({title: tip,icon:"success",time:1000});
-            setTimeout(function(){
+            app.globalData.promise.upDataGroupMsg = new Promise((resol,rej)=>{
+              resol();
               wx.navigateBack();
-            },1000)
+            })
           }else{
             system.stateMsg({title:res.data.message,icon:"none",time:1000})
           }
@@ -478,6 +483,7 @@ export default {
       },
       scb(res){
         if(res.data.status == 200){
+          wx.hideToast();
           if( that.data.edit == "true"){//编辑群组....
             if( that.data.groupMsg.parentId == "0" ){//父群
                 res.data.data.rows.forEach((value,ii,array)=>{
@@ -535,6 +541,7 @@ export default {
           resolve ? resolve(that) : null ;
         }else{
           system.stateMsg({title:res.data.data.message,time:1000})
+          wx.hideToast();
         }
       },
       fcb(res){

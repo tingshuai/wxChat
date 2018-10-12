@@ -16,7 +16,7 @@
         <view style="height:66px;width:100%;"></view>
 
         <scroll-view class="view_H" scroll-y style="width: 100%;height:{{ scrollHeight }};">
-          <ui-row class="radio-group" height="50" bindtap="radioChange" wx:for="{{ userList }}" space="10" id="{{ item.openId }}" data-index="{{ index }}">
+          <ui-row class="radio-group" height="50" bindtap="radioChange" wx:for="{{ userList }}" wx:if="{{ item.openId != openId }}" space="10" id="{{ item.openId }}" data-index="{{ index }}">
               <ui-col vertical-align="middle" align="center" width="50">
                 <text wx:if="{{ item.checked }}" class="iconfont myWx-dui3"></text>
                 <text wx:else class="iconfont"></text>
@@ -49,7 +49,8 @@ export default {
     userList:[],
     bottomHeight:148,
     scrollHeight:'',
-    selOpenId:""
+    selOpenId:"",
+    openId:""
   },
   onLoad(options){
     let userList = JSON.parse( options.userList );
@@ -59,7 +60,8 @@ export default {
     userList.length * 50 > wx.WIN_HEIGHT - this.data.bottomHeight ? this.data.scrollHeight = wx.WIN_HEIGHT - this.data.bottomHeight + 'px': this.data.scrollHeight = 'auto';
     this.setData({
       "userList":userList,
-      "scrollHeight":this.data.scrollHeight
+      "scrollHeight":this.data.scrollHeight,
+      "openId":app.globalData.openId
     })
   },
   navigateBack () {

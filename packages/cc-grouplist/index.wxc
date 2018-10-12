@@ -15,16 +15,16 @@
                                <icon class="iconfont myWx-xiangyou" style="{{ item.expand == true ? 'transform:rotate(90deg)' : 'transform:rotate(0deg)' }}" catchtap="slide" data-item="{{ item }}" data-index="{{ index }}" wx:if="{{ item.children.length != 0 }}"></icon>
                            </view>
                        </view>
-                       <view class="childList list_0 top_tip {{ item.children.length != 0 && item.expand == true ? 'expanded' : '' }}" style="height:0px;border-bottom:1px solid #efefef;overflow:hidden;" wx:key="{{ indexTow }}" wx:for="{{ item.children }}" catchtap="toChat" data-parentItem="{{ item }}" wx:for-item="itemChidren" data-item="{{itemChidren}}" wx:for-index="indexTow">
-                               <!-- <image src="{{ itemChidren.icon || defaultHeadImg}}"></image> -->
-                               <view style="width:40px;height:40px;position:relative;">
-                                  <icon class="iconfont myWx-iconfont12" style="transform:rotate(-45deg);text-align:left;width:25px;height:100%;"></icon>
-                                  <text class="angleIcon angleIcon2" wx:if="{{ itemChidren.unreadCount != 0 }}">{{ itemChidren.unreadCount >= 100 ? '99+' : itemChidren.unreadCount }}</text>
-                               </view>
-                               <view style="position:absolute;left:50px;top:10px;bottom:10px;right:0px;">
-                                    <text style="height:100%;display:block;line-height:40px;font-size:15px;">{{ itemChidren.groupName }}</text>
-                                    <!-- <view class="txt">{{ itemChidren.groupDesc ? itemChidren.groupDesc : "" }}</view> -->
-                               </view>
+                       <view class="childList list_0 top_tip {{ item.children.length != 0 && item.expand == true ? 'expanded' : '' }}" style="height:0px;overflow:hidden;" wx:key="{{ indexTow }}" wx:for="{{ item.children }}" catchtap="toChat" data-parentItem="{{ item }}" wx:for-item="itemChidren" data-item="{{itemChidren}}" wx:for-index="indexTow">
+                          <!-- <image src="{{ itemChidren.icon || defaultHeadImg}}"></image> -->
+                          <view style="width:40px;height:40px;position:relative;">
+                             <icon class="iconfont myWx-iconfont12" style="transform:rotate(-45deg);text-align:left;width:25px;height:100%;color:#c7c7c7"></icon>
+                             <text class="angleIcon angleIcon2" wx:if="{{ itemChidren.unreadCount != 0 }}">{{ itemChidren.unreadCount >= 100 ? '99+' : itemChidren.unreadCount }}</text>
+                          </view>
+                          <view style="position:absolute;left:50px;top:10px;bottom:10px;right:0px;">
+                               <text style="height:100%;display:block;line-height:40px;font-size:15px;">{{ itemChidren.groupName }}</text>
+                               <!-- <view class="txt">{{ itemChidren.groupDesc ? itemChidren.groupDesc : "" }}</view> -->
+                          </view>
                        </view>
                    </view>
                </view>
@@ -64,7 +64,7 @@ export default {
     toChat(event){//跳转到群聊页面.....
       let item = {};
       let that = this;
-      item.group = event.currentTarget.dataset.item ;
+      item.group = event.currentTarget.dataset.item;
       item.user = app.globalData.userMsgReq;
       item.tabBar = that.data.tabBar;
       wx.navigateTo({
@@ -108,7 +108,7 @@ export default {
   }
   .list_1{
     box-sizing:border-box;
-    border-bottom:1px solid #efefef;
+    // border-bottom:1px solid #efefef;
   }
   .list_0{
     transition: all 0.3s;
@@ -164,5 +164,18 @@ export default {
     line-height:50px;
     text-align:center;
     transition: all 0.3s;
+    color:#c7c7c7;
+}
+.parentList,.childList{
+  position: relative;
+  &:after{
+    content: '';
+    display: inline-block;
+    position: absolute;
+    bottom: 0;
+    border-bottom: 1px solid #efefef;
+    width: 97%;
+    right: 0;
+  }
 }
 </style>

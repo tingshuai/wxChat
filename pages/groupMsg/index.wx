@@ -37,12 +37,12 @@
       <ui-col vertical-align="middle" span="3" space-left="10" align="left" class="txtLeft" span="2">群描述</ui-col>
       <ui-col vertical-align="middle" space-right="10" align="left" class="txtRight">{{ groupMsg.groupDesc ? groupMsg.groupDesc : '' }}</ui-col>
     </ui-row>
-    <view style="padding-left:10px;line-height:21px;padding-right:5px;background-color:white;height:40px;line-height:40px;" bindtap="selChatList">
+    <view style="padding-left:10px;line-height:21px;padding-right:5px;background-color:white;height:45px;line-height:45px;border-top:1px solid #e5e5e5;border-bottom:1px solid #e5e5e5;" bindtap="selChatList">
         <view class="txtLeft" style="color:black;width:40%;display:inline-block;" >查找聊天记录</view>
-        <view style="width:60%;display:inline-block;text-align:right;"><icon class="iconfont myWx-xiangyou" style="font-size:20px;"></icon></view>
+        <view style="width:60%;display:inline-block;text-align:right;"><icon class="iconfont myWx-xiangyou" style="font-size:20px;vertical-align:top;color:#c7c7c7;"></icon></view>
     </view>
     <!--退群按钮-->
-    <view class="fixed-view-content" style="padding:0 35rpx;padding-top:100px;">
+    <view class="fixed-view-content" style="padding:0 35rpx;padding-top:28px;">
       <view class="btn-area">
         <button type="warn" class="fixed_bottom jingjingBtn" wx:if="{{ userMsg.openId == groupMsg.managerId  }}" data-disband="true" bindtap="exitGroup">解散群组</button>
         <button type="warn" class="fixed_bottom jingjingBtn" wx:else data-disband="false" bindtap="exitGroup">退出群组</button>
@@ -101,6 +101,11 @@
       wx.setNavigationBarTitle({//设置页面标题....
         title: JSON.parse( option.item ).groupName
       })
+      this.canAddMenuber();
+      this.onMessage();
+    },
+    canAddMenuber(){
+      let that = this;
       this.data.groupMsg.groupUsers.filter((item)=>{
         if( that.data.userMsg.openId == item.openId){
           if(item.authAddMember == true){
@@ -119,6 +124,28 @@
       let that = this;
       wx.navigateTo({
         url:`/pages/historyMsg/index?item=${ JSON.stringify( that.data.groupMsg ) }&tabBar=${ JSON.stringify( that.data.tabBar) }`
+      })
+    },
+    onMessage(){
+      let that = this;
+      app.globalData.socketTask.onMessage((res)=>{
+        var _data = JSON.parse( res.data );
+        switch (_data.cmd ) {
+            case 2://推送消息
+                if( _data.msgType == 13 ){//更新群列表.....
+                  app.globalData.promise.upDataGroupMsg.then(()=>{
+                    setTimeout(()=>{
+                      that.setData({
+                        "groupMsg":_data.groupDate
+                      })
+                      that.canAddMenuber();
+                    },1000)
+                  })
+                }
+                break;
+            default:
+                break;
+        }
       })
     },
     editGroup(e){//编辑群组
@@ -199,8 +226,10 @@
     height: 100%;
     .groupName,.groupDescribe{
       background-color:white;
-      height: 40px;
+      height: 47px;
       margin: 18px 0;
+      border-top: 1px solid #e5e5e5;
+      border-bottom: 1px solid #e5e5e5;
       .txtLeft{
         font-size: 32rpx;
         width:30px;
@@ -217,12 +246,12 @@
     }
     .groupDescribe{
       height: auto;
-      min-height: 40px;
+      min-height: 47px;
       .txtLeft{
         top:7px;
       }
       .txtRight{
-        padding:7px 0 0 0;
+        padding:7px 0 7px 0;
       }
     }
     .fixed_bottom{

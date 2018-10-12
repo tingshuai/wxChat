@@ -34,7 +34,7 @@
     
     <ui-row height="60" style="background-color:white;">
         <ui-col align="center" vertical-align="middle" wx:for="{{ search.list00 }}" wx:key="{{ index }}">
-            <view class="tag" style="color:{{ item.checked ? '#dd0000' : 'black'}}" data-item="{{ item }}" bindtap="singleTap" data-index="{{ index }}">{{ item.text }}</view>
+            <view class="tag" style="color:{{ item.checked ? '#267AFC' : 'black'}}" data-item="{{ item }}" bindtap="singleTap" data-index="{{ index }}">{{ item.text }}</view>
         </ui-col>
     </ui-row>
 
@@ -69,13 +69,13 @@
             <checkbox-group bindchange="checkboxChange">
               <ui-row hover-class="touchui-hover" class="talkItem" wx:for="{{ chatData }}" wx:key="index" id="the{{index}}">
                     <view class="historyLine" wx:if="{{ (item.cmd == 'time' || item.cmd == '2') && item.content }}">{{ item.content }}</view>
-                    <ui-col width="60" align="left" vertical-align="top" wx:if="{{ item.cmd == 0 &&  (sendInputMsg.fromUser != item.fromUser)}}"><!--消息来自别人-->
+                    <ui-col width="60" align="left" vertical-align="top" wx:if="{{ (item.cmd == 0 || item.cmd == 100) &&  (sendInputMsg.fromUser != item.fromUser)}}"><!--消息来自别人-->
                         <view class="left_icon left_icon1">
                             <image src="{{  item.headImgUrl }}"/>
                         </view>
                     </ui-col>
                     <!-- <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && (sendInputMsg.fromUser == item.fromUser) && transmit.isTransmit }}"><checkbox-group data-item="{{ item }}" bindchange="checkboxChange"><label><checkbox class="checkbox" value="{{item.msgId}}"/></label></checkbox-group></view>消息转发选项框...... -->
-                    <ui-col class="text" align="left" vertical-align="top" space-left="0" space-right="5" wx:if="{{ item.cmd == 0 }}">
+                    <ui-col class="text" align="left" vertical-align="top" space-left="0" space-right="5" wx:if="{{ item.cmd == 0 || item.cmd == 100 }}">
                         <view style="width: 100%; text-align:{{ sendInputMsg.fromUser == item.fromUser ? 'right' : 'left' }};">
                             <ui-row height="20" wx:if="{{ sendInputMsg.fromUser != item.fromUser }}">
                                 <ui-col align="{{ sendInputMsg.fromUser == item.fromUser ? 'right' : 'left'}}" vertical-align="top">
@@ -159,16 +159,16 @@
                         <view class="historyLine">{{ item.fromUserName }} 撤回了一条消息</view>
                     </ui-col>
                     <!-- 办结消息 -->
-                    <ui-col class="text" align="center" vertical-align="top" space-left="0" space-right="0" wx:if="{{ item.cmd == 100 }}">
+                    <!-- <ui-col class="text" align="center" vertical-align="top" space-left="0" space-right="0" wx:if="{{ item.cmd == 100 }}">
                         <view class="historyLine">{{ item.content }} </view>
-                    </ui-col>                    
-                    <ui-col width="60" align="left" vertical-align="top" wx:if="{{ item.cmd != 'time' && (sendInputMsg.fromUser == item.fromUser) && item.cmd != 2 && item.cmd != 1 && item.cmd != 100 }}"><!--消息来自自己-->
+                    </ui-col> -->
+                    <ui-col width="60" align="left" vertical-align="top" wx:if="{{ item.cmd != 'time' && (sendInputMsg.fromUser == item.fromUser) && item.cmd != 2 && item.cmd != 1 }}"><!--消息来自自己-->
                         <view class="left_icon left_icon1">
                             <image src="{{  userMsg.headImgUrl }}"/>
                         </view>
                         <!-- 消息转发选项框...... -->
                     </ui-col>
-                    <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && item.msgType != 20 && item.msgType != 21 && item.msgType != 22 && tabBar.actItem == 0 && item.msgType != 30 }}"><checkbox checked="{{ item.checked }}" class="checkbox" value="{{ item.msgId }}"/></view>
+                    <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && item.msgType != 20 && item.msgType != 21 && item.msgType != 22 && tabBar.actItem == 0 && item.msgType != 30 }}"><checkbox color="#267AFC" checked="{{ item.checked }}" class="checkbox" value="{{ item.msgId }}"/></view>
                 </ui-row>
               </checkbox-group>
               <view wx:if="{{ chatData.length == 0 }}" style="color:#555;text-align:center;padding:20px 0;">无匹配内容</view>
@@ -769,5 +769,8 @@ export default {
     font-size: 10px;
     margin: 10px 0;
     color: white;
+  }
+  .weui-search-bar__form{
+      background-color: #f5f5f5;
   }
 </style>

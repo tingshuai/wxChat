@@ -51,7 +51,9 @@
                             <view class="txt">{{ itemChidren.groupDesc ? itemChidren.groupDesc : "" }}</view>
                         </view>
                     </ui-col>
-                    <icon class="iconfont myWx-dui3" wx:if="{{ itemChidren.act }}" size="23"></icon>
+                    <ui-col width="50" align="center">
+                        <icon class="iconfont myWx-dui3" wx:if="{{ itemChidren.act }}" size="23"></icon>
+                    </ui-col>
                 </ui-row>
             </view>
         </ui-accordion>
@@ -69,7 +71,7 @@
                 <button bindtap="transMsg" type="primary" class="myBtnSuccess jingjingBtn">确定</button>
             </view>
             </view>
-        </ui-fixed-view>        
+        </ui-fixed-view>
     </view>
 </template>
 <script>
@@ -84,7 +86,7 @@ export default {
           selMe:""
       },
       chatData:[],
-      modelHeight:wx.DEFAULT_CONTENT_HEIGHT - 100 + 'px',
+      modelHeight:wx.DEFAULT_CONTENT_HEIGHT - 135 + 'px',
     },
     onLoad(option){
       let _obj = JSON.parse( app.globalData._obj );

@@ -156,6 +156,10 @@
             <ui-col width="55" vertical-align="middle" hidden="{{ !isInputing }}" class="sendBtn" space-left="3" space-right="3"><button type="primary" bindtap="sendMsg">发送</button></ui-col>
           </ui-row>
           <ui-row height="70" class="sentType" hidden="{{ isHidden }}" style="justify-content:flex-center;">
+            <!-- 电话 -->
+            <ui-col class="sentType_col" span="2" align="center" vertical-align="middle">
+              <image src="../../static/img/call.png" bindtap="callMe" style="width:50px;height:50px;"></image>   
+            </ui-col>
             <!-- 发送图片 -->
             <ui-col style="display:inline-block;" class="sentType_col" span="2" align="center" vertical-align="bottom">
               <!-- <text class="iconfont myWx-zhaopian1" bindtap="chooseFile" data-type="1" data-watermark = "false"></text> -->
@@ -176,16 +180,12 @@
               <!-- <text class="iconfont myWx-xiazai" bindtap="aite" data-type="9"></text> -->
               <image src="../../static/img/Group4Copy@2x.png" bindtap="aite" data-type="9" style="width:50px;height:50px;"></image>              
             </ui-col>
+          </ui-row>
+          <ui-row height="80" class="sentType" hidden="{{ isHidden }}" style="justify-content:flex-center;">
             <!-- 创建需求 -->
             <ui-col class="sentType_col" span="2" align="center" vertical-align="bottom">
               <!-- <text class="iconfont myWx-bianji" bindtap="creatRequirement" data-type="7"></text> -->
               <image src="../../static/img/Group5Copy@2x.png" bindtap="creatRequirement" data-type="7" style="width:50px;height:50px;"></image>              
-            </ui-col>
-          </ui-row>
-          <ui-row height="80" class="sentType" hidden="{{ isHidden }}" style="justify-content:flex-center;">
-            <!-- 电话 -->
-            <ui-col class="sentType_col" span="2" align="center" vertical-align="middle">
-              <image src="../../static/img/call.png" bindtap="callMe" style="width:50px;height:50px;"></image>   
             </ui-col>
             <!-- 办结 -->
             <ui-col class="sentType_col" span="2" align="center" vertical-align="middle">

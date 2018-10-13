@@ -33,7 +33,7 @@
       <view class="weui-cells weui-cells_after-title">
           <view class="weui-cell">
               <view class="weui-cell__bd">
-                  <textarea fixed="{{ true }}" placeholder-style="font-size:16px;color: #BCC2C6" placeholder="给我们一些鼓励吧~" show-confirm-bar="{{ false }}" value="{{ face.reviewText }}" class="weui-textarea" bindinput="requireTextareaInputing"/>
+                  <textarea fixed="{{ false }}" placeholder-style="font-size:16px;color: #BCC2C6" placeholder="给我们一些鼓励吧~" show-confirm-bar="{{ false }}" value="{{ face.reviewText }}" class="weui-textarea" bindinput="requireTextareaInputing"/>
               </view>
           </view>
       </view>

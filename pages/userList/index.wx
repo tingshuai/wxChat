@@ -86,7 +86,7 @@ export default {
   callMe(e){
     let that = this;
     system.http({
-      url:'/axb/binding',
+      url:'axb/binding',
       method:"post",
       param:{
         "fromOpenId": app.globalData.openId,
@@ -96,6 +96,12 @@ export default {
         if( res.data.status == 200 ){
           wx.makePhoneCall({
             phoneNumber:res.data.data.telX
+          })
+        }else{
+          system.stateMsg({
+            title: JSON.parse(res.data.message).message,
+            icon:"none",
+            time:1500
           })
         }
       }

@@ -39,7 +39,9 @@
       <view class="weui-cells weui-cells_after-title applyForm">
           <view class="weui-cell weui-cell_input">
               <view class="weui-cell__hd">
-                  <view class="weui-label">邮箱<text class="star" style="color:{{ validate.email.color }}">★</text></view>
+                    <view class="weui-label">邮箱
+                      <!-- <text class="star" style="color:{{ validate.email.color }}">★</text> -->
+                    </view>
               </view>
               <view class="weui-cell__bd">
                   <input name="email" id="email" style="color:{{ validate.email.isLegal == true ? 'green' : 'red' }}" value="{{ form.email }}" data-item="{{ validate.email }}" bindblur="blur" class="weui-input" type="text" bindinput="inputing" placeholder="{{ validate.email.placeholder }}" />
@@ -108,7 +110,7 @@ var app = getApp();
           },
           email:{
               placeholder:"请输入邮箱",
-              required:true,
+              required:false,
               name:"邮箱",
               color:'#F21B1B',
               isLegal:false,
@@ -238,10 +240,13 @@ var app = getApp();
 
 <style lang="less">
   #successMsg{
-    height: 200px;
-    line-height: 200px;
-    font-size: 13px;
-    text-align: center;
+    height:200px;
+    line-height:25px;
+    font-size:13px;
+    text-align:center;
+    white-space:wrap;
+    width:80vw;
+    margin:20vh auto;
   }
     .star{
         // color: #F21B1B;

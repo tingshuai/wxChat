@@ -453,10 +453,10 @@ export default {
           wx.hideToast();
           let tip = that.data.edit == 'true' ? "修改群组成功" : '新增群组成功';
           if(res.data.status == 200){
+            wx.navigateBack();
             system.stateMsg({title: tip,icon:"success",time:1000});
             app.globalData.promise.upDataGroupMsg = new Promise((resol,rej)=>{
               resol();
-              wx.navigateBack();
             })
           }else{
             system.stateMsg({title:res.data.message,icon:"none",time:1000})

@@ -187,9 +187,6 @@ export default {
   submit(e){
     let that = this;
     let _lebal = "",_selLebal,_face;
-    this.setData({
-      ["disabled.confirmDisabled"]:true
-    })
     let _promise = new Promise((resolve,reject)=>{
       _selLebal = this.data.face.evaluateList.filter((val)=>{
         if( val.bgColor == true ){
@@ -226,6 +223,9 @@ export default {
         "reviewText":that.data.face.reviewText || "",
         "reviewType": _face[0].id
       }
+      this.setData({
+        ["disabled.confirmDisabled"]:true
+      })      
       system.http({
         url:'review/add',
         method:"post",

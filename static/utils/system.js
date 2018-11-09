@@ -125,7 +125,7 @@ export default {
   sendSocketMessage(obj) {//发送socket消息......
       let that = this;
       obj._app.socketTask.send({
-        data: obj.params ,
+        data: obj.params,
         success(res){},
         fail(res){
           that.msgTip({title: '提示',content: "网络连接断开请检查网络，并重新进入小程序.",scb(){},ccb(){}})

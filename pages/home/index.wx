@@ -1,5 +1,5 @@
 <template>
-  <view class="container">
+  <view class="container" wx:show="{{ showPage }}">
     <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#267AFC',color:'#fff'} }}">
         <ui-row height="40">
             <ui-col vertical-align="middle" align="center" width="60">
@@ -153,6 +153,7 @@ export default {
     // "enablePullDownRefresh": true
   },
   data: {
+    showPage:false,
     headerHeight:"",//头部栏的高
     phoneModel:"",//是否是刘海屏
     isShow:false,
@@ -177,7 +178,6 @@ export default {
     that.setData({
         ["tabBar.actItem"]:option.actItem
     })
-    this.toggleTab({currentTarget:{dataset:{index:option.actItem}}});
     system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:8000});
     wx.getStorage({
         key: 'openId',
@@ -212,7 +212,9 @@ export default {
     this.getDefaultImg();
   },
   onShow(e){
-      this.requestGroupList( '/chat/groups/tree','over',1);
+    this.requestGroupList( '/history/groups/tree','history');
+    this.requestGroupList( '/chat/groups/tree','over',1 );
+    system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:20000});
   },
   exData(_data){
       console.log( _data );
@@ -234,6 +236,7 @@ export default {
         this.setData({
             ['tabBar.actItem']:_item.index
         })
+        this.requestGroupList( '/chat/groups/tree','over', 1 );
         system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:8000});
         that.setData({
             list1:that.data.list1
@@ -248,7 +251,7 @@ export default {
             ['tabBar.actItem']:_item.index
         })
         system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:8000});
-        this.requestGroupList( '/history/groups/tree','history')
+        this.requestGroupList( '/history/groups/tree','history');
     }
   },
   addGroup(e){
@@ -342,7 +345,7 @@ export default {
         },
         success: function(res) {
             if(type == 'over'){
-                let _newList ,_rows = res.data.data.rows;;
+                let _newList , _rows = res.data.data.rows;
                 that.setData({
                     overList:[],
                 });
@@ -357,7 +360,7 @@ export default {
                     });
                 }else if( cont == 2 ){//有人发消息过来
                     let promise = new Promise((resolve,reject)=>{
-                        that.arrList1( _groupId , _rows ,resolve );//排序未读消息....
+                        that.arrList1( _groupId , _rows , resolve );//排序未读消息....
                     })
                     promise.then(( _obj )=>{
                         that.data.list1.splice(_obj._i,1);
@@ -385,6 +388,9 @@ export default {
             // wx.stopPullDownRefresh();
             wx.hideNavigationBarLoading();
             wx.hideToast()
+            that.setData({
+                showPage:true
+            })
         },
         fail(res){
             console.log( "获取列表失败",res.data.data )

@@ -82,7 +82,7 @@
                             <view class="talkContent" wx:if="{{ item.msgType == 6 }}" data-item="{{item}}" style="width:80%;" catchtap="openFile">
                               <ui-row>
                                   <ui-col span="9" align="left" vertical-align="top" data-item="{{item}}" catch:longpress="{{transmit.tabBar.actItem == 0 ? 'openActionsheet' : ''}}">
-                                      <view style="font-size:13px;color:#333333;">{{ item.content }}</view>
+                                      <view style="font-size:13px;color:#333333;width:100%;">{{ item.content }}</view>
                                   </ui-col>
                                   <ui-col span="3">
                                     <text class="iconfont myWx-552cd47fba2cc" style="font-size:32px;text-align:center;"></text>
@@ -1077,14 +1077,7 @@ export default {
   },
   navigateBack () {
     let that = this;
-    let page = getCurrentPages();
-    wx.redirectTo({
-      url: `/pages/home/index?actItem=${that.data.transmit.tabBar.actItem}`
-    })
-    // if(page.length > 1 && page.length < 8){//从登录页过来的。。。。
-    //   wx.navigateBack();
-    // }else{//从公众号过来的.....
-    // }
+    wx.navigateBack();
   },
   comeOver(e){//这个是要发送办结消息.....
     let _me = this.data.sendInputMsg;

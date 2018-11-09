@@ -12,7 +12,7 @@
             </ui-col>
         </ui-row>
     </ui-nav-bar>
-    <view style="height:66px;width:100%;"></view>
+    <view style="height:{{ headerHeight }}px;width:100%;"></view>
 
     <form bindsubmit="formSubmit" wx:if="{{ !show }}">
       <view class="weui-cells__title"></view>
@@ -90,7 +90,9 @@ var app = getApp();
         phone:"",
         email:"",
         company:"",
-        unionid:""
+        unionid:"",
+        "headerHeight":app.globalData.headHeight,
+        "phoneModel":app.globalData.phoneModel    
       },
       validate:{
           username:{
@@ -131,6 +133,8 @@ var app = getApp();
       this.setData({
         ['form.openId']:app.globalData.openId,
         ['form.unionid']:app.globalData.userMsgReq.unionId,
+        "headerHeight":app.globalData.headHeight,
+        "phoneModel":app.globalData.phoneModel
       });
       if( option.register == 0){
         this.setData({

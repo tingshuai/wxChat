@@ -12,7 +12,7 @@
             </ui-col>
         </ui-row>
     </ui-nav-bar>
-    <view style="height:66px;width:100%;"></view>
+    <view style="height:{{ headerHeight }}px;width:100%;"></view>
     <view class="fixed-view-content" style="background-color:white;">
         <view class="weui-search-bar">
             <view class="weui-search-bar__form">
@@ -85,7 +85,7 @@
                             <!--文本类型-->
                             <text selectable='true' class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 0 || item.msgType == 7}}" style="background-color: {{ sendInputMsg.fromUser == item.fromUser ? '#A0E75A' : 'white' }}">{{ item.content }} </text>
                             <!--需求类型-->
-                            <view class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="retOrConfirm" wx:if="{{ item.msgType == 20 || item.msgType == 22 || item.msgType == 21}}" style="background-color: white;width:100%;">
+                            <view class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" wx:if="{{ item.msgType == 20 || item.msgType == 22 || item.msgType == 21}}" style="background-color: white;width:100%;">
                               <ui-row style="border-bottom:1px solid rgba(0,0,0,0.1);">
                                   <ui-col style="color:{{ item.content.demandState ? '#4EBF62' : '#267AFC' }};font-size:12px;">{{ item.msgType == 20 || item.msgType == 21 ? "需求确认" : "修改需求确认" }}</ui-col>
                               </ui-row>
@@ -218,6 +218,8 @@ export default {
         navigationBarTitleText: '聊天信息'
     },
     data: {
+        headerHeight:"",//头部栏的高
+        phoneModel:"",//是否是刘海屏        
         scroll:{
             toView:"",//定位滚动元素
             pageNum:1,//要查看的页码...
@@ -318,7 +320,9 @@ export default {
             ["searchData.openId"]:app.globalData.openId,
             ["searchData.groupId"]:_groupMsg.groupId,
             "defaultHeadImg":app.globalData.defaultImg,
-            "userMsgReq":app.globalData.userMsgReq
+            "userMsgReq":app.globalData.userMsgReq,
+            "headerHeight":app.globalData.headHeight,
+            "phoneModel":app.globalData.phoneModel
         })
         this.getHistoryMsg(1);
     },

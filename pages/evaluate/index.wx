@@ -1,5 +1,5 @@
 <template>
-  <view style="padding-top:66px;">
+  <view style="padding-top:{{ headerHeight }}px;">
       <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#267AFC',color:'#fff'} }}">
           <ui-row height="40">
               <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
@@ -11,6 +11,7 @@
               <ui-col vertical-align="middle" align="center" width="80"></ui-col>
           </ui-row>
       </ui-nav-bar>
+      <!-- <view style="height:{{ headerHeight }}px;width:100%;"></view>       -->
       <view style="margin:20px 0 10px 0;background-color:white;padding:40px 10px 25px 10px">
         <ui-row>
           <ui-col align="center" wx:for="{{ face.list }}" wx:key="{{ index }}" style="padding:0 10px;">
@@ -38,7 +39,7 @@
           </view>
       </view>
       <view class="" style="padding:0 20px;margin-top:40px;">
-        <button type="" class="btn2 jingjingBtn myBtnSuccess" data-show="{{ false }}" data-type="1" bindtap="submit" style="margin-bottom:10px;color:white;">确定</button>
+        <button type="" disabled="{{ disabled.confirmDisabled }}" class="btn2 jingjingBtn myBtnSuccess" data-show="{{ false }}" data-type="1" bindtap="submit" style="margin-bottom:10px;color:white;">确定</button>
         <button type="default" class="btn1 jingjingBtn" data-show="{{ false }}" data-type="0" bindtap="navigateBack">取消</button>
       </view>
   </view>
@@ -78,6 +79,11 @@ export default {
     navigationBarTitleText: ''
   },
   data: {
+    headerHeight:"",//头部栏的高
+    phoneModel:"",//是否是刘海屏        
+    disabled:{
+      confirmDisabled:false
+    },
     title:"评价",
     theGroupMsg:{},
     face:{
@@ -88,7 +94,7 @@ export default {
           "name": "非常满意",
           "id": 2,
           "align":"left",
-          "faceColor":true,
+          "faceColor":false,
           "src":"verySatisfied"
         },
         {
@@ -121,7 +127,9 @@ export default {
   onLoad(option){
     let _option = JSON.parse( option.groupMsg )
     this.setData({
-      "theGroupMsg": _option
+      "theGroupMsg": _option,
+      "headerHeight":app.globalData.headHeight,
+      "phoneModel":app.globalData.phoneModel      
     })
     // this.httpEvaluateItem({"name":"非常差","id":1})//默认选中
   },
@@ -179,7 +187,9 @@ export default {
   submit(e){
     let that = this;
     let _lebal = "",_selLebal,_face;
-
+    this.setData({
+      ["disabled.confirmDisabled"]:true
+    })
     let _promise = new Promise((resolve,reject)=>{
       _selLebal = this.data.face.evaluateList.filter((val)=>{
         if( val.bgColor == true ){
@@ -192,7 +202,7 @@ export default {
       });
       if( _face.length != 0 ){//选择了评价.....
         if( that.data.face.index == 3 ){//选择不满意......
-            if( _selLebal.length == 0 ){//不满意且没有选择不满意原因
+            if( _selLebal.length == 0 && that.data.face.evaluateList.length != 0 ){//不满意且没有选择不满意原因
               system.stateMsg({ title:"请选择不满意原因",icon:"none",time:1500 } )
             }else{//选择了原因
               if( that.data.face.reviewText == '' ){//评价内容为空
@@ -222,6 +232,9 @@ export default {
         param:_params,
         header:{'content-type': 'application/x-www-form-urlencoded'},
         scb(res){
+          that.setData({
+            ["disabled.confirmDisabled"]:false
+          })
           if( res.data.status == 200 ){
             system.stateMsg({
               title:"评价成功",
@@ -243,6 +256,9 @@ export default {
           }
         },
         fcb(res){
+          that.setData({
+            ["disabled.confirmDisabled"]:false
+          })
           system.stateMsg({
             title:"评价失败",
             icon:"none",

@@ -12,7 +12,7 @@
         </ui-row>
     </ui-nav-bar>
     <view  wx:if="{{ come_msg.enterType == '0' }}">
-        <view style="height:66px;width:100%;"></view>
+        <view style="height:{{ headerHeight }}px;width:100%;"></view>    
         <!-- 需求单 -->
         <view class="weui-cells__title">需求描述</view>
         <view class="weui-cells weui-cells_after-title" style="display:block;">
@@ -93,7 +93,7 @@
         <view style="height:66px;width:100%;"></view>
         <view style="padding:5px 10px;background-color:white;margin-top:7px;">
             <ui-row style="margin-top:10px;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><ui-col>需求单{{ come_msg.item.content.demandNum }}</ui-col></ui-row>
-            <view class="weui-cells__title" style="padding-left:0px;margin-top:1px;font-size:12px;">发起时间{{ come_msg.item.content.createAt }}</view>
+            <view class="weui-cells__title" style="padding-left:0px;margin-top:1px;font-size:12px;">发起时间{{ come_msg.item.createAt }}</view>
             <view class="weui-cells__title" style="padding-left:0px;font-size:12px;margin-top:20px;">发起人：{{ come_msg.item.content.fromUserName }}</view>
             <view class="weui-cells__title" style="padding-left:0px;font-size:12px;margin-top:0px;">对接人：{{ come_msg.item.content.confirmUserName }}</view>
             <view class="weui-cells__title" style="padding-left:0px;font-size:12px;color:black;font-size:15px;">需求内容</view>
@@ -127,6 +127,8 @@ let _promise1,_url;
       navigationBarTitleText: '申请填写'
     },
     data: {
+      headerHeight:"",//头部栏的高
+      phoneModel:"",//是否是刘海屏
       tag:true,
       disabled:true,
       contentHeight: wx.WIN_HEIGHT - 180 + "px",
@@ -187,7 +189,9 @@ let _promise1,_url;
         ['form.groupId']:_groupMsg.groupId,
         ['form.headImgUrl']:app.globalData.userMsgReq.headImgUrl,
         ['form.position']:app.globalData.userMsgReq.position,
-        "userMsgReq":app.globalData.userMsgReq
+        "userMsgReq":app.globalData.userMsgReq,
+        "headerHeight":app.globalData.headHeight,
+        "phoneModel":app.globalData.phoneModel        
       });
       if( _obj.enterType == 1 ){//编辑。。。。
         if( _item.itemcontent.demandAttach != "" ){
@@ -261,9 +265,7 @@ let _promise1,_url;
         scb(res){
           if( res.data.status == 200 ){
             system.stateMsg({title:"确认成功",icon:"success",time:1000})
-            setTimeout(()=>{
-                wx.navigateBack()
-            },1000)
+            wx.navigateBack()
           }else{
             system.stateMsg({title:res.data.message,icon:"none",time:1000})
           }
@@ -327,24 +329,19 @@ let _promise1,_url;
     },
     upload(obj){
         let that = this;
-        debugger;
         return new Promise((resolve, reject) => {
             let uploadTask =  wx.uploadFile({
-                url: `${app.globalData.httpUpload}/fileSystem/uploadFile`, //仅为示例，非真实的接口地址
+                url: `${app.globalData.httpUpload}/chat/attach`, //仅为示例，非真实的接口地址
                 filePath: obj.val,
                 name: 'file',
                 success(res){
                     if( res.statusCode == 200 ){
-                        let _resData = JSON.parse( res.data );
-                        if( _resData.errorCode == 0 ){
-                            that.data.form.demandAttach.push( _resData.model );
-                            that.setData({
-                                ["form.demandAttach"]:that.data.form.demandAttach,
-                            })
-                            resolve(obj.i)
-                        }else{
-                            system.stateMsg( {title: _resData.message, icon:"none", time:1000} )
-                        }
+                        let _imgUrl = JSON.parse( res.data ).data;
+                        that.data.form.demandAttach.push( _imgUrl );
+                        that.setData({
+                            ["form.demandAttach"]:that.data.form.demandAttach,
+                        });
+                        resolve(obj.i);
                     }else{
                         system.stateMsg( {title: "图片上传失败", icon:"none", time:1000 } )
                     }

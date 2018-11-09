@@ -60,15 +60,18 @@ export default {
   },
   // http请求......
   http(options={header:{'content-type': 'application/json'}}){
+    this.stateMsg({ title:"加载中...",content:"",icon:"loading",time:20000});      
     wx.request({
       url: `${getApp().globalData.httpHost}/${options.url}`,
       data: options.param,
       method: options.method,
       header: options.header,
       success: function(res) {
+        wx.hideToast();
         options.scb(res);
       },
       fail: function(res) {
+        wx.hideToast();
         options.fcb(res);
       }
     })

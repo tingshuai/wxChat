@@ -11,15 +11,11 @@
               <ui-col vertical-align="middle" align="center" width="80"></ui-col>
           </ui-row>
       </ui-nav-bar>
-  
-      <view class="loadingData" style="top:{{ loadingMsg.top }}">
-        <icon class="iconfont myWx-unif032" style="color:{{ loadingMsg.color }};font-size:32px;"></icon>
-      </view>
       <!-- 转发按钮 -->
       <ui-fixed-view top="120" right="50" class="groupMsgBtn" wx:if="{{ transmit.isTransmit }}">
         <button bindtap="showModel" class="seeGroupMsg cBtn0">转发</button>
       </ui-fixed-view>
-      <view class="article" style="height:{{ transmit.tabBar.actItem == 0 ? scrollHeight : ( scrollHeight + 50 ) }}px;">
+      <view class="article" style="height:{{ transmit.tabBar.actItem == 0 ? scrollHeight : ( scrollHeight + 50 ) }}px;padding-top:{{ phoneModel == 'custom' ? 66 : 90 }}px">
         <view class="weui-cells weui-cells_after-title" style="height:40px;background-color:rgba(38,122,252,0.6);top:-1px;">
             <view class="weui-cell weui-cell_link" style="padding-left:10px;padding-right:5px;height:100%;" bindtap="groupMsg">
                 <view class="weui-cell__bd" style="color:white;font-size:12px;">群信息</view>
@@ -29,7 +25,7 @@
         <!-- <view wx:if="{{ transmit.tabBar.actItem == 2 }}" style="height:90%;width:100%;padding:0px 100px;"><image style="width:100%;" mode="aspectFit" src="../../static/img/nothing.png"></image></view> -->
         <scroll-view scroll-y="true" bindscroll="scrllView" id="viewport" style="height: {{ transmit.tabBar.actItem == 0  ? (scrollHeight - 103) : (scrollHeight - 53)}}px;overflow:hidden;top:-2px;position:relative;" scroll-into-view="{{ toView }}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden"><!-- bindscrolltoupper="bindscrolltoupper"，，，，catch:touchstart="loadTouchstart" catch:touchend="loadTouchend" catch:touchmove="loadTouchmove"-->
           <view class="content" id="content">
-            <checkbox-group bindchange="checkboxChange">
+            <checkbox-group bindchange="checkboxChange" class="checkboxGroup">
               <ui-row hover-class="touchui-hover" class="talkItem" wx:for="{{ chatData }}" wx:key="index" id="the{{index}}">
                     <view class="historyLine" wx:if="{{ (item.cmd == 'time' || item.cmd == '2') && item.content }}">{{ item.content }}</view>
                     <ui-col width="60" align="left" vertical-align="top" wx:if="{{ (item.cmd == 0 || item.cmd == 100) && (sendInputMsg.fromUser != item.fromUser)}}"><!--消息来自别人-->
@@ -46,9 +42,9 @@
                                 </ui-col>
                             </ui-row>
                             <!--文本类型-->
-                            <text selectable='true' class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ ( item.msgType == 0 && item.cmd != 100 ) || item.msgType == 7}}" style="background-color: white;">{{ item.content }} </text>
+                            <text selectable='true' class="talkContent" data-item="{{item}}" bind:longpress="{{transmit.tabBar.actItem == 0 ? 'openActionsheet' : ''}}" wx:if="{{ ( item.msgType == 0 && item.cmd != 100 ) || item.msgType == 7}}" style="background-color: white;">{{ item.content }} </text>
                             <!--需求类型-->
-                            <view class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="retOrConfirm" wx:if="{{ item.msgType == 20 || item.msgType == 22 || item.msgType == 21 }}" style="background-color: white;width:100%;">
+                            <view class="talkContent" data-item="{{item}}" bind:longpress="{{transmit.tabBar.actItem == 0 ? 'openActionsheet' : ''}}" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="retOrConfirm" wx:if="{{ item.msgType == 20 || item.msgType == 22 || item.msgType == 21 }}" style="background-color: white;width:100%;">
                               <ui-row style="border-bottom:1px solid rgba(0,0,0,0.1);">
                                   <ui-col style="color:{{ item.content.demandState ? '#4EBF62' : '#267AFC' }};font-size:12px;">{{ item.msgType == 20 || item.msgType == 21 ? "需求确认" : "修改需求确认" }}</ui-col>
                               </ui-row>
@@ -63,15 +59,15 @@
                                   </ui-col>
                               </ui-row>
                               <ui-row>
-                                    <ui-col style="white-space:nowrap;font-size:12px;" wx:if="{{ item.content.demandState == true }}">确认日期{{ item.content.createAt }}</ui-col>
+                                  <ui-col style="white-space:nowrap;font-size:12px;" wx:if="{{ item.content.demandState == true }}">确认日期{{ item.createAt }}</ui-col>
                               </ui-row>
                             </view>
                             <!--图片类型-->
                             <view class="talkContent" wx:if="{{ item.msgType == 1 }}" style="height:100px;background-color:rgba(0,0,0,0);width:40%;">
-                              <image lazy-load="true" mode="aspectFill" data-item="{{item}}" bindtap="previewImage" catch:longpress="openActionsheet" style="height:100%;width:auto" src="{{ item.attachUrl }}"></image>
+                              <image lazy-load="true" mode="aspectFill" data-item="{{item}}" bindtap="previewImage" bind:longpress="{{transmit.tabBar.actItem == 0 ? 'openActionsheet' : ''}}" style="height:100%;width:auto" src="{{ item.attachUrl }}"></image>
                               <view class="myProgress" wx:if="{{ item.progress >0 && item.progress < 100 }}" style="height:1px;width:{{ item.progress }}%;background-color: {{ item.progress == 100 && item.readCount >= 0 ? '#49CC8D' : 'rgba(255,100,100,0.8)' }}"></view></view>
                             <!--语音类型-->
-                            <view class="talkContent" wx:if="{{ item.msgType == 2 }}" style="width:{{ item.seeWord ? 'auto' : '100px' }};min-width:100px;" catchtap="playVoice" bind:longpress="openActionsheet" data-index="{{ index }}" data-item="{{item}}">
+                            <view class="talkContent" wx:if="{{ item.msgType == 2 }}" style="width:{{ item.seeWord ? 'auto' : '100px' }};min-width:100px;" catchtap="playVoice" bind:longpress="{{transmit.tabBar.actItem == 0 ? 'openActionsheet' : ''}}" data-index="{{ index }}" data-item="{{item}}">
                                 <image mode="aspectFit" style="height:20px;width:20px;float:{{ sendInputMsg.fromUser == item.fromUser ? 'left' : 'right'}}" src="{{ item.src ? item.src : '../../static/img/voice2.png' }}"></image>
                                 <view style="border-top:1rpx solid #ddd;padding-top:3px;margin-top:28px;font-size:26rpx;color:#666;" class="voiceContent" wx:if="{{item.content != '' && item.content != null && item.seeWord }}">{{ item.content }}</view>
                                 <view style="border-top:1rpx solid #ddd;padding-top:3px;margin-top:28px;color:rgba(255,100,100,0.8);font-size:26rpx;" class="voiceContent" wx:elif="{{ item.seeWord }}"> 无可识别内容 </view>
@@ -85,7 +81,7 @@
                             <!--文件类型-->
                             <view class="talkContent" wx:if="{{ item.msgType == 6 }}" data-item="{{item}}" style="width:80%;" catchtap="openFile">
                               <ui-row>
-                                  <ui-col span="9" align="left" vertical-align="top" data-item="{{item}}" catch:longpress="openActionsheet">
+                                  <ui-col span="9" align="left" vertical-align="top" data-item="{{item}}" catch:longpress="{{transmit.tabBar.actItem == 0 ? 'openActionsheet' : ''}}">
                                       <view style="font-size:13px;color:#333333;">{{ item.content }}</view>
                                   </ui-col>
                                   <ui-col span="3">
@@ -110,7 +106,7 @@
                               </ui-row>
                               <ui-row>
                                   <ui-col align="center" vertical-align="top">
-                                      <text wx:if="{{ item.toUser == sendInputMsg.fromUser}}" style="font-size:12px;color:#2A79FB;padding:9px 0;" catchtap="evaluateMe">点击评价</text>
+                                      <text wx:if="{{ item.toUser == sendInputMsg.fromUser && transmit.tabBar.actItem == 0 }}" style="font-size:12px;color:#2A79FB;padding:9px 0;" catchtap="evaluateMe">点击评价</text>
                                       <text wx:else style="font-size:12px;color:#bbb;padding:9px 0;">点击评价</text>
                                   </ui-col>
                               </ui-row>
@@ -231,6 +227,8 @@ export default {
     }
   },
   data: {
+    headerHeight:"",//头部栏的高
+    phoneModel:"",//是否是刘海屏    
     defaultImg:"",//默认群头像.....
     toView:'',//要滚动的位置...
     msgType:true, //0-文字，1-语音
@@ -317,9 +315,11 @@ export default {
   onLoad(options){
     var that = this;
     var onFirst = 1;
-    console.log( "options" , options );
+    this.setData({
+      "phoneModel":app.globalData.phoneModel,
+      "scrollHeight":app.globalData.phoneModel == 'custom' ? this.data.scrollHeight : 23  + this.data.scrollHeight
+    })
     let _item = JSON.parse( options.item );
-    console.log( "_item",_item)
     let _currentPage = getCurrentPages();
     let _curPage = _currentPage[ _currentPage.length - 1 ].route;
     this.setData({
@@ -407,13 +407,13 @@ export default {
               that.setData({
                 scrollTop:10000
               })
-              if(  data.msgType == 20 || data.msgType == 21 || data.msgType == 22 || data.msgType == 11){
-                setTimeout(() => {
-                  that.sendReadedReceipt();
-                }, 2000);
-              }else{
-                that.sendReadedReceipt();
-              }
+              // if(  data.msgType == 20 || data.msgType == 21 || data.msgType == 22 || data.msgType == 11){
+              //   setTimeout(() => {
+              //     that.sendReadedReceipt();
+              //   }, 2000);
+              // }else{
+              //   }
+              that.sendReadedReceipt();
               that.data.chatData.filter( (item)=>{
                 let _is = that.data.transmit.transData.findIndex((it)=>{
                   return it == item.msgId
@@ -465,6 +465,7 @@ export default {
                 val.content.editable = false
               }
             })
+            set();
             that.setData({
               "chatData":that.data.chatData
             })
@@ -490,8 +491,7 @@ export default {
                 ['transmit.aiteContent']:'',
                 ['theGroupMsg.groupUsers']:that.data.theGroupMsg.groupUsers
               })
-            }else if(data.msgType == 1 || data.msgType == 2 || data.msgType == 20 || data.msgType == 30 || data.msgType == 22 || data.msgType == 21 ){//图片和语音...
-              // that.data.chatData.pop();
+            }else if(data.msgType == 1 || data.msgType == 2 || data.msgType == 30 ){//图片和语音...
               set();
             }
             that.setData({
@@ -690,9 +690,9 @@ export default {
     }
     function toggle(){
       if(new Date().getTime() - creatTime > 120000){
-        typeCode == 2 ? list = ['转发',"语音转文字"] : ( (typeCode == 20 || typeCode == 21 || typeCode == 22) ? list = [] : list = ['转发']);
+        typeCode == 2 ? list = ['转发',"语音转文字"] : ( (typeCode == 20 || typeCode == 21 || typeCode == 22 || typeCode == 30) ? list = [] : list = ['转发']);
       }else{
-        typeCode == 2 ? list = ['转发','撤回',"语音转文字"] : ( (typeCode == 20 || typeCode == 21 || typeCode == 22) ? list = ['撤回'] : list = ['转发','撤回']);
+        typeCode == 2 ? list = ['转发','撤回',"语音转文字"] : ( (typeCode == 20 || typeCode == 21 || typeCode == 22) ? list = [] : list = ['转发','撤回']);
       }
     }
     if( item.fromUser == that.data.sendInputMsg.fromUser ){
@@ -1045,7 +1045,7 @@ export default {
     var that = this;
     let isTrue = false;
     if( this.data.selUser.actType == 9 ){//9为发送@消息
-      this.data.theGroupMsg.groupUsers.filter((item)=>{
+      this.data.theGroupMsg.groupUsers.filter((item)=>{ 
         if(item.act){
           isTrue = true;
           that.data.transmit.aiteContent += `@${item.username}(@\`-\`@)`;
@@ -1072,19 +1072,19 @@ export default {
       ['isHidden']:!that.data.isHidden,
       ['transmit.isAite']:!that.data.transmit.isAite,
       ["selUser.actType"]:e.currentTarget.dataset.type,
-      "scrollHeight": wx.DEFAULT_CONTENT_HEIGHT - 85,
+      "scrollHeight": app.globalData.phoneModel == 'custom' ? wx.DEFAULT_CONTENT_HEIGHT - 85 : wx.DEFAULT_CONTENT_HEIGHT - 63
     })
   },
   navigateBack () {
     let that = this;
     let page = getCurrentPages();
-    if(page.length > 1 && page.length < 8){//从登录页过来的。。。。
-      wx.navigateBack();
-    }else{//从公众号过来的.....
-      wx.redirectTo({
-        url: '/pages/home/index'
-      })
-    }
+    wx.redirectTo({
+      url: `/pages/home/index?actItem=${that.data.transmit.tabBar.actItem}`
+    })
+    // if(page.length > 1 && page.length < 8){//从登录页过来的。。。。
+    //   wx.navigateBack();
+    // }else{//从公众号过来的.....
+    // }
   },
   comeOver(e){//这个是要发送办结消息.....
     let _me = this.data.sendInputMsg;
@@ -1093,8 +1093,7 @@ export default {
     let _selMe = this.data.theGroupMsg.groupUsers.filter((val)=>{
       return val.act == true
     })
-    let _params = {fromUser:_me.fromUser,fromUserName:_me.fromUserName,groupId:_groupMsg.groupId,groupName:_groupMsg.groupName,headImgUrl:_me.headImgUrl,position:_me.position,toUser: _selMe[0].openId
-    }
+    let _params = {fromUser:_me.fromUser,fromUserName:_me.fromUserName,groupId:_groupMsg.groupId,groupName:_groupMsg.groupName,headImgUrl:_me.headImgUrl,position:_me.position,toUser: _selMe[0].openId}
     system.http({
       url:"review/finish",
       param:_params,
@@ -1114,10 +1113,10 @@ export default {
         that.data.sendInputMsg.cmd = 100;
         that.data.sendInputMsg.content = "群主已发起办结"
         let _params = JSON.stringify( that.data.sendInputMsg );
-        system.sendSocketMessage({
-          "_app":app.globalData,
-          "params":_params
-        })
+        // system.sendSocketMessage({
+        //   "_app":app.globalData,
+        //   "params":_params
+        // })
         // setTimeout(()=>{
         //   that.navigateBack();
         // },1500)
@@ -1148,6 +1147,18 @@ export default {
           val.act = !val.act;
         }
       })
+      let _cont = this.data.theGroupMsg.groupUsers.filter((val)=>{
+        return val.act == true;
+      })
+      if( _cont.length > 0 ){//是否选中要@的人....
+          that.setData({
+            'isInputing': true
+          })
+      }else{
+          that.setData({
+            'isInputing': false
+          })        
+      }
     }
     this.setData({
       ['theGroupMsg.groupUsers']:that.data.theGroupMsg.groupUsers
@@ -1168,7 +1179,7 @@ export default {
     if( e.currentTarget.id == "viewport" ){
       this.setData({
         isHidden:true,
-        scrollHeight:wx.DEFAULT_CONTENT_HEIGHT + 15,
+        scrollHeight:app.globalData.phoneModel == 'custom' ? wx.DEFAULT_CONTENT_HEIGHT + 15 : wx.DEFAULT_CONTENT_HEIGHT + 38,
         ['transmit.isAite']:true
       })
     }else{
@@ -1177,7 +1188,7 @@ export default {
         ['transmit.isAite']:true
       })
       this.setData({
-        scrollHeight: !this.data.isHidden ? wx.DEFAULT_CONTENT_HEIGHT - 165 : wx.DEFAULT_CONTENT_HEIGHT + 15,
+        scrollHeight: !this.data.isHidden ? ( app.globalData.phoneModel == 'custom' ? wx.DEFAULT_CONTENT_HEIGHT - 165 : wx.DEFAULT_CONTENT_HEIGHT - 145 ): app.globalData.phoneModel == 'custom' ? wx.DEFAULT_CONTENT_HEIGHT + 15 : wx.DEFAULT_CONTENT_HEIGHT + 38,
       })
       this.setData({
         scrollTop:10000000
@@ -1290,14 +1301,13 @@ export default {
     border-top:1px solid #ddd;
   }
   .tit12{
-    font-size：12px;
+    font-size:12px;
   }
-.article{
-  position: relative;
-  width:100%;
-  padding-top:66px;
-  overflow: hidden;
-}
+  .article{
+    position: relative;
+    width:100%;
+    overflow: hidden;
+  }
     .groupMsgBtn{
         position: relative;
         // right:48px;
@@ -1534,14 +1544,13 @@ page{
   // overflow: hidden;
   // height: 100%;
 }
+.checkboxGroup{
+  padding-bottom:15px;
+}
 view {
   &.content {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    top:0;
     width: 100%;
+    height: 100%;
     button.btn{
       position:absolute;
       width:90%;

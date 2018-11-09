@@ -12,8 +12,7 @@
             </ui-col>
         </ui-row>
     </ui-nav-bar>    
-    <view style="height:66px;width:100%;"></view>
-
+    <view style="height:{{ headerHeight }}px;width:100%;"></view>
     <!-- 群成员头像 -->
     <view class="talkItem" >
         <view width="60" style="vertical-align:top;" align="left" vertical-align="top" bindtap="sel" data-index="{{index}}" data-item="{{item}}" class="mycol" wx:for="{{ groupMsg.groupUsers }}" wx:key="{{index}}">
@@ -35,7 +34,9 @@
     </ui-row>
     <ui-row class="groupDescribe">
       <ui-col vertical-align="middle" span="3" space-left="10" align="left" class="txtLeft" span="2">群描述</ui-col>
-      <ui-col vertical-align="middle" space-right="10" align="left" class="txtRight">{{ groupMsg.groupDesc ? groupMsg.groupDesc : '' }}</ui-col>
+      <ui-col vertical-align="middle" space-right="15" align="left" class="txtRight">
+        <textarea fixed="{{ true }}" auto-height disabled style="padding-right:10px;width:100%;" value="{{ groupMsg.groupDesc ? groupMsg.groupDesc : '' }}" />
+      </ui-col>
     </ui-row>
     <view style="padding-left:10px;line-height:21px;padding-right:5px;background-color:white;height:45px;line-height:45px;border-top:1px solid #e5e5e5;border-bottom:1px solid #e5e5e5;" bindtap="selChatList">
         <view class="txtLeft" style="color:black;width:40%;display:inline-block;" >查找聊天记录</view>
@@ -63,6 +64,9 @@
       navigationBarTitleText: '',
     },
     data: {
+      headerHeight:"",//头部栏的高
+      phoneModel:"",//是否是刘海屏
+      headerHeight:app.globalData.headHeight,
       groupMsg:{},
       userList:[],
       userMsg:{},
@@ -91,7 +95,9 @@
         ['submitData.groupId']:JSON.parse( option.item ).groupId,
         ['submitData.groupName']:JSON.parse( option.item ).groupName,
         ['submitData.groupDesc']:JSON.parse( option.item ).groupDesc,
-        "userMsg":app.globalData.userMsgReq
+        "userMsg":app.globalData.userMsgReq,
+        "headerHeight":app.globalData.headHeight,
+        "phoneModel":app.globalData.phoneModel
       })
       if( _tabBar.actItem == 2 ){//是历史群组不显示底部栏
         this.setData({
@@ -103,6 +109,9 @@
       })
       this.canAddMenuber();
       this.onMessage();
+    },
+    onShow(){
+      this.getGroupMsg();
     },
     canAddMenuber(){
       let that = this;
@@ -120,6 +129,24 @@
         }
       })
     },
+    getGroupMsg(){
+      let that = this;
+      system.http({ url:'chat/groups',
+        method:"get",
+        param: {groupId:that.data.submitData.groupId},
+        scb(res){
+          if ( res.data.status == 200) {
+              that.setData({
+                'groupMsg':res.data.data.rows[0]
+              })
+          }else{
+            system.msgTip({title: '提示',content: res.data.message,scb(){},ccb(){}})
+          }
+        },fcb(res){
+          system.msgTip({title: '提示',content: res.data.message,scb(){},ccb(){}})
+        }
+      })
+    },
     selChatList(e){
       let that = this;
       wx.navigateTo({
@@ -131,16 +158,14 @@
       app.globalData.socketTask.onMessage((res)=>{
         var _data = JSON.parse( res.data );
         switch (_data.cmd ) {
-            case 2://推送消息
+          case 2://推送消息
                 if( _data.msgType == 13 ){//更新群列表.....
-                  app.globalData.promise.upDataGroupMsg.then(()=>{
                     setTimeout(()=>{
                       that.setData({
                         "groupMsg":_data.groupDate
                       })
                       that.canAddMenuber();
                     },1000)
-                  })
                 }
                 break;
             default:
@@ -239,6 +264,9 @@
         text-align: left;
         padding-left: 4px;
         color:rgba(153,153,153,1);
+        flex-wrap:wrap;
+        display:block;
+        overflow: hidden;
          >view{
            font-size: 30rpx;
          }

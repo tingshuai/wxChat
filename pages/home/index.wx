@@ -12,7 +12,7 @@
             </ui-col>
         </ui-row>
     </ui-nav-bar>
-    <view style="height:66px;width:100%;"></view>
+    <view style="height:{{ headerHeight }}px;width:100%;"></view>
     <!-- <ui-fixed-view top="0" left="0" right="0" style="position:relative;"> -->
       <view class="fixed-view-content">
           <view class="weui-search-bar">
@@ -39,7 +39,7 @@
         <view class="weui-loadmore__tips weui-loadmore__tips_in-line" style="background-color:none;">暂无数据 可尝试下拉刷新</view>
     </view>
     <!-- //右滑菜单.........  -->
-    <view class="listContainer" hidden="{{ overList.length != 0 }}">
+    <view class="listContainer" style="top:{{ phoneModel == 'custom' ? 113 : 137 }}px" hidden="{{ overList.length != 0 }}">
         <scroll-view scroll-y style="height:{{modelHeight}};">
             <cc-grouplist wx:if="{{ tabBar.actItem == 0 }}" groupList="{{ list1 }}" bind:exData = "exData" tabBar="{{ tabBar }}"></cc-grouplist>
         </scroll-view>
@@ -153,6 +153,8 @@ export default {
     // "enablePullDownRefresh": true
   },
   data: {
+    headerHeight:"",//头部栏的高
+    phoneModel:"",//是否是刘海屏
     isShow:false,
     inputShowed: false,
     inputVal: "",
@@ -172,6 +174,10 @@ export default {
     // 关闭socket
     // system.closeSocket( getApp() );
     // 连接sockey服务
+    that.setData({
+        ["tabBar.actItem"]:option.actItem
+    })
+    this.toggleTab({currentTarget:{dataset:{index:option.actItem}}});
     system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:8000});
     wx.getStorage({
         key: 'openId',
@@ -185,7 +191,6 @@ export default {
                 //连接状态
                 that.homeSocket();//监听socket更新群列表...
             })
-            console.log( "SocketTask.readState" , app.globalData.socketTask )
         },
         fail(res){
             wx.redirectTo({
@@ -198,9 +203,10 @@ export default {
         success(res){
             app.globalData.userMsgReq = res.data;
             that.setData({
-                "userMsgReq":res.data
+                "userMsgReq":res.data,
+                "headerHeight":app.globalData.headHeight,
+                "phoneModel":app.globalData.phoneModel
             })
-            console.log( "userMsgReq.canBuildGroup" , that.data.userMsgReq.canBuildGroup )
         }
     })
     this.getDefaultImg();
@@ -643,7 +649,6 @@ export default {
     overflow:auto;
     position:absolute;
     width:100%;
-    top:113px;
     bottom:50px;
 }
 .container{

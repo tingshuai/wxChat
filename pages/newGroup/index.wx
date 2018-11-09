@@ -1,5 +1,5 @@
 <template id="page">
-  <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#267AFC',color:'#fff'} }}">
+  <ui-nav-bar slot="nav-bar" class="nav_bar" style="z-index:1000;" custom-style="{{ {backgroundColor:'#267AFC',color:'#fff'} }}">
       <ui-row height="40">
           <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
               <icon class="iconfont myWx-iconfontqianjin2" style="font-size:20px;"></icon>
@@ -12,7 +12,7 @@
       </ui-row>
   </ui-nav-bar>
 
-  <view style="height:66px;width:100%;"></view>
+  <view style="height:{{ headerHeight }}px;width:100%;"></view>
 
   <view class="weui-toptips weui-toptips_warn" style="top:66px;" wx:if="{{ tip.showTopTips }}">{{ tip.tipMsg }}</view>
   <view class="pageContainer">
@@ -57,7 +57,7 @@
       <view class="weui-cells__title" wx:if="{{ addMenu == 'false' }}">群描述</view>
       <view class="weui-cells weui-cells_after-title" wx:if="{{ addMenu == 'false' }}">
           <view class="weui-cell" style="padding:4px 15px;">
-              <view class="weui-cell__bd" style="position:relative;">
+              <view class="weui-cell__bd" style="position:relative;z-index:0;">
                   <textarea fixed="{{ tag }}" placeholder-class="placeholderClass" value="{{ formData.groupDesc }}" class="weui-textarea fontValue" name="groupDesc" placeholder="请输入群描述" style="height: 3.3em;position:relative;" />
               </view>
           </view>
@@ -90,7 +90,7 @@
       <ui-fixed-view bottom="0" left="0" right="0" class="fixBtn">
         <view class="fixed-view-content" style="padding:10px 35rpx;background-color:white;border-top:1px solid #efefef;">
           <view class="btn-area">
-            <button type="primary" formType="submit" class="myBtnSuccess jingjingBtn">{{ btnTitle.title0 }}</button>
+            <button type="primary" disabled = "{{ disabled }}" formType="submit" class="myBtnSuccess jingjingBtn">{{ btnTitle.title0 }}</button>
             <!-- <button formType="reset" class="jingjingBtn">取消</button> -->
           </view>
         </view>
@@ -107,6 +107,9 @@ export default {
     navigationBarTitleText: ''
   },
   data: {
+    headerHeight:"",//头部栏的高
+    phoneModel:"",//是否是刘海屏    
+    disabled:false,
     tip:{
       showTopTips:false,
       tipMsg:"",
@@ -165,6 +168,8 @@ export default {
       "userMsg":app.globalData.userMsgReq,
       ['formData.startTime']:startTime,
       "edit":option.edit,
+      "headerHeight":app.globalData.headHeight,
+      "phoneModel":app.globalData.phoneModel      
     })
     promise = new Promise((resolve,reject)=>{//先请求群列表再请求用户列表....
       let pro = new Promise((resolve2,reject2)=>{
@@ -398,10 +403,11 @@ export default {
     }
   },
   submitGroupData(e){
-    system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:8000});
+    system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:20000});
     let that = this;
     this.setData({
-      ["submitFormData.openIds"]:[]
+      ["submitFormData.openIds"]:[],
+      "disabled":true
     })
     that.data.formData.userList.filter((item)=>{
       if( item.checked ){
@@ -450,19 +456,22 @@ export default {
         header:{'content-type': 'application/x-www-form-urlencoded'},
         param: formData,
         scb(res){
+          that.setData({
+            "disabled":false
+          })          
           wx.hideToast();
           let tip = that.data.edit == 'true' ? "修改群组成功" : '新增群组成功';
           if(res.data.status == 200){
             wx.navigateBack();
             system.stateMsg({title: tip,icon:"success",time:1000});
-            app.globalData.promise.upDataGroupMsg = new Promise((resol,rej)=>{
-              resol();
-            })
           }else{
             system.stateMsg({title:res.data.message,icon:"none",time:1000})
           }
         },
         fcb(res){
+          this.setData({
+            "disabled":false
+          })              
           system.stateMsg({title:that.data.edit == 'true' ? "修改群组失败" : '新增群组失败',icon:"none",time:1000})
         }
       })

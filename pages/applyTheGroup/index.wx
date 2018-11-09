@@ -11,7 +11,7 @@
               <ui-col vertical-align="middle" align="center" width="80"></ui-col>
           </ui-row>
       </ui-nav-bar>  
-      <view style="height:66px;width:100%;"></view>
+      <view style="height:{{ headerHeight }}px;width:100%;"></view>
 
       <view class="content">
         <!--群标题-->
@@ -42,13 +42,17 @@
       groupMsg:{}
     },
     data: {
+      headerHeight:"",//头部栏的高
+      phoneModel:"",//是否是刘海屏          
       loading:false,
       disabled:false,
       title:"群信息"
     },
     onLoad(option){
       this.setData({
-        groupMsg:JSON.parse (option.item)
+        groupMsg:JSON.parse (option.item),
+        "headerHeight":app.globalData.headHeight,
+        "phoneModel":app.globalData.phoneModel        
       });
     },
     addTo(event){

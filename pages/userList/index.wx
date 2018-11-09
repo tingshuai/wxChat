@@ -13,8 +13,7 @@
                 </ui-col>
             </ui-row>
         </ui-nav-bar>    
-        <view style="height:66px;width:100%;"></view>
-
+        <view style="height:{{ headerHeight }}px;width:100%;"></view>
         <scroll-view class="view_H" scroll-y style="width: 100%;height:{{ scrollHeight }};">
           <ui-row class="radio-group" height="50" bindtap="radioChange" wx:for="{{ userList }}" wx:if="{{ item.openId != openId }}" space="10" id="{{ item.openId }}" data-index="{{ index }}">
               <ui-col vertical-align="middle" align="center" width="50">
@@ -46,6 +45,8 @@ export default {
     navigationBarTitleText: ''
   },
   data: {
+    headerHeight:"",//头部栏的高
+    phoneModel:"",//是否是刘海屏       
     userList:[],
     bottomHeight:148,
     scrollHeight:'',
@@ -61,7 +62,9 @@ export default {
     this.setData({
       "userList":userList,
       "scrollHeight":this.data.scrollHeight,
-      "openId":app.globalData.openId
+      "openId":app.globalData.openId,
+      "headerHeight":app.globalData.headHeight,
+      "phoneModel":app.globalData.phoneModel      
     })
   },
   navigateBack () {
@@ -99,7 +102,7 @@ export default {
           })
         }else{
           system.stateMsg({
-            title: JSON.parse(res.data.message).message,
+            title: "操作过于频繁,请稍后再拨。",// JSON.parse(res.data.message).message,
             icon:"none",
             time:1500
           })

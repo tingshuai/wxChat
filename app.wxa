@@ -40,7 +40,7 @@ export default {
       navigationStyle: 'custom'
     },
     networkTimeout: {
-      request: 10000
+      request: 20000
     },
     theme: {
       'theme-color': '#1aad19'
@@ -49,13 +49,14 @@ export default {
   globalData: {
     socketHost: 'wss://www.comayi.com', // 祝天洋 'wss://192.168.0.49', 沈鑫：192.168.1.230，线上：www.china-cms.com
     httpHost: 'https://www.comayi.com', //'https://192.168.0.144',
-    httpUpload: 'http://www.comayi.com', //文件上传地址......
+    httpUpload: 'https://www.comayi.com', //文件上传地址......
     userMsg: {},
     openId: '', //'oc6Hd1BHJF55T1jIWr2eC2AEYoUQ',
     sessionId: '',
     userMsgReq: {},
     promise:{
-      upDataGroupMsg:""
+      upDataGroupMsg:"",//更新群信息......
+      upDataGroupList:""//更新群列表......
     },
     wxImg: '',
     defaultImg: '', //默认群头像...
@@ -63,7 +64,9 @@ export default {
       openType: false,
       timeOuter: ''
     },
-    registerState: ''
+    registerState: '',
+    headHeight:"",
+    phoneModel:'custom'
   },
   onLaunch() {
     system.attachInfo()

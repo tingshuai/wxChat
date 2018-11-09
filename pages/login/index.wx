@@ -27,6 +27,16 @@ export default {
     loading: false
   },
   onLoad(options){
+    wx.getSystemInfo({
+      success (res) {
+        if( res.model == "iPhone X"){
+          app.globalData.headHeight = 90;
+          app.globalData.phoneModel = "special";
+        }else{
+          app.globalData.headHeight = 66;
+        }
+      }
+    })
     let that = this;
     wx.getStorage({
       key:"wxImg",
@@ -45,7 +55,7 @@ export default {
             success(response){
                 if( response.data.state == 1 ){
                     wx.redirectTo({
-                      url: '/pages/home/index'
+                      url: '/pages/home/index?actItem=0'
                     })
                 }else if( response.data.state == 2 ){
                   wx.redirectTo({

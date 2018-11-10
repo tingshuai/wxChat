@@ -56,7 +56,8 @@ export default {
     userMsgReq: {},
     promise:{
       upDataGroupMsg:"",//更新群信息......
-      upDataGroupList:""//更新群列表......
+      upDataGroupList:"",//更新群列表......
+      socketTask:""//websocket消息
     },
     wxImg: '',
     defaultImg: '', //默认群头像...
@@ -157,5 +158,9 @@ page {
   .title {
     font-size: 18px;
   }
+}
+#page{
+    overflow-y:auto;
+    width:100%;
 }
 </style>

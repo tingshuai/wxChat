@@ -1,5 +1,5 @@
-<template>
-  <view class="content" style="overflow:auto;">
+<template id="page">
+  <view class="content" style="">
     <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#267AFC',color:'#fff'} }}">
         <ui-row height="40">
             <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
@@ -35,7 +35,7 @@
     <ui-row class="groupDescribe">
       <ui-col vertical-align="middle" span="3" space-left="10" align="left" class="txtLeft" span="2">群描述</ui-col>
       <ui-col vertical-align="middle" space-right="15" align="left" class="txtRight">
-        <textarea fixed="{{ true }}" auto-height disabled style="padding-right:10px;width:100%;" value="{{ groupMsg.groupDesc ? groupMsg.groupDesc : '' }}" />
+        <text style="padding-right:10px;width:100%;">{{ groupMsg.groupDesc ? groupMsg.groupDesc : '' }}</text>
       </ui-col>
     </ui-row>
     <view style="padding-left:10px;line-height:21px;padding-right:5px;background-color:white;height:45px;line-height:45px;border-top:1px solid #e5e5e5;border-bottom:1px solid #e5e5e5;" bindtap="selChatList">
@@ -247,8 +247,6 @@
 
 <style lang="less">
  .content{
-    // padding:0px 8px 0px 8px;
-    height: 100%;
     .groupName,.groupDescribe{
       background-color:white;
       height: 47px;
@@ -362,4 +360,8 @@
   .txtLeft{
     font-weight: 500;
   }
+  page{
+    overflow-y:auto;
+    width:100%;
+  }  
 </style>

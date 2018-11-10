@@ -1,5 +1,5 @@
 <template>
-  <view style="height:100%;overflow:auto;">
+  <view style="height:100%;">
     <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#267AFC',color:'#fff'} }}">
         <ui-row height="40">
             <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
@@ -18,7 +18,7 @@
         <view class="weui-cells weui-cells_after-title" style="display:block;">
             <view class="weui-cell" style="padding:0;">
                 <view class="weui-cell__bd">
-                    <textarea placeholder="建议使用1,2,3点来列举需求" placeholder-style="font-size:16px;color:#ddd;" wx:if="{{ !model.show }}" fixed="{{ false }}" maxlength="-1" show-confirm-bar="{{ false }}" id="reqMsg" auto-height="{{ true }}" style="min-height:80px;box-sizing:border-box;position:relative;padding:11px 16px;font-size:14px;height:auto;" value="{{ form.demandText }}" data-index="{{ index }}" class="weui-textarea" bindinput="inputing"/>
+                    <textarea placeholder="建议使用1,2,3点来列举需求" placeholder-style="font-size:16px;color:#ddd;" wx:if="{{ !model.show }}" fixed="{{ true }}" maxlength="-1" show-confirm-bar="{{ false }}" id="reqMsg" auto-height="{{ true }}" style="min-height:80px;box-sizing:border-box;position:relative;padding:11px 16px;font-size:14px;height:auto;" value="{{ form.demandText }}" data-index="{{ index }}" class="weui-textarea" bindinput="inputing"/>
                 </view>
             </view>
         </view>
@@ -89,7 +89,7 @@
         </ui-popup>
     </view>
     <!-- 填好的需求确认单... -->
-    <view wx:if="{{ come_msg.enterType == '1' }}" style="height:100%;overflow:hidden;">
+    <view wx:if="{{ come_msg.enterType == '1' }}" style="height:100%;overflow:auto;">
         <view style="height:66px;width:100%;"></view>
         <view style="padding:5px 10px;background-color:white;margin-top:7px;">
             <ui-row style="margin-top:10px;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><ui-col>需求单{{ come_msg.item.content.demandNum }}</ui-col></ui-row>
@@ -497,4 +497,8 @@ let _promise1,_url;
         width:55px;
         height:55px;
     }
+  page{
+    overflow-y:auto;
+    width:100%;
+  }      
 </style>

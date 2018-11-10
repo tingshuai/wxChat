@@ -29,6 +29,7 @@ export default {
     })
   },
   closeSocket(app,fun){
+      let that = this;
       app.globalData.socketTask.close({success(res){
           app.globalData.socketTask.openType = false;
       },fail(res){}});
@@ -39,7 +40,6 @@ export default {
       let _app = getApp();
       that.closeSocket(_app);
       app.globalData.socketTask.openType = false;
-      // that.msgTip({title: '提示',content: "网络连接异常！请检查网络并重新进入小程序",scb(){},ccb(){}})
     })
   },
   // 消息提示....
@@ -86,7 +86,7 @@ export default {
       return res.data.data.rows
     }})
   },
-  connectSocket(app,resolve){//连接socket.......
+  connectSocket(app){//连接socket.......
     let that = this;
     if( app.globalData.socketTask.openType == false ){
       app.globalData.socketTask = wx.connectSocket({
@@ -95,12 +95,12 @@ export default {
         header:{'content-type': 'application/json'},
         success:function(msg){
           console.log( "SocketTask.readState" , app.globalData.socketTask )
+          wx.hideToast();
           setTimeout(()=>{
             that.socketOnClose(getApp());
             that.socketOnOpen(getApp());
             that.socketOnError(getApp());
           },1000)
-          resolve();
         },
         fail:function(msg){
           that.msgTip({title: '提示',content: "会话连接失败！请检查网络并重新进入小程序",scb(){},ccb(){}})
@@ -111,22 +111,36 @@ export default {
   socketOnOpen(app){
     app.globalData.socketTask.onOpen(function(res) {
       app.globalData.socketTask.openType = true;
-      console.log( 'socket open' );
     })
+  },
+  netChange(){
+    let that = this;
+    wx.onNetworkStatusChange(function(res) {
+      if( !res.isConnected ){
+        that.stateMsg({ title:"网络连接断开...",content:"",icon:"none",time:2000});   
+      }else{
+        that.closeSocket(getApp());
+        that.connectSocket( getApp() );
+        that.stateMsg({ title:"网络已连接",content:"",icon:"none",time:2000});  
+      }
+    })    
   },
   socketOnError(app,_tip){
     //监听WebSocket错误。
     let that = this;
     app.globalData.socketTask.onError(function(res){
         system.msgTip({title: '提示',content: _tip,scb(){},ccb(){}})
-        that.closeSocket(getApp());
+        that.closeSocket( getApp() );
     })
   },
-  sendSocketMessage(obj) {//发送socket消息......
+ sendSocketMessage(obj) {//发送socket消息......
       let that = this;
+      console.log( obj )
       obj._app.socketTask.send({
         data: obj.params,
-        success(res){},
+        success(res){
+          console.log("发送消息成功.", res )
+        },
         fail(res){
           that.msgTip({title: '提示',content: "网络连接断开请检查网络，并重新进入小程序.",scb(){},ccb(){}})
         }
@@ -142,7 +156,6 @@ export default {
     obj.str = obj.str.replace(reg, `<text style='color:${obj.color}'>$1</text>`); //这里的reg就是上面的正则表达式
     //s = s.replace(reg, "$1$2"); //这里的reg就是上面的正则表达式
     // s = s.match(reg);
-    console.log( obj.str )
     return( obj.str )
   }
 }

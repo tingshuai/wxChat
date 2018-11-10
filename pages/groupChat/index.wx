@@ -314,7 +314,6 @@ export default {
   },
   onLoad(options){
     var that = this;
-    var onFirst = 1;
     this.setData({
       "phoneModel":app.globalData.phoneModel,
       "scrollHeight":app.globalData.phoneModel == 'custom' ? this.data.scrollHeight : 23  + this.data.scrollHeight
@@ -379,9 +378,21 @@ export default {
           ['selUser.users']:that.data.selUser.users
         })
       })
-      system.connectSocket(app)//连接socket.......
       that.reqGroupList();//请求群列表
-      that.getHistoryMsg( that.data.theGroupMsg.groupId, 10 , that.data.pageNum,true );
+      that.getHistoryMsg( that.data.theGroupMsg.groupId, 10 , that.data.pageNum,true ,false);
+      that.onMessage();
+      // 当网络有异常时.....
+      wx.onNetworkStatusChange(function(res) {
+        if( res.isConnected ){
+          that.onMessage();
+          that.getHistoryMsg( that.data.theGroupMsg.groupId, 10 , 1 , false ,true);
+        }
+      })
+    })//resolve函数结束....
+  },
+  onMessage(){
+      let that = this;
+      let onFirst = 1;
       app.globalData.socketTask.onMessage(function(res) {
         var data = JSON.parse( res.data );
         var chatDataMsgId;
@@ -537,7 +548,6 @@ export default {
           set();
         }
       })//onMessage结束...
-    })//resolve函数结束....
   },
   onUnload( e ){
     // let prePage = this.data.pageMsg.pageList[this.data.pageMsg.pageList.length - 2].route
@@ -852,7 +862,7 @@ export default {
       ['loadingMsg.color']:'#666666'
     })
     system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:8000});
-    this.getHistoryMsg( that.data.theGroupMsg.groupId ,10 , that.data.pageNum ,false,e);
+    this.getHistoryMsg( that.data.theGroupMsg.groupId ,10 , that.data.pageNum ,true,false);
   },
   // 播放语音....
   playVoice(e){
@@ -915,7 +925,7 @@ export default {
     })
   },
   // 请求历史记录....
-  getHistoryMsg(id,size,num,isFirst,event){
+  getHistoryMsg(id,size,num,isFirst,reload){
     var that= this;
     wx.request({
       url: `${app.globalData.httpHost}/chat/msg/${ that.data.transmit.tabBar.actItem == 2 ? 'getHisGroupMsg' : 'getGroupMsg'}`,
@@ -938,11 +948,20 @@ export default {
               val.content = val.content.replace(/@.*(\(@`-`@\))/g,'')
             }
           })
-          that.data.chatData.splice(0,0,...res.data.data.rows);
-          that.setData({
-            chatData:that.data.chatData,
-            pageNum:++that.data.pageNum
-          })
+          if( reload ){
+            that.setData({
+              chatData:[]
+            })
+            that.setData({
+              chatData:res.data.data.rows,
+            })
+          }else{
+            that.data.chatData.splice(0,0,...res.data.data.rows);
+            that.setData({
+              chatData:that.data.chatData,
+              pageNum:++that.data.pageNum
+            })
+          }
           var newList = that.data.chatData.length;
           if(isFirst){
             that.setData({scrollTop:10000});
@@ -1077,7 +1096,14 @@ export default {
   },
   navigateBack () {
     let that = this;
-    wx.navigateBack();
+    let prePage = this.data.pageMsg.pageList[this.data.pageMsg.pageList.length - 2 ].route
+    if( prePage != "pages/home/index"){
+      wx.redirectTo({
+        url: '/pages/home/index'
+      })
+    }else{
+      wx.navigateBack();
+    }
   },
   comeOver(e){//这个是要发送办结消息.....
     let _me = this.data.sendInputMsg;

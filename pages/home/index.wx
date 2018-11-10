@@ -183,14 +183,9 @@ export default {
         key: 'openId',
         success: function(res) {
             app.globalData.openId = res.data;
-            let promise = new Promise((resolve,reject)=>{
-                system.connectSocket(app,resolve)//连接socket.......
-            })
-            promise.then((obj)=>{
-                that.requestGroupList( '/chat/groups/tree','over',1);
-                //连接状态
-                that.homeSocket();//监听socket更新群列表...
-            })
+            that.requestGroupList( '/chat/groups/tree','over',1 );
+            //连接状态
+            that.homeSocket();//监听socket更新群列表...
         },
         fail(res){
             wx.redirectTo({
@@ -210,6 +205,16 @@ export default {
         }
     })
     this.getDefaultImg();
+    wx.onNetworkStatusChange(function(res) {
+      if( res.isConnected ){
+        that.homeSocket();
+        if( that.data.tabBar.actItem == 0 ){
+            that.requestGroupList( '/chat/groups/tree','over',1 );
+        }else{
+            that.requestGroupList( '/history/groups/tree','history');
+        }
+      }
+    })
   },
   onShow(e){
     this.requestGroupList( '/history/groups/tree','history');

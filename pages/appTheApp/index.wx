@@ -115,7 +115,7 @@ var app = getApp();
               required:false,
               name:"邮箱",
               color:'#F21B1B',
-              isLegal:false,
+              isLegal:true,
               RegExp:"^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$"
           },
           company:{
@@ -156,6 +156,7 @@ var app = getApp();
                 if(obj[key].isLegal == false){
                     dis = true;
                 }
+                console.log( obj[key] )
             });
             resolve(dis);
         });
@@ -179,7 +180,7 @@ var app = getApp();
                 [`validate.${e.currentTarget.id}.isLegal`]:false
             })
         }else{
-          if( e.currentTarget.id == 'email' || e.currentTarget.id == "phone" ){
+          if( e.currentTarget.id == "phone" ){
             if ( !(new RegExp( _item.RegExp ).test( e.detail.value )) ){
                 this.setData({
                     [`validate.${e.currentTarget.id}.isLegal`]:false,
@@ -191,11 +192,30 @@ var app = getApp();
                   [`validate.${e.currentTarget.id}.isLegal`]:true
                 })
               }
+          }else if( e.currentTarget.id == "email" ){
+              if( e.detail.value == '' ){
+                  this.setData({
+                    [`validate.${e.currentTarget.id}.color`]:'green',
+                    [`validate.${e.currentTarget.id}.isLegal`]:true
+                  })
+              }else{
+                  if( !(new RegExp( _item.RegExp ).test( e.detail.value )) ){
+                    this.setData({
+                        [`validate.${e.currentTarget.id}.isLegal`]:false,
+                        [`validate.${e.currentTarget.id}.color`]:'#F21B1B'
+                    })
+                  }else{
+                    this.setData({
+                        [`validate.${e.currentTarget.id}.color`]:'green',
+                        [`validate.${e.currentTarget.id}.isLegal`]:true
+                    })                      
+                  }
+              }
           }else{
-             this.setData({
-                [`validate.${e.currentTarget.id}.color`]:'green',
-                 [`validate.${e.currentTarget.id}.isLegal`]:true
-            })
+            this.setData({
+              [`validate.${e.currentTarget.id}.color`]:'green',
+              [`validate.${e.currentTarget.id}.isLegal`]:true
+            })              
           }
         }
         this.initValidate();

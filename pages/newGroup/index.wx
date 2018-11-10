@@ -403,7 +403,6 @@ export default {
     }
   },
   submitGroupData(e){
-    system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:20000});
     let that = this;
     this.setData({
       ["submitFormData.openIds"]:[],

@@ -1,17 +1,5 @@
 <template>
   <view>
-    <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#267AFC',color:'#fff'} }}">
-        <ui-row height="40">
-            <ui-col vertical-align="middle" align="center" width="60">
-                <!-- <icon class="iconfont myWx-iconfontqianjin2" style="font-size:20px;"></icon> -->
-            </ui-col>
-            <ui-col vertical-align="middle" align="center">
-                {{ title }}
-            </ui-col>
-            <ui-col vertical-align="middle" align="center" width="80">
-            </ui-col>
-        </ui-row>
-    </ui-nav-bar>
     <view style="height:{{ headerHeight }}px;width:100%;"></view>
 
     <form bindsubmit="formSubmit" wx:if="{{ !show }}">

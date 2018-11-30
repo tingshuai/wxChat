@@ -1,17 +1,5 @@
 <template>
   <view style="padding-top:{{ headerHeight }}px;">
-      <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#267AFC',color:'#fff'} }}">
-          <ui-row height="40">
-              <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
-                  <icon class="iconfont myWx-iconfontqianjin2" style="font-size:25px;"></icon>
-              </ui-col>
-              <ui-col vertical-align="middle" align="center" class="title center">
-                  {{ title }}
-              </ui-col>
-              <ui-col vertical-align="middle" align="center" width="80"></ui-col>
-          </ui-row>
-      </ui-nav-bar>
-      <!-- <view style="height:{{ headerHeight }}px;width:100%;"></view>       -->
       <view style="margin:20px 0 10px 0;background-color:white;padding:40px 10px 25px 10px">
         <ui-row>
           <ui-col align="center" wx:for="{{ face.list }}" wx:key="{{ index }}" style="padding:0 10px;">

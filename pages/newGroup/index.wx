@@ -1,16 +1,4 @@
 <template id="page">
-  <ui-nav-bar slot="nav-bar" class="nav_bar" style="z-index:1000;" custom-style="{{ {backgroundColor:'#267AFC',color:'#fff'} }}">
-      <ui-row height="40">
-          <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
-              <icon class="iconfont myWx-iconfontqianjin2" style="font-size:20px;"></icon>
-          </ui-col>
-          <ui-col vertical-align="middle" align="center" class="center">
-              {{ title }}
-          </ui-col>
-          <ui-col vertical-align="middle" align="center" width="80">
-          </ui-col>
-      </ui-row>
-  </ui-nav-bar>
 
   <view style="height:{{ headerHeight }}px;width:100%;"></view>
 

@@ -1,0 +1,144 @@
+<template>
+    <view class="fixed_bottom">
+      <view class="rowInputs" height="50" border-top border-bottom>
+        <view style="font-size:14px;width:50px;text-align:center;"><text class="iconfont {{ isVoice ? 'myWx-jianpan' : 'myWx-yuyintonghua' }}" bindtap="toggleMsgType"></text></view>
+        <view hidden="{{ isVoice }}" style="width:{{ inputWidth }};"><input cursor-spacing="6" class="myInput" focus="{{inputIn.inputFocus}}" bindinput="onInput" value="{{ inputVal }}" style="background-color:white;"/></view>
+        <view hidden="{{ !isVoice }}" style="width:{{ inputWidth }};"><button catch:touchstart="touchstart" catch:touchend="touchend" catch:touchmove="touchmove">按住说话</button></view>
+        <view style="font-size:14px;width:50px;text-align:center;" hidden="{{ isInputing }}"><text class="iconfont myWx-jia" bindtap="toggleHeight"></text></view>
+        <view style="width:55px;text-align:center;" hidden="{{ !isInputing }}" class="sendBtn" space-left="3" space-right="3"><button type="primary" bindtap="sendMsg">发送</button></view>
+      </view>
+      <view height="90" class="sentType" hidden="{{ isShowControlBar }}" style="">
+        <!-- 电话 -->
+        <view class="sentType_col">
+          <image src="../../static/img/call.png" bindtap="callMe" style="width:50px;height:50px;"></image>
+          <text class="tit12" style="font-size:12px;margin:8px 0 5px 0;">语音通话</text>
+        </view>
+        <!-- 发送图片 -->
+        <view class="sentType_col">
+          <image src="../../static/img/GroupCopy@2x.png" style="width:50px;height:50px;" bindtap="chooseFile" data-type="1" data-watermark = "false"></image>
+          <text class="tit12" style="font-size:12px;margin:8px 0 5px 0;">照片</text>
+        </view>
+        <!-- 发送水印图片 -->
+        <view class="sentType_col">
+          <image src="../../static/img/Group2Copy@2x.png" style="width:50px;height:50px;" bindtap="chooseFile" data-type="1" data-watermark = "true"></image>
+          <text class="tit12" style="font-size:12px;margin:8px 0 5px 0;">水印</text>
+        </view>
+        <!-- 查看文件 -->
+        <view class="sentType_col">
+          <image src="../../static/img/Group3Copy@2x.png" bindtap="chooseFile" data-type="6" style="width:50px;height:50px;"></image>              
+          <text class="tit12" style="font-size:12px;margin:8px 0 5px 0;">文件</text>
+        </view>
+        <!-- @成员 -->
+        <view class="sentType_col">
+          <image src="../../static/img/Group4Copy@2x.png" bindtap="aite" data-type="9" style="width:50px;height:50px;"></image>              
+          <text class="tit12" style="font-size:12px;margin:8px 0 5px 0;">@人</text>
+        </view>
+        <!-- 创建需求 -->
+        <view class="sentType_col">
+          <image src="../../static/img/Group5Copy@2x.png" bindtap="creatRequirement" data-type="7" style="width:50px;height:50px;"></image>              
+          <text class="tit12" style="font-size:12px;margin:8px 0 5px 0;">需求确认</text>
+        </view>
+        <!-- 办结 -->
+        <view class="sentType_col">
+          <image src="../../static/img/pingjia.png" bindtap="aite" data-type="8" style="width:50px;height:50px;" wx:if="{{ sendInputMsg.isGroupManager }}"></image>   
+          <text class="tit12" style="font-size:12px;margin:8px 0 5px 0;" wx:if="{{ sendInputMsg.isGroupManager }}">办结评价</text>
+        </view>
+      </view>
+      <!-- <scroll-view scroll-x class="sentType" hidden="{{ transmit.isAite }}" style="height:100px;white-space:nowrap;">
+        <view style="display:{{ item.openId == sendInputMsg.fromUser ? 'none' : 'inline-block' }}" class="sentType_col" width="58" align="center" vertical-align="middle" data-isaite="true" data-index="{{ index }}" data-item="{{ item }}" wx:key="index" catchtap="selUser" wx:for="{{ theGroupMsg.groupUsers }}">
+          <image mode="aspectFit" style="height:72px;" src="{{ item.headImgUrl == null ? defaultImg : item.headImgUrl }}"></image>
+          <text style="text-align:center;" class="txt9">{{ item.username }}</text>
+          <text class="angleIcon angleIcon2 iconfont myWx-dui3" wx:if="{{ item.act }}"></text>
+          <icon class="iconfont myWx-fenxiang-copy" catchtap="comeOver" style="left:0px;position:absolute;background-color:white;top:10px;font-size:37px;width:42px;border:none;border-radius:0px;" wx:if="{{ item.act && selUser.actType == 8 }}" size="23"></icon>
+        </view>
+      </scroll-view> -->
+    </view>
+</template>
+<script>
+import chatRoomBehavior from '../../static/data/chatRoomBehavior.js'
+export default {
+  behaviors: [chatRoomBehavior],
+  data: {
+    isVoice: false,
+    inputWidth:wx.WIN_WIDTH - 50 + 'px',
+    isInputing:false,//是否正在输入...
+  },
+  methods: {
+    handleTap () {
+      console.log(this.data.msg)
+    },
+    onInput(e){
+
+    },
+    toggleMsgType(e){//切换录音与输入按钮......
+      this.setData({
+        "isVoice":!this.data.isVoice
+      })
+    }
+  }
+}
+</script>
+<style lang="less">
+  @import '../styles/icon.less';
+  .fixed_bottom{
+    background-color:#F7F7FA;
+    border-top:1px solid #ddd;
+  }
+  .rowInputs{
+    display: flex;
+    justify-content: space-between;
+    height:50px;
+    line-height:50px;
+    align-items: center;
+    >view{
+        height: 100%;
+    }
+  }
+  .sentType{
+    transition: all 0.2s;
+    display: flex;
+    justify-content:space-between;
+    flex-wrap: wrap;
+    align-items:center;
+    align-content:center;
+    border-top:1px solid #eee;
+    padding:10px 0;
+    .sentType_col{
+    //   margin-right:5%;
+      width:20%;
+      text-align: center;
+      position: relative;
+    }
+    image{
+        margin:0 auto;
+    }
+    .iconfont{
+      font-size:30px;
+      padding:0px 8px;
+      background-color: white;
+      color: #666666;
+      &:active{
+        opacity: 0.8;
+      }
+    }
+  }
+  .sendBtn{
+    button{
+      font-size:12px;
+      padding:0;
+    }
+  }
+  .myInput{
+    height: 30px;
+    text-indent: 10px;
+    padding-left: 5px;
+    margin-top:10px;
+  }
+  .myWx-ai01 , .myWx-jia ,.myWx-jianpan,.myWx-unif032,.myWx-yuyintonghua{
+    font-size: 38px;
+    color: #555;
+    &:active{
+      opacity: 0.8;
+    }
+  }  
+</style>

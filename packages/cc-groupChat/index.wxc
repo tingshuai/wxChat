@@ -1,50 +1,120 @@
 <template>
   <view class="article">
-    <button class="groupMsgBtn" bindtap="groupMsg"> 群信息 </button>
-    <view class="content">
-       <ui-row hover-class="touchui-hover" class="talkItem">
-            <ui-col width="60" align="left" vertical-align="top" class="mycol">
-                <view class="left_icon left_icon1">
-                    <image src="https://t12.baidu.com/it/u=4239869624,2005225806&fm=173&app=25&f=JPEG?w=640&h=434&s=92AAEBA054423EE41A302499030050C0"/>
-                </view>
-            </ui-col>
-            <ui-col class="text" align="left" vertical-align="top" space-left="0" space-right="5">
-                <view style="width: 100%;">
-                    <ui-row height="20">
-                        <ui-col align="left" vertical-align="top">
-                            <view class="userMsg"><text class="name">郭晶晶</text><text decode="true">&nbsp;&nbsp;</text><text class="job">前端工程师</text></view>
-                        </ui-col>
-                    </ui-row>
-                    <view class="talkContent">第37周|总票房8.11亿较上周上涨4.38%，《猩猿崛起》突破票房10亿</view>
-                </view>
-            </ui-col>
-        </ui-row>
-        <ui-row hover-class="touchui-hover" class="talkItem">
-            <ui-col width="60" align="left" vertical-align="top" class="mycol">
-                <view class="left_icon left_icon1">
-                    <image src="https://t12.baidu.com/it/u=4239869624,2005225806&fm=173&app=25&f=JPEG?w=640&h=434&s=92AAEBA054423EE41A302499030050C0"/>
-                </view>
-            </ui-col>
-            <ui-col class="text" align="left" vertical-align="top" space-left="0" space-right="5">
-                <view style="width: 100%;">
-                    <ui-row height="20">
-                        <ui-col align="left" vertical-align="top">
-                            <view class="userMsg"><text class="name">郭晶晶</text><text decode="true">&nbsp;&nbsp;</text><text class="job">前端工程师</text></view>
-                        </ui-col>
-                    </ui-row>
-                    <view class="talkContent">第37周|总票房8.11亿较上周上涨4.38%，《猩猿崛起》突破票房10亿</view>
-                </view>
-            </ui-col>
-        </ui-row>
-    </view>
+        <scroll-view scroll-y="true" bindscroll="scrllView" id="viewport" style="height: {{ transmit.tabBar.actItem == 0  ? (scrollHeight - 103) : (scrollHeight - 53)}}px;overflow:hidden;top:-2px;position:relative;" scroll-into-view="{{ toView }}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden"><!-- bindscrolltoupper="bindscrolltoupper"，，，，catch:touchstart="loadTouchstart" catch:touchend="loadTouchend" catch:touchmove="loadTouchmove"-->
+          <view class="content" id="content">
+            <checkbox-group bindchange="checkboxChange" class="checkboxGroup">
+              <ui-row hover-class="touchui-hover" class="talkItem" wx:for="{{ chatData }}" wx:key="index" id="the{{index}}">
+                    <view class="historyLine" wx:if="{{ (item.cmd == 'time' || item.cmd == '2') && item.content }}">{{ item.content }}</view>
+                    <ui-col width="60" align="left" vertical-align="top" wx:if="{{ (item.cmd == 0 || item.cmd == 100) && (sendInputMsg.fromUser != item.fromUser)}}"><!--消息来自别人-->
+                        <view class="left_icon left_icon1">
+                            <image src="{{  item.headImgUrl }}"/>
+                        </view>
+                    </ui-col>
+                    <!-- <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && (sendInputMsg.fromUser == item.fromUser) && transmit.isTransmit }}"><checkbox-group data-item="{{ item }}" bindchange="checkboxChange"><label><checkbox class="checkbox" value="{{item.msgId}}"/></label></checkbox-group></view>消息转发选项框...... -->
+                    <ui-col class="text" align="left" vertical-align="top" space-left="0" space-right="5" wx:if="{{ item.cmd == 0 || item.cmd == 100}}">
+                        <view style="width: 100%; text-align:{{ sendInputMsg.fromUser == item.fromUser ? 'right' : 'left' }};">
+                            <ui-row height="20" wx:if="{{ sendInputMsg.fromUser != item.fromUser }}">
+                                <ui-col align="{{ sendInputMsg.fromUser == item.fromUser ? 'right' : 'left'}}" vertical-align="top">
+                                    <view class="userMsg"><text class="name">{{ item.fromUserName }}</text><text decode="true">&nbsp;&nbsp;</text><text class="job">{{ item.position || '' }}</text></view>
+                                </ui-col>
+                            </ui-row>
+                            <!--文本类型-->
+                            <text selectable='true' class="talkContent" data-item="{{item}}" bind:longpress="{{transmit.tabBar.actItem == 0 ? 'openActionsheet' : ''}}" wx:if="{{ ( item.msgType == 0 && item.cmd != 100 ) || item.msgType == 7}}" style="background-color: white;">{{ item.content }} </text>
+                            <!--需求类型-->
+                            <view class="talkContent" data-item="{{item}}" bind:longpress="{{transmit.tabBar.actItem == 0 ? 'openActionsheet' : ''}}" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="retOrConfirm" wx:if="{{ item.msgType == 20 || item.msgType == 22 || item.msgType == 21 }}" style="background-color: white;width:100%;">
+                              <ui-row style="border-bottom:1px solid rgba(0,0,0,0.1);">
+                                  <ui-col style="color:{{ item.content.demandState ? '#4EBF62' : '#267AFC' }};font-size:12px;">{{ item.msgType == 20 || item.msgType == 21 ? "需求确认" : "修改需求确认" }}</ui-col>
+                              </ui-row>
+                              <ui-row style="height:60px;padding:7px 0;">
+                                  <ui-col style="font-size:12px;" width="45">
+                                    <image mode="aspectFit" src="../../static/img/Group6Copy@2x.png"></image>
+                                  </ui-col>
+                                  <ui-col style="font-size:12px;padding-left:10px;">
+                                    <view style="white-space:nowrap;text-overflow:ellipsis;overflow:hidden;height:30px;">需求单{{ item.content.demandNum }}</view>
+                                    <!-- <view style="white-space:nowrap;height:30px;line-height:40px;" wx:if="{{ sendInputMsg.fromUser == item.content.createUser && (item.content.demandState == false) }}">发起人<text>@</text>{{ item.fromUserName }}</view> -->
+                                    <view style="white-space:nowrap;height:30px;line-height:40px;">确认人<text style="color: #FF9D44;">@{{ item.content.confirmUserName }}</text></view>
+                                  </ui-col>
+                              </ui-row>
+                              <ui-row>
+                                  <ui-col style="white-space:nowrap;font-size:12px;" wx:if="{{ item.content.demandState == true }}">确认日期{{ item.createAt }}</ui-col>
+                              </ui-row>
+                            </view>
+                            <!--图片类型-->
+                            <view class="talkContent" wx:if="{{ item.msgType == 1 }}" style="height:100px;background-color:rgba(0,0,0,0);width:40%;">
+                              <image lazy-load="true" mode="aspectFill" data-item="{{item}}" bindtap="previewImage" bind:longpress="{{transmit.tabBar.actItem == 0 ? 'openActionsheet' : ''}}" style="height:100%;width:auto" src="{{ item.attachUrl }}"></image>
+                              <view class="myProgress" wx:if="{{ item.progress >0 && item.progress < 100 }}" style="height:1px;width:{{ item.progress }}%;background-color: {{ item.progress == 100 && item.readCount >= 0 ? '#49CC8D' : 'rgba(255,100,100,0.8)' }}"></view></view>
+                            <!--语音类型-->
+                            <view class="talkContent" wx:if="{{ item.msgType == 2 }}" style="width:{{ item.seeWord ? 'auto' : '100px' }};min-width:100px;" catchtap="playVoice" bind:longpress="{{transmit.tabBar.actItem == 0 ? 'openActionsheet' : ''}}" data-index="{{ index }}" data-item="{{item}}">
+                                <image mode="aspectFit" style="height:20px;width:20px;float:{{ sendInputMsg.fromUser == item.fromUser ? 'left' : 'right'}}" src="{{ item.src ? item.src : '../../static/img/voice2.png' }}"></image>
+                                <view style="border-top:1rpx solid #ddd;padding-top:3px;margin-top:28px;font-size:26rpx;color:#666;" class="voiceContent" wx:if="{{item.content != '' && item.content != null && item.seeWord }}">{{ item.content }}</view>
+                                <view style="border-top:1rpx solid #ddd;padding-top:3px;margin-top:28px;color:rgba(255,100,100,0.8);font-size:26rpx;" class="voiceContent" wx:elif="{{ item.seeWord }}"> 无可识别内容 </view>
+                                <!-- <view class="myProgress" wx:if="{{ item.progress }}" style="height:1px;width:{{ item.progress }}px;background-color: {{ item.progress == 100 ? '#49CC8D' : 'rgba(255,100,100,0.8)' }}"></view> -->
+                            </view>
+                            <!--视频类型-->
+                            <view class="talkContent" wx:if="{{ item.msgType == 3 }}" style="width:90%;">
+                                <video style="width:100%;height:117px;" src="{{ item.attachUrl }}" controls></video>
+                                <view class="myProgress" wx:if="{{ item.progress }}" style="height:1px;width:{{ item.progress }}px;background-color: {{ item.progress == 100 ? '#49CC8D' : 'rgba(255,100,100,0.8)' }}"></view>
+                            </view>
+                            <!--文件类型-->
+                            <view class="talkContent" wx:if="{{ item.msgType == 6 }}" data-item="{{item}}" style="width:80%;" catchtap="openFile">
+                              <ui-row>
+                                  <ui-col span="9" align="left" vertical-align="top" data-item="{{item}}" catch:longpress="{{transmit.tabBar.actItem == 0 ? 'openActionsheet' : ''}}">
+                                      <view style="font-size:13px;color:#333333;width:100%;">{{ item.content }}</view>
+                                  </ui-col>
+                                  <ui-col span="3">
+                                    <text class="iconfont myWx-552cd47fba2cc" style="font-size:32px;text-align:center;"></text>
+                                  </ui-col>
+                              </ui-row>
+                              <view style="border-top:1xp solid blue;"></view>
+                              <view class="myProgress" wx:if="{{ item.progress }}" style="height:1px;width:{{ item.progress }}px;background-color: {{ item.progress == 100 ? '#49CC8D' : 'rgba(255,100,100,0.8)' }}"></view>
+                            </view>
+                            <!-- 评价 -->
+                            <view class="talkContent" wx:if="{{ item.cmd == 100 || item.msgType == 30  }}" style="width:80%;">
+                              <ui-row space-bottom="" style="height:30px;line-height:26px;">
+                                  <ui-col align="left" vertical-align="top">
+                                      <text style="font-size:14px;color:#333333;">项目办结消息提醒</text>
+                                  </ui-col>
+                              </ui-row>
+                              <ui-row style="border-bottom:1px solid #EFEFEF;padding:0px 0 10px 0;">
+                                  <ui-col align="left" vertical-align="top">
+                                      <!-- <text style="font-size:13px;color:#333333;text-align:right;display:block;width:100%;font-size:13px;">{{ item.fromUserName }}邀请你对本次服务进行评价。</text> -->
+                                      <text style="font-size:12px;color:#5C6466;text-align:left;display:block;width:100%;font-size:13px;">尊敬的客户你好，你的项目已经完结请对我们的服务进行评价。</text>
+                                  </ui-col>
+                              </ui-row>
+                              <ui-row>
+                                  <ui-col align="center" vertical-align="top">
+                                      <text wx:if="{{ item.toUser == sendInputMsg.fromUser && transmit.tabBar.actItem == 0 }}" style="font-size:12px;color:#2A79FB;padding:9px 0;" catchtap="evaluateMe">点击评价</text>
+                                      <text wx:else style="font-size:12px;color:#bbb;padding:9px 0;">点击评价</text>
+                                  </ui-col>
+                              </ui-row>
+                            </view>
+                        </view>
+                        <view class="readMe" wx:if="{{ sendInputMsg.fromUser == item.fromUser }}" style="right:{{ sendInputMsg.fromUser == item.fromUser ? '5px' : '' }}">{{ theGroupMsg.groupUsers.length - item.readCount -1 >= 0 ? theGroupMsg.groupUsers.length - item.readCount -1 : '0'}} {{ item.readCount >= 0 ? "人未读" : ''}}</view>
+                    </ui-col>
+                    <ui-col class="text" align="center" vertical-align="top" space-left="0" space-right="0" wx:if="{{ item.cmd == 1 }}">
+                        <view class="historyLine">{{ item.fromUserName }} 撤回了一条消息</view>
+                    </ui-col>
+                    <!-- 办结消息 -->
+                    <!-- <ui-col class="text" align="center" vertical-align="top" space-left="0" space-right="0" wx:if="{{ item.cmd == 100 }}">
+                        <view class="historyLine">{{ item.content }} </view>
+                    </ui-col> -->
+                    <ui-col width="60" align="left" vertical-align="top" wx:if="{{ item.cmd != 'time' && (sendInputMsg.fromUser == item.fromUser) && item.cmd != 2 && item.cmd != 1 }}"><!--消息来自自己-->
+                        <view class="left_icon left_icon1">
+                            <image src="{{  userMsg.headImgUrl }}"/>
+                        </view>
+                        <!-- 消息转发选项框...... -->
+                    </ui-col>
+                    <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && transmit.isTransmit && item.msgType != 20 && item.msgType != 21 && item.msgType != 22 && item.msgType != 30}}"><checkbox color="#267AFC" checked="{{ item.checked }}" class="checkbox" value="{{ item.msgId }}"/></view>
+                </ui-row>
+              </checkbox-group>
+          </view>
+        </scroll-view>
   </view>
 </template>
 <script>
+import chatRoomBehavior from '../../static/data/chatRoomBehavior.js'
 export default {
-  config:{
-    "component": true,
-    "usingComponents": {}
-  },
+  behaviors: [chatRoomBehavior],
   data: {
     msg: 'This is a test msg!'
   },

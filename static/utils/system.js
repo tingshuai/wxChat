@@ -157,5 +157,41 @@ export default {
     //s = s.replace(reg, "$1$2"); //这里的reg就是上面的正则表达式
     // s = s.match(reg);
     return( obj.str )
+  },
+  getGroupMsg( app , num ,resolve){//请求群消息.......
+    let _groupMsg = app.globalData.groupMsg;
+    debugger;
+    this.http({ 
+      url:`/chat/msg/getGroupMsg`, method:"get",
+      param:{
+        groupId : _groupMsg.groupId ,//群ID
+        pageSize : 10,//一页几条
+        pageNum : num,//第几页
+        openId: _groupMsg.openId
+      },
+      header:{'content-type': 'application/x-www-form-urlencoded'},
+      scb(res){
+        let _resData = res.data.data;
+        debugger;
+        wx.getStorage({
+          key: _groupMsg.groupId,
+          success (_data_) {
+            let _newData = [..._resData.rows,..._data_.data]
+            resolve( _newData );
+            wx.setStorage({
+              key: _groupMsg.groupId,
+              data: _newData
+            })
+          },
+          fail(_data_){
+            wx.setStorage({
+              key: _groupMsg.groupId,
+              data: _resData.rows
+            })
+            resolve( _data_.data );
+          }
+        })
+      }
+    })
   }
 }

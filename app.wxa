@@ -67,7 +67,8 @@ export default {
     },
     registerState: '',
     headHeight: '',
-    phoneModel: 'custom'
+    phoneModel: 'custom',
+    groupMsg:{},//当前群信息.....
   },
   onLaunch() {
     system.attachInfo()
@@ -139,8 +140,8 @@ export default {
 page {
   background-color: #EFEFF4; // padding-top: 66px;
   overflow: hidden;
+  box-sizing: border-box;
 }
-
 .ui-nav-bar {
   padding-top: 28px;
 }
@@ -150,7 +151,12 @@ page {
   line-height: 48px;
   font-size: 17px;
 }
-
+.noafter:after{
+  display: none!important;
+}
+.noafter:before{
+  display: none!important;
+}
 .nav_bar {
   .center {
     font-size: 18px;

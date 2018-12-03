@@ -4,10 +4,10 @@
         <view style="font-size:14px;width:50px;text-align:center;"><text class="iconfont {{ isVoice ? 'myWx-jianpan' : 'myWx-yuyintonghua' }}" bindtap="toggleMsgType"></text></view>
         <view hidden="{{ isVoice }}" style="width:{{ inputWidth }};"><input cursor-spacing="6" class="myInput" focus="{{inputIn.inputFocus}}" bindinput="onInput" value="{{ inputVal }}" style="background-color:white;"/></view>
         <view hidden="{{ !isVoice }}" style="width:{{ inputWidth }};"><button catch:touchstart="touchstart" catch:touchend="touchend" catch:touchmove="touchmove">按住说话</button></view>
-        <view style="font-size:14px;width:50px;text-align:center;" hidden="{{ isInputing }}"><text class="iconfont myWx-jia" bindtap="toggleHeight"></text></view>
+        <view style="font-size:14px;width:50px;text-align:center;" hidden="{{ isInputing }}"><text class="iconfont myWx-jia" bindtap="changeHeight"></text></view>
         <view style="width:55px;text-align:center;" hidden="{{ !isInputing }}" class="sendBtn" space-left="3" space-right="3"><button type="primary" bindtap="sendMsg">发送</button></view>
       </view>
-      <view height="90" class="sentType" hidden="{{ isShowControlBar }}" style="">
+      <view height="90" class="sentType" hidden="{{ !isShowControlBar }}" style="">
         <!-- 电话 -->
         <view class="sentType_col">
           <image src="../../static/img/call.png" bindtap="callMe" style="width:50px;height:50px;"></image>
@@ -56,12 +56,24 @@
 </template>
 <script>
 import chatRoomBehavior from '../../static/data/chatRoomBehavior.js'
+
 export default {
   behaviors: [chatRoomBehavior],
+  properties:{
+    pwx:{
+      type: Object, // 类型（必填），目前接受的类型包括：String, Number, Boolean, Object, Array, null（表示任意类型）
+      value: {}, // 属性初始值（可选），如果未指定则会根据类型选择一个
+      observer: function (newVal, oldVal) {
+
+      }
+    }
+  },    
   data: {
     isVoice: false,
     inputWidth:wx.WIN_WIDTH - 50 + 'px',
     isInputing:false,//是否正在输入...
+    isShowControlBar:false,//是否显示下面控制栏....
+    isShowUserList:false,//是否显示下面用户列表...
   },
   methods: {
     handleTap () {
@@ -74,6 +86,16 @@ export default {
       this.setData({
         "isVoice":!this.data.isVoice
       })
+    },
+    // 弹出控制栏.....
+    changeHeight(){
+      this.setData({
+        "isShowControlBar":!this.data.isShowControlBar
+      })
+      this.triggerEvent( "cheight" , { "_height_": this.data.isShowControlBar ? wx.DEFAULT_CONTENT_HEIGHT - 214 - 40 : wx.DEFAULT_CONTENT_HEIGHT -  49 - 40 } );
+    },
+    aite(){
+      
     }
   }
 }
@@ -83,6 +105,7 @@ export default {
   .fixed_bottom{
     background-color:#F7F7FA;
     border-top:1px solid #ddd;
+    box-sizing: border-box;
   }
   .rowInputs{
     display: flex;

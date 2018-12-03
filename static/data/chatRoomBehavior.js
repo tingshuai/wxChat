@@ -6,16 +6,10 @@ module.exports = Behavior({
       }
     },
     data: {
-      isShowControlBar:false,//是否显示下面控制栏....
-      isShowUserList:false,//是否显示下面用户列表...      
+      _app_:getApp()
     },
     attached: function(){},
     methods: {
-      toggleHeight(){
-        debugger;
-        this.setData({
-          "isShowControlBar": !this.data.isShowControlBar
-        })        
-      }
+      
     }
   })

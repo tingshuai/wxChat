@@ -1,6 +1,6 @@
 <template>
-  <view class="article">
-        <scroll-view scroll-y="true" bindscroll="scrllView" id="viewport" style="height: {{ transmit.tabBar.actItem == 0  ? (scrollHeight - 103) : (scrollHeight - 53)}}px;overflow:hidden;top:-2px;position:relative;" scroll-into-view="{{ toView }}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden"><!-- bindscrolltoupper="bindscrolltoupper"，，，，catch:touchstart="loadTouchstart" catch:touchend="loadTouchend" catch:touchmove="loadTouchmove"-->
+  <view class="article" style="height:{{ scrollHeight }}px;">
+        <scroll-view scroll-y="true" bindscroll="scrllView" id="viewport" style="height: 100%;overflow:hidden;" scroll-into-view="{{ toView }}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}"><!-- bindscrolltoupper="bindscrolltoupper"，，，，catch:touchstart="loadTouchstart" catch:touchend="loadTouchend" catch:touchmove="loadTouchmove"-->
           <view class="content" id="content">
             <checkbox-group bindchange="checkboxChange" class="checkboxGroup">
               <ui-row hover-class="touchui-hover" class="talkItem" wx:for="{{ chatData }}" wx:key="index" id="the{{index}}">
@@ -113,15 +113,29 @@
 </template>
 <script>
 import chatRoomBehavior from '../../static/data/chatRoomBehavior.js'
+import watch from '../../static/utils/watch'
+
 export default {
   behaviors: [chatRoomBehavior],
+  properties:{
+    scrollHeight:{
+      type: Number, // 类型（必填），目前接受的类型包括：String, Number, Boolean, Object, Array, null（表示任意类型）
+      value: null, // 属性初始值（可选），如果未指定则会根据类型选择一个
+      observer: function (newVal, oldVal) {
+
+      }
+    }
+  },  
   data: {
-    msg: 'This is a test msg!'
+    h: wx.DEFAULT_CONTENT_HEIGHT -  49 - 40
   },
   methods: {
     handleTap () {
-      console.log(this.data.msg)
+      console.log( this.data.msg )
     }
+  },
+  watch:{
+      
   }
 }
 </script>

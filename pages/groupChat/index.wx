@@ -12,7 +12,7 @@
           </view>
       </view>
       <!-- 消息区 -->
-      <cc-group-chat id="groupChat" scrollHeight="{{ scrollHeight }}"  bindtap="toggleHeight"></cc-group-chat>
+      <cc-group-chat id="groupChat" bindaddData="addData" scrollHeight="{{ scrollHeight }}"  bindtap="toggleHeight" chatData="{{ chatData }}"></cc-group-chat>
       <!-- 话筒 -->
       <ui-fixed-view top="30%" left="{{ voice.plVoice }}" style="z-index:9999;display:{{ voice.show ? 'block' : 'none' }}">
           <view class="fixed-view-content" style="background-color:rgba(0,0,0,0.5);padding:0px 35px 20px 35px;border-radius:7px;">
@@ -53,33 +53,10 @@ export default {
     this.setData({
       "_item":_item
     })
-    let promise = new Promise((resolve,reject)=>{
-      wx.getStorage({
-        key: _item.group.groupId,
-        success ( _data_ ) {
-          let _msgLength = _data_.data.filter((item)=>{
-            return item.cmd != "time";
-          })
-          let _curPage = Math.ceil( _msgLength.length / 10 );
-          debugger;
-          system.getGroupMsg( app , ++_curPage ,resolve);
-          debugger;
-        },
-        fail(_data_){
-          system.getGroupMsg( app , 1 ,resolve);
-        }
-      })    
-    })
-    promise.then(( _data_ )=>{
-      that.setData({
-        chatData: _data_
-      })
-      that.data.chatData
-      debugger;
-    })
+    this.getChatData();
   },
   onShow(){
-    console.log("b");
+    // this.onMessage();
   },
   // 改变聊天窗口的高度...
   toggleHeight(){
@@ -94,6 +71,72 @@ export default {
     this.setData({
       "scrollHeight": e.detail._height_
     })
+  },
+  addData(e){//获取分页数据.....
+    let that = this;
+    let _msgLength = this.data.chatData.filter((item)=>{
+      return item.cmd != "time";
+    })
+    let _curPage = Math.ceil( _msgLength.length / 10 );
+    let promise = new Promise((resolve,reject)=>{
+      system.getGroupMsg( app , ++_curPage , resolve);
+    })
+    promise.then(( _data_ )=>{
+      let _cur = _data_.length - this.data.chatData.length;
+      that.setData({
+        chatData: _data_
+      })
+      that.selectComponent("#groupChat").setData({
+        "toView":`the${_cur}`
+      })      
+    })
+  },
+  getChatData(){//获取首次数据.....
+    let that = this;
+    let promise = new Promise((resolve,reject)=>{
+      wx.getStorage({
+        key: that.data._item.group.groupId,
+        success ( _data_ ) {
+          if( _data_.data.length > 80 ){
+            _data_.data = _data_.data.splice( -30 , _data_.data.length - 1 )
+          }
+          wx.setStorage({
+            key:that.data._item.group.groupId,
+            data:_data_.data
+          })
+          that.setData({
+            chatData:_data_.data
+          })
+          that.selectComponent("#groupChat").setData({
+            "scrollTop":10000
+          })
+        },
+        fail(){
+          system.getGroupMsg( app , 1 , resolve);
+        }
+      })
+    })
+    promise.then(( _data_ )=>{
+      that.setData({
+        chatData: _data_
+      })
+    })
+  },
+  onMessage(){
+    system.socketOnMessage(app,this);
+    app.globalData.socketTask.onMessage((res)=>{
+      var _data = JSON.parse( res.data );
+      app.globalData.promise.upDataGroupMsg.then((_old_,_new_)=>{
+        switch ( _data.cmd ) {
+          case 0://有人发消息过来..
+              break;
+          case 2://有群解散..
+              break;
+          default:
+              break;
+        }
+      })
+    })    
   }
 }
 </script>
@@ -140,11 +183,7 @@ export default {
   .tit12{
     font-size:12px;
   }
-  .article{
-    position: relative;
-    width:100%;
-    overflow: hidden;
-  }
+
     .groupMsgBtn{
         position: relative;
         // right:48px;
@@ -202,60 +241,7 @@ export default {
 #viewport{
   transition: all 0.2s;
 }
-.content{
-    padding:0px 8px 0px 8px;
-    transition: all 0.2s;
-    .talkItem{
-      padding:15px 0;
-      margin-bottom:6px;
-    }
-    .left_icon{
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background-color:#FCB300; 
-        text-align: center;
-        line-height: 50px;
-    }
-    .left_icon2{
-        background-color: #FF7360;
-    }
-    .left_icon3{
-        background-color: #39CCC5;
-    }
-    .name,.job{
-      font-family:PingFang-SC-Medium;
-      color:rgba(102,102,102,1);
-      max-width: 90px;
-      display: inline-block;
-      .mix-text-overflow();
-    }
-    .name{
-      font-size: 13px;
-    }
-    .job{
-      font-size: 11px;
-    }
-    .userMsg{
-      vertical-align: top;
-      line-height: 13px;
-    }
-    .talkContent{
-      font-size: 15px;
-      font-family:PingFang-SC-Medium;
-      color:rgba(51,51,51,1);
-      background-color: white;
-      padding: 5px 10px;
-      border-radius: 5px;
-      display: inline-block;
-      max-width:90%;
-      white-space: pre-line;
-      overflow-wrap:break-word;
-      text-align: left;
-      min-height: 20px;
-      position: relative;
-    }
-}
+
 .myProgress{
   position:absolute;
   bottom:0px;
@@ -381,9 +367,7 @@ page{
   // overflow: hidden;
   // height: 100%;
 }
-.checkboxGroup{
-  padding-bottom:15px;
-}
+
 view {
   &.content {
     width: 100%;

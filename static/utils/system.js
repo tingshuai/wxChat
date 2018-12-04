@@ -86,7 +86,7 @@ export default {
       return res.data.data.rows
     }})
   },
-  connectSocket(app){//连接socket.......
+  connectSocket(app,_obj){//连接socket.......
     let that = this;
     if( app.globalData.socketTask.openType == false ){
       app.globalData.socketTask = wx.connectSocket({
@@ -94,12 +94,17 @@ export default {
         data:{},
         header:{'content-type': 'application/json'},
         success:function(msg){
-          console.log( "SocketTask.readState" , app.globalData.socketTask )
           wx.hideToast();
           setTimeout(()=>{
+            that.socketOnMessage(getApp());
             that.socketOnClose(getApp());
             that.socketOnOpen(getApp());
             that.socketOnError(getApp());
+            if( _obj.type == 'login' ){//如果是第一次登陆来的。。。。
+              wx.redirectTo({
+                url: '/pages/home/index?actItem=0'
+              })              
+            }
           },1000)
         },
         fail:function(msg){
@@ -129,11 +134,42 @@ export default {
     //监听WebSocket错误。
     let that = this;
     app.globalData.socketTask.onError(function(res){
-        system.msgTip({title: '提示',content: _tip,scb(){},ccb(){}})
+        system.msgTip({title: '提示',content: _tip,scb(){},ccb(){}});
         that.closeSocket( getApp() );
     })
   },
- sendSocketMessage(obj) {//发送socket消息......
+  socketOnMessage( app , _me ){
+    app.globalData.socketTask.onMessage((res)=>{
+      var _data = JSON.parse( res.data );
+      app.globalData.promise.upDataGroupMsg = new Promise((resolve,reject)=>{
+        switch ( _data.cmd ) {
+          case 0://有人发消息过来..
+              wx.getStorage({//更新存储的群信息....
+                key: _data.groupId,
+                success ( _data_ ) {
+                  _data_.data.splice(0,0,_data);
+                  wx.setStorage({
+                    key: _data.groupId,
+                    data: _data_.data
+                  })
+                  if( _me != undefined){
+                    _me.setData({
+                      "chatData": _data_.data
+                    })
+                  }
+                  resolve( {_old_:_data,_new_:_data_.data} )
+                }
+              })
+              break;
+          case 2://有群解散..
+              break;
+          default:
+              break;
+        }
+      })
+    })
+  },
+  sendSocketMessage(obj) {//发送socket消息......
       let that = this;
       console.log( obj )
       obj._app.socketTask.send({
@@ -160,7 +196,6 @@ export default {
   },
   getGroupMsg( app , num ,resolve){//请求群消息.......
     let _groupMsg = app.globalData.groupMsg;
-    debugger;
     this.http({ 
       url:`/chat/msg/getGroupMsg`, method:"get",
       param:{
@@ -172,7 +207,6 @@ export default {
       header:{'content-type': 'application/x-www-form-urlencoded'},
       scb(res){
         let _resData = res.data.data;
-        debugger;
         wx.getStorage({
           key: _groupMsg.groupId,
           success (_data_) {
@@ -183,12 +217,12 @@ export default {
               data: _newData
             })
           },
-          fail(_data_){
+          fail(){
             wx.setStorage({
               key: _groupMsg.groupId,
               data: _resData.rows
             })
-            resolve( _data_.data );
+            resolve( _resData.rows );
           }
         })
       }

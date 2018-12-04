@@ -2,9 +2,9 @@
   <view class="container" wx:show="{{ showPage }}">
     <!-- <ui-fixed-view top="0" left="0" right="0" style="position:relative;"> -->
       <view class="fixed-view-content">
-          <view class="weui-search-bar">
-              <view class="weui-search-bar__form">
-                  <view class="weui-search-bar__box">
+          <view class="weui-search-bar noafter">
+              <view class="weui-search-bar__form noafter">
+                  <view class="weui-search-bar__box noafter">
                       <icon class="weui-icon-search_in-box" type="search" size="14" wx:if="{{ !showInput }}"></icon>
                       <input type="text" class="weui-search-bar__input" placeholder="{{ showInput ? '' :  '搜索'}}" value="{{inputVal}}" focus="{{ inputShowed }}" bindinput="inputTyping" />
                       <view class="weui-icon-clear" wx:if="{{ inputVal.length > 0 }}" bindtap="clearInput">
@@ -118,6 +118,11 @@ export default {
         }
     })
     this.getDefaultImg();
+  },
+  onShow(e){
+    this.requestGroupList( '/history/groups/tree','history');
+    this.requestGroupList( '/chat/groups/tree','over',1 );
+    system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:20000});
     wx.onNetworkStatusChange(function(res) {
       if( res.isConnected ){
         that.homeSocket();
@@ -128,11 +133,6 @@ export default {
         }
       }
     })
-  },
-  onShow(e){
-    this.requestGroupList( '/history/groups/tree','history');
-    this.requestGroupList( '/chat/groups/tree','over',1 );
-    system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:20000});
   },
   exData(_data){
       console.log( _data );

@@ -5,14 +5,14 @@
         <button bindtap="showModel" class="seeGroupMsg cBtn0">转发</button>
       </ui-fixed-view>
       <!-- 群信息按钮 -->
-      <view class="weui-cells weui-cells_after-title noafter" style="height:40px;background-color:rgba(38,122,252,0.6);">
-          <view class="weui-cell weui-cell_link noafter" style="padding-left:10px;padding-right:5px;height:100%;" bindtap="groupMsg">
+      <view class="weui-cells weui-cells_after-title noafter" style="height:40px;position:relative;z-index:100;background-color:#EFEFF4;">
+          <view class="weui-cell weui-cell_link noafter" style="padding-left:10px;padding-right:5px;height:100%;background-color:rgba(38,122,252,0.6);" bindtap="groupMsg">
               <view class="weui-cell__bd noafter" style="color:white;font-size:12px;">群信息</view>
               <view><icon class="iconfont myWx-xiangyou" style="font-size:16px;color:white;line-height:35px;"></icon></view>
           </view>
       </view>
       <!-- 消息区 -->
-      <cc-group-chat id="groupChat" bindaddData="addData" scrollHeight="{{ scrollHeight }}"  bindtap="toggleHeight" chatData="{{ chatData }}"></cc-group-chat>
+      <cc-group-chat id="groupChat" style="position:relative;top:{{ translateY }}px" bindaddData="addData" scrollHeight="{{ scrollHeight }}"  bindtap="toggleHeight" chatData="{{ chatData }}"></cc-group-chat>
       <!-- 话筒 -->
       <ui-fixed-view top="30%" left="{{ voice.plVoice }}" style="z-index:9999;display:{{ voice.show ? 'block' : 'none' }}">
           <view class="fixed-view-content" style="background-color:rgba(0,0,0,0.5);padding:0px 35px 20px 35px;border-radius:7px;">
@@ -22,7 +22,7 @@
       </ui-fixed-view>
       <!--底部输入工具-->
       <ui-fixed-view bottom="0" left="0" right="0">
-          <cc-chat-tool id="chatTool" bindcheight="changeHeight"></cc-chat-tool>
+          <cc-chat-tool sendInputMsg="{{ sendInputMsg }}" id="chatTool" bindcheight="changeHeight" bindscrollToBottom="scrollToBottom"></cc-chat-tool>
       </ui-fixed-view>
   </view>
 </template>
@@ -35,7 +35,7 @@ var recorderManager,wx_timer,wx_timer2,wx_n1=0,wx_n2=1,wx_promiseSubmitRequire;
 var backgroundAudioManager=wx.getBackgroundAudioManager();
 export default {
   config: {
-    navigationBarTitleText: "欢迎进入群聊",
+    navigationBarTitleText: "",
     usingComponents: {
       'cc-group-chat': '../../packages/cc-groupChat/index',
       'cc-chat-tool': '../../packages/cc-chatTool/index'
@@ -44,24 +44,51 @@ export default {
   data: {
     scrollHeight: wx.DEFAULT_CONTENT_HEIGHT - 49 - 40,
     _item:{},
-    chatData:[]
+    chatData:[],
+    translateY:0,
+    sendInputMsg :{
+      fromUser:"",//发送人ID
+      fromUserName:"",//发送人姓名
+      toUser:'',//群聊不填，私聊必填
+      content:"",//消息体
+      cmd:0,//0发送消息，1-撤回消息,2-系统推送消息.
+      msgType:0,//消息类型0-text,1-image,2-voice,3-vedio,4-music,5-news
+      chatType:0,//聊天类型0-未知，1-公聊，2-私聊
+      groupId:'',//群聊ID....群聊必填..
+      attachUrl:'',//附件地址...
+      position:"",
+      msgId:'',
+      groupName:'',
+      status:0,
+      isGroupManager:false,
+      headImgUrl:app.globalData.userMsgReq.headImgUrl || '',
+    }    
   },
   onLoad(options){
     let that = this;
     let _item = JSON.parse( options.item );
     app.globalData.groupMsg = _item.group;//当前群信息
     this.setData({
-      "_item":_item
+      "_item":_item,
+      ['sendInputMsg.groupId']:_item.group.groupId,
+      ['sendInputMsg.groupName']:_item.group.groupName,
+      ['sendInputMsg.headImgUrl']:app.globalData.userMsgReq.headImgUrl,
+      ['sendInputMsg.isGroupManager']:app.globalData.userMsgReq.isGroupManager,
+      ['sendInputMsg.fromUser']:app.globalData.openId,
+      ['sendInputMsg.fromUserName']:app.globalData.userMsgReq.username
+    })
+    wx.setNavigationBarTitle({
+      title: _item.group.groupName || "欢迎进入群聊"
     })
     this.getChatData();
+    this.onMessage();
   },
   onShow(){
-    // this.onMessage();
   },
   // 改变聊天窗口的高度...
   toggleHeight(){
     this.setData({
-      "scrollHeight": wx.DEFAULT_CONTENT_HEIGHT - 49 - 40
+      "translateY": 0
     })
     this.selectComponent("#chatTool").setData({
       "isShowControlBar":false
@@ -69,7 +96,7 @@ export default {
   },
   changeHeight(e){
     this.setData({
-      "scrollHeight": e.detail._height_
+      "translateY": e.detail.type == "control" ? e.detail.showControlBar ? "-170" : "0" : "-50"
     })
   },
   addData(e){//获取分页数据.....
@@ -88,7 +115,7 @@ export default {
       })
       that.selectComponent("#groupChat").setData({
         "toView":`the${_cur}`
-      })      
+      })
     })
   },
   getChatData(){//获取首次数据.....
@@ -106,9 +133,8 @@ export default {
           })
           that.setData({
             chatData:_data_.data
-          })
-          that.selectComponent("#groupChat").setData({
-            "scrollTop":10000
+          },()=>{
+            that.scrollToBottom();
           })
         },
         fail(){
@@ -119,18 +145,40 @@ export default {
     promise.then(( _data_ )=>{
       that.setData({
         chatData: _data_
+      },()=>{
+        that.scrollToBottom();
       })
     })
   },
-  onMessage(){
-    system.socketOnMessage(app,this);
+  scrollToBottom(){
+    this.selectComponent("#groupChat").setData({
+      "scrollTop":10000
+    })      
+  },
+  onMessage(){//更新聊天记录.....
+    let that = this;
+    // system.socketOnMessage(app,this);
     app.globalData.socketTask.onMessage((res)=>{
       var _data = JSON.parse( res.data );
-      app.globalData.promise.upDataGroupMsg.then((_old_,_new_)=>{
+      app.globalData.promise.upDataGroupMsg.then((_data_)=>{
         switch ( _data.cmd ) {
           case 0://有人发消息过来..
+              wx.getStorage({//更新存储的群信息....
+                key: _data.groupId,
+                success ( _data_ ) {
+                    that.setData({
+                      chatData:_data_.data
+                    })
+                    that.scrollToBottom();
+                    that.selectComponent("#chatTool").setData({
+                      "inputVal":""
+                    })                        
+                }
+              })
               break;
           case 2://有群解散..
+              break;
+          case 3://有人读消息.....
               break;
           default:
               break;
@@ -142,6 +190,13 @@ export default {
 </script>
 
 <style lang="less">
+  .wrapChatRoom{
+    position: relative;
+    z-index: 0;
+  }
+  #groupChat  {
+    transition: all 0.2s;
+  }
   .msgTransCheckbox{
     .checkbox{
       .wx-checkbox-input{
@@ -166,19 +221,6 @@ export default {
     width:100%;
     text-align:center;
     z-index:99999;
-  }
-  .historyLine{
-    text-align: center;
-    background-color: #cccccc;
-    padding: 5px 10px;
-    border-radius: 6px;
-    font-size: 10px;
-    margin: 10px 0;
-    color: white;
-  }
-  .fixed_bottom{
-    background-color:#F7F7FA;
-    border-top:1px solid #ddd;
   }
   .tit12{
     font-size:12px;

@@ -163,7 +163,20 @@ export default {
     },
     scrllView(e){
   
-    }
+    },
+    previewImage(e){//图片预览.....
+      var imgUrl = e.currentTarget.dataset.item.attachUrl;
+      var imgList = [];
+      this.data.chatData.forEach((val,i,arr)=>{
+        if( val.msgType == 1 ){
+          imgList.push( val.attachUrl );
+        }
+      })
+      wx.previewImage({
+          current: imgUrl, // 当前显示图片的http链接
+          urls: imgList // 需要预览的图片http链接列表
+      })
+    }    
   },
   attached(){
     this.setData({
@@ -216,19 +229,32 @@ export default {
     }
     .itemLeft{
       justify-content: flex-start;
+      .text{
+        margin-left: 10px;
+      }
     }
     .text{
       width: 80%;
+      .talkContent{
+        margin-top: 6px;
+      }
     }
     .itemRight{
       justify-content: flex-end;
       .text{
         text-align: right;
+        margin-right: 10px;
       }
     }
-    .historyLine{
-      margin: 0 auto;
-    }
+  .historyLine{
+    text-align: center;
+    background-color: #cccccc;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 10px;
+    margin:0 auto;
+    color: white;
+  }
     .left_icon{
         width: 50px;
         height: 50px;

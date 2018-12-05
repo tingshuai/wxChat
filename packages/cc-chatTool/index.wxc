@@ -5,9 +5,9 @@
         <view hidden="{{ isVoice }}" style="width:{{ inputWidth }};"><input cursor-spacing="6" class="myInput" focus="{{inputIn.inputFocus}}" bindinput="onInput" value="{{ inputVal }}" style="background-color:white;"/></view>
         <view hidden="{{ !isVoice }}" style="width:{{ inputWidth }};"><button catch:touchstart="touchstart" catch:touchend="touchend" catch:touchmove="touchmove">按住说话</button></view>
         <view style="font-size:14px;width:50px;text-align:center;" hidden="{{ isInputing }}"><text class="iconfont myWx-jia" bindtap="changeHeight"></text></view>
-        <view style="width:55px;text-align:center;" hidden="{{ !isInputing }}" class="sendBtn" space-left="3" space-right="3"><button type="primary" bindtap="sendMsg">发送</button></view>
+        <view style="width:65px;text-align:center;" hidden="{{ !isInputing }}" class="sendBtn" space-left="3" space-right="3"><button type="primary" bindtap="sendMsg">发送</button></view>
       </view>
-      <view height="90" class="sentType" hidden="{{ !isShowControlBar }}" style="">
+      <view class="sentType" style="height:{{ !isShowControlBar ? 0 : 170 }}px;padding:{{ !isShowControlBar ? 0 : '10px' }} 0;">
         <!-- 电话 -->
         <view class="sentType_col">
           <image src="../../static/img/call.png" bindtap="callMe" style="width:50px;height:50px;"></image>
@@ -56,31 +56,42 @@
 </template>
 <script>
 import chatRoomBehavior from '../../static/data/chatRoomBehavior.js'
+import system from '../../static/utils/system'
 
+let app = getApp();
 export default {
   behaviors: [chatRoomBehavior],
   properties:{
     pwx:{
       type: Object, // 类型（必填），目前接受的类型包括：String, Number, Boolean, Object, Array, null（表示任意类型）
       value: {}, // 属性初始值（可选），如果未指定则会根据类型选择一个
-      observer: function (newVal, oldVal) {
-
-      }
-    }
+      observer: function (newVal, oldVal) {}
+    },
+    sendInputMsg:{
+      type: Object, // 类型（必填），目前接受的类型包括：String, Number, Boolean, Object, Array, null（表示任意类型）
+      value: {}, // 属性初始值（可选），如果未指定则会根据类型选择一个
+      observer: function (newVal, oldVal) {}
+    }    
   },    
   data: {
     isVoice: false,
     inputWidth:wx.WIN_WIDTH - 50 + 'px',
     isInputing:false,//是否正在输入...
+    inputVal:"",
     isShowControlBar:false,//是否显示下面控制栏....
     isShowUserList:false,//是否显示下面用户列表...
+    src:'../../static/img/voice2.png',//语音消息的图片地址
   },
   methods: {
     handleTap () {
       console.log(this.data.msg)
     },
-    onInput(e){
-
+    onInput(event){
+      if( event.detail.value != '' && /^(?!(\s+$))/.test(event.detail.value)){
+        this.setData({ isInputing: true, "inputVal":event.detail.value });
+      }else{
+        this.setData({ isInputing: false });
+      }
     },
     toggleMsgType(e){//切换录音与输入按钮......
       this.setData({
@@ -92,10 +103,39 @@ export default {
       this.setData({
         "isShowControlBar":!this.data.isShowControlBar
       })
-      this.triggerEvent( "cheight" , { "_height_": this.data.isShowControlBar ? wx.DEFAULT_CONTENT_HEIGHT - 214 - 40 : wx.DEFAULT_CONTENT_HEIGHT -  49 - 40 } );
+      this.triggerEvent( "cheight" , { "type": "control", "showControlBar": this.data.isShowControlBar } );
     },
     aite(){
       
+    },
+    sendMsg(){
+      var that = this;
+      let isTrue = false;
+      // if( this.data.selUser.actType == 9 ){//9为发送@消息
+      //   this.data.theGroupMsg.groupUsers.filter((item)=>{
+      //     if(item.act){
+      //       isTrue = true;
+      //       that.data.transmit.aiteContent += `@${item.username}(@\`-\`@)`;
+      //       that.setData({
+      //         ['sendInputMsg.toUser']:`${that.data.sendInputMsg.toUser},${item.openId}`
+      //       })
+      //     }
+      //   })
+      // }
+      if( isTrue ){
+        // this.setData({['sendInputMsg.msgType']: 7 ,['sendInputMsg.content']: that.data.transmit.aiteContent + that.data.inputVal});
+        this.data.sendInputMsg.msgType = 7;
+        this.data.sendInputMsg.content = that.data.transmit.aiteContent + that.data.inputVal;        
+      }else{
+        // this.setData({['sendInputMsg.msgType']: 0,['sendInputMsg.content']: that.data.inputVal});
+        this.data.sendInputMsg.msgType = 0;
+        this.data.sendInputMsg.content = that.data.inputVal;
+      }
+      let _params = JSON.stringify( that.data.sendInputMsg );
+      system.sendSocketMessage({
+        "_app":app.globalData,
+        "params": _params
+      })
     }
   }
 }
@@ -125,7 +165,8 @@ export default {
     align-items:center;
     align-content:center;
     border-top:1px solid #eee;
-    padding:10px 0;
+    overflow: hidden;
+    height: 0px;
     .sentType_col{
     //   margin-right:5%;
       width:20%;
@@ -146,9 +187,14 @@ export default {
     }
   }
   .sendBtn{
+    display:flex;
+    align-items:center;
+    padding-right:10px;
     button{
       font-size:12px;
       padding:0;
+      width:100%;
+      height:30px;
     }
   }
   .myInput{

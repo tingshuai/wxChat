@@ -120,6 +120,7 @@ export default {
     this.getDefaultImg();
   },
   onShow(e){
+    let that = this;
     this.requestGroupList( '/history/groups/tree','history');
     this.requestGroupList( '/chat/groups/tree','over',1 );
     system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:20000});

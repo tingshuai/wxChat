@@ -30,16 +30,15 @@ export default {
   },
   closeSocket(app,fun){
       let that = this;
-      app.globalData.socketTask.close({success(res){
-          app.globalData.socketTask.openType = false;
-      },fail(res){}});
+      app.globalData.socketTask.close();
   },
   socketOnClose(app){
     let that = this;
     app.globalData.socketTask.onClose(()=>{
-      let _app = getApp();
-      that.closeSocket(_app);
-      app.globalData.socketTask.openType = false;
+      setTimeout(()=>{
+        app.globalData.socketTask = null;
+        that.connectSocket( getApp(), { type:"next" } )
+      },300)
     })
   },
   // 消息提示....
@@ -88,7 +87,6 @@ export default {
   },
   connectSocket(app,_obj){//连接socket.......
     let that = this;
-    if( app.globalData.socketTask.openType == false ){
       app.globalData.socketTask = wx.connectSocket({
         url: app.globalData.socketHost + `/websocket/${ app.globalData.openId }`,//用户id
         data:{},
@@ -103,7 +101,9 @@ export default {
             if( _obj.type == 'login' ){//如果是第一次登陆来的。。。。
               wx.redirectTo({
                 url: '/pages/home/index?actItem=0'
-              })              
+              })
+            }else if( _obj.type == 'next' ){
+              console.log( "重连" );
             }
           },1000)
         },
@@ -111,12 +111,9 @@ export default {
           that.msgTip({title: '提示',content: "会话连接失败！请检查网络并重新进入小程序",scb(){},ccb(){}})
         }
       })
-    }
   },
   socketOnOpen(app){
-    app.globalData.socketTask.onOpen(function(res) {
-      app.globalData.socketTask.openType = true;
-    })
+    app.globalData.socketTask.onOpen((res)=>{})
   },
   netChange(){
     let that = this;
@@ -124,7 +121,7 @@ export default {
       if( !res.isConnected ){
         that.stateMsg({ title:"网络连接断开...",content:"",icon:"none",time:2000});   
       }else{
-        that.closeSocket(getApp());
+        that.closeSocket( getApp() );
         that.connectSocket( getApp() );
         that.stateMsg({ title:"网络已连接",content:"",icon:"none",time:2000});  
       }
@@ -136,6 +133,7 @@ export default {
     app.globalData.socketTask.onError(function(res){
         system.msgTip({title: '提示',content: _tip,scb(){},ccb(){}});
         that.closeSocket( getApp() );
+        debugger;
     })
   },
   socketOnMessage( app , _me ){
@@ -147,17 +145,12 @@ export default {
               wx.getStorage({//更新存储的群信息....
                 key: _data.groupId,
                 success ( _data_ ) {
-                  _data_.data.splice(0,0,_data);
+                  _data_.data.splice(_data_.data.length, 0,_data);
                   wx.setStorage({
                     key: _data.groupId,
                     data: _data_.data
                   })
-                  if( _me != undefined){
-                    _me.setData({
-                      "chatData": _data_.data
-                    })
-                  }
-                  resolve( {_old_:_data,_new_:_data_.data} )
+                  resolve( { _old_:_data,_new_:_data_.data } )
                 }
               })
               break;
@@ -171,14 +164,14 @@ export default {
   },
   sendSocketMessage(obj) {//发送socket消息......
       let that = this;
-      console.log( obj )
       obj._app.socketTask.send({
         data: obj.params,
         success(res){
           console.log("发送消息成功.", res )
         },
         fail(res){
-          that.msgTip({title: '提示',content: "网络连接断开请检查网络，并重新进入小程序.",scb(){},ccb(){}})
+          debugger;
+          that.msgTip({title: '提示',content: "发送失败!",scb(){},ccb(){}})
         }
       })
   },

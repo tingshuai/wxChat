@@ -2,7 +2,7 @@
     <view class="fixed_bottom">
       <view class="rowInputs" height="50" border-top border-bottom>
         <view style="font-size:14px;width:50px;text-align:center;"><text class="iconfont {{ isVoice ? 'myWx-jianpan' : 'myWx-yuyintonghua' }}" bindtap="toggleMsgType"></text></view>
-        <view hidden="{{ isVoice }}" style="width:{{ inputWidth }};"><input cursor-spacing="6" class="myInput" focus="{{inputIn.inputFocus}}" bindinput="onInput" value="{{ inputVal }}" style="background-color:white;"/></view>
+        <view hidden="{{ isVoice }}" style="width:{{ inputWidth }};padding-right:10px;"><input cursor-spacing="6" class="myInput" focus="{{inputIn.inputFocus}}" bindinput="onInput" value="{{ inputVal }}" style="background-color:white;"/></view>
         <view hidden="{{ !isVoice }}" style="width:{{ inputWidth }};"><button catch:touchstart="touchstart" catch:touchend="touchend" catch:touchmove="touchmove">按住说话</button></view>
         <view style="font-size:14px;width:50px;text-align:center;" hidden="{{ isInputing }}"><text class="iconfont myWx-jia" bindtap="changeHeight"></text></view>
         <view style="width:65px;text-align:center;" hidden="{{ !isInputing }}" class="sendBtn" space-left="3" space-right="3"><button type="primary" bindtap="sendMsg">发送</button></view>
@@ -160,7 +160,6 @@ export default {
   .sentType{
     transition: all 0.2s;
     display: flex;
-    justify-content:space-between;
     flex-wrap: wrap;
     align-items:center;
     align-content:center;
@@ -168,7 +167,6 @@ export default {
     overflow: hidden;
     height: 0px;
     .sentType_col{
-    //   margin-right:5%;
       width:20%;
       text-align: center;
       position: relative;

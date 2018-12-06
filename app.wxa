@@ -12,7 +12,7 @@ export default {
       'pages/login/index',
       'pages/home/index',
       'pages/applyTheGroup/index',
-      'pages/appTheApp/index',
+      // 'pages/appTheApp/index',
       'pages/fillInApplycation/index',
       'pages/groupChat/index',
       'pages/groupMsg/index',
@@ -57,14 +57,10 @@ export default {
     promise: {
       upDataGroupMsg: new Promise(()=>{}), //更新群信息......
       upDataGroupList: '', //更新群列表......
-      socketTask: '' //websocket消息
     },
     wxImg: '',
     defaultImg: '', //默认群头像...
-    socketTask: {
-      openType: false,
-      timeOuter: ''
-    },
+    socketTask: {},
     registerState: '',
     headHeight: '',
     phoneModel: 'custom',

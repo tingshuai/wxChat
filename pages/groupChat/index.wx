@@ -12,7 +12,7 @@
           </view>
       </view>
       <!-- 消息区 -->
-      <cc-group-chat id="groupChat" style="position:relative;top:{{ translateY }}px" bindaddData="addData" scrollHeight="{{ scrollHeight }}"  bindtap="toggleHeight" chatData="{{ chatData }}"></cc-group-chat>
+      <cc-group-chat id="groupChat" style="position:relative;top:{{ translateY }}px" bindaddData="addData" scrollHeight="{{ scrollHeight }}"  bindtouchstart="toggleHeight" chatData="{{ chatData }}"></cc-group-chat>
       <!-- 话筒 -->
       <ui-fixed-view top="30%" left="{{ voice.plVoice }}" style="z-index:9999;display:{{ voice.show ? 'block' : 'none' }}">
           <view class="fixed-view-content" style="background-color:rgba(0,0,0,0.5);padding:0px 35px 20px 35px;border-radius:7px;">
@@ -62,7 +62,7 @@ export default {
       status:0,
       isGroupManager:false,
       headImgUrl:app.globalData.userMsgReq.headImgUrl || '',
-    }    
+    }
   },
   onLoad(options){
     let that = this;
@@ -81,9 +81,10 @@ export default {
       title: _item.group.groupName || "欢迎进入群聊"
     })
     this.getChatData();
-    this.onMessage();
   },
   onShow(){
+    system.getThis(this);
+    this.onMessage();
   },
   // 改变聊天窗口的高度...
   toggleHeight(){
@@ -150,39 +151,44 @@ export default {
       })
     })
   },
-  scrollToBottom(){
+  scrollToBottom(){//滚动到最下面....
     this.selectComponent("#groupChat").setData({
       "scrollTop":10000
     })      
   },
   onMessage(){//更新聊天记录.....
     let that = this;
-    // system.socketOnMessage(app,this);
-    app.globalData.socketTask.onMessage((res)=>{
-      var _data = JSON.parse( res.data );
-      app.globalData.promise.upDataGroupMsg.then((_data_)=>{
-        switch ( _data.cmd ) {
-          case 0://有人发消息过来..
-              wx.getStorage({//更新存储的群信息....
-                key: _data.groupId,
-                success ( _data_ ) {
-                    that.setData({
-                      chatData:_data_.data
-                    })
-                    that.scrollToBottom();
-                    that.selectComponent("#chatTool").setData({
-                      "inputVal":""
-                    })                        
-                }
-              })
-              break;
-          case 2://有群解散..
-              break;
-          case 3://有人读消息.....
-              break;
-          default:
-              break;
-        }
+    let manager = (_data,_data_)=>{
+      switch ( _data.cmd ) {
+        case 0://有人发消息过来..
+            wx.getStorage({//更新存储的群信息....
+              key: _data.groupId,
+              success ( _data_ ) {
+                that.setData({
+                  chatData:_data_.data
+                })
+                that.scrollToBottom();
+                that.selectComponent("#chatTool").setData({//发送成功清空输入框数据....
+                  "inputVal":"",
+                  "isInputing":false
+                })                        
+              }
+            })
+            break;
+        case 2://有群解散..
+            break;
+        case 3://有人读消息.....
+            break;
+        default:
+            break;
+      }
+    }
+    wx.nextTick(()=>{
+      app.globalData.socketTask.onMessage((res)=>{
+        var _data = JSON.parse( res.data );
+        app.globalData.promise.upDataGroupMsg.then((_data_)=>{
+          manager(_data,_data_)
+        })
       })
     })    
   }

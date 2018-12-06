@@ -1,4 +1,8 @@
+let thisChatRoom = null;
 export default {
+  getThis(me){
+    thisChatRoom = me;
+  },
   attachInfo () {
     let res = wx.getSystemInfoSync()
 
@@ -15,7 +19,6 @@ export default {
       options.showCancel = false
       wx.showModal(options)
     }
-
     wx.showConfirm = (options) => {
       wx.showModal(options)
     }
@@ -36,9 +39,8 @@ export default {
     let that = this;
     app.globalData.socketTask.onClose(()=>{
       setTimeout(()=>{
-        app.globalData.socketTask = null;
         that.connectSocket( getApp(), { type:"next" } )
-      },300)
+      },200)
     })
   },
   // 消息提示....
@@ -92,12 +94,12 @@ export default {
         data:{},
         header:{'content-type': 'application/json'},
         success:function(msg){
-          wx.hideToast();
-          setTimeout(()=>{
+          wx.nextTick(()=>{
             that.socketOnMessage(getApp());
             that.socketOnClose(getApp());
-            that.socketOnOpen(getApp());
+            that.socketOnOpen(getApp(),()=>{});
             that.socketOnError(getApp());
+            thisChatRoom == null ? null : thisChatRoom.onMessage();//断开重连
             if( _obj.type == 'login' ){//如果是第一次登陆来的。。。。
               wx.redirectTo({
                 url: '/pages/home/index?actItem=0'
@@ -105,23 +107,21 @@ export default {
             }else if( _obj.type == 'next' ){
               console.log( "重连" );
             }
-          },1000)
+          })
         },
         fail:function(msg){
           that.msgTip({title: '提示',content: "会话连接失败！请检查网络并重新进入小程序",scb(){},ccb(){}})
         }
       })
   },
-  socketOnOpen(app){
-    app.globalData.socketTask.onOpen((res)=>{})
-  },
+  socketOnOpen(app,callBack){},
   netChange(){
     let that = this;
     wx.onNetworkStatusChange(function(res) {
       if( !res.isConnected ){
         that.stateMsg({ title:"网络连接断开...",content:"",icon:"none",time:2000});   
-      }else{
         that.closeSocket( getApp() );
+      }else{
         that.connectSocket( getApp() );
         that.stateMsg({ title:"网络已连接",content:"",icon:"none",time:2000});  
       }
@@ -131,9 +131,8 @@ export default {
     //监听WebSocket错误。
     let that = this;
     app.globalData.socketTask.onError(function(res){
-        system.msgTip({title: '提示',content: _tip,scb(){},ccb(){}});
+        that.msgTip({title: '提示',content: _tip,scb(){},ccb(){}});
         that.closeSocket( getApp() );
-        debugger;
     })
   },
   socketOnMessage( app , _me ){
@@ -167,11 +166,17 @@ export default {
       obj._app.socketTask.send({
         data: obj.params,
         success(res){
-          console.log("发送消息成功.", res )
         },
         fail(res){
-          debugger;
-          that.msgTip({title: '提示',content: "发送失败!",scb(){},ccb(){}})
+          wx.getNetworkType({
+            success (res) {
+              if( res.networkType == "none" ){
+                that.msgTip({title: '提示',content: "发送失败! 网络未连接",scb(){},ccb(){}})
+              }else{
+                that.msgTip({title: '提示',content: "未知错误.",scb(){},ccb(){}})
+              }
+            }
+          })          
         }
       })
   },

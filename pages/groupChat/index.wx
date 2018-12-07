@@ -75,7 +75,7 @@ export default {
       ['sendInputMsg.headImgUrl']:app.globalData.userMsgReq.headImgUrl,
       ['sendInputMsg.isGroupManager']:app.globalData.userMsgReq.isGroupManager,
       ['sendInputMsg.fromUser']:app.globalData.openId,
-      ['sendInputMsg.fromUserName']:app.globalData.userMsgReq.username
+      ['sendInputMsg.fromUserName']:app.globalData.userMsgReq.username,
     })
     wx.setNavigationBarTitle({
       title: _item.group.groupName || "欢迎进入群聊"
@@ -84,7 +84,28 @@ export default {
   },
   onShow(){
     system.getThis(this);
+    let that = this;
     this.onMessage();
+    if( app.globalData.isAite ){
+      that.selectComponent("#chatTool").setData({
+        "isShowControlBar":false,
+        "isAite":true
+      })
+      wx.getStorage({
+        key: 'selUser',
+        success (res) {
+          that.selectComponent("#chatTool").setData({
+            "users":res.data,
+            "isInputing":true
+          })
+        }
+      })
+      this.setData({
+        "translateY":  "-100"
+      })      
+    }else if( app.globalData.isConfirm ){
+
+    }
   },
   // 改变聊天窗口的高度...
   toggleHeight(){
@@ -92,12 +113,15 @@ export default {
       "translateY": 0
     })
     this.selectComponent("#chatTool").setData({
-      "isShowControlBar":false
+      "isShowControlBar":false,
+      "isAite":false,
+      "isInputing":false,
+      "users":[]
     })
   },
   changeHeight(e){
     this.setData({
-      "translateY": e.detail.type == "control" ? e.detail.showControlBar ? "-170" : "0" : "-50"
+      "translateY":  e.detail.isShowControlBar ? '-170' : e.detail.isAite ? "-100" : "0"
     })
   },
   addData(e){//获取分页数据.....
@@ -395,14 +419,6 @@ export default {
       color: #666;
     }
   }
-  .left_icon{
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background-color:#FCB300; 
-        text-align: center;
-        line-height: 50px;
-    }
 #container{
   height:100%;
   overflow:hidden;

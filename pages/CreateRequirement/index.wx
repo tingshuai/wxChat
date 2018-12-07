@@ -117,7 +117,6 @@ let _promise1,_url;
     },
     data: {
       headerHeight:"",//头部栏的高
-      phoneModel:"",//是否是刘海屏
       tag:true,
       disabled:true,
       contentHeight: wx.WIN_HEIGHT - 180 + "px",
@@ -180,7 +179,6 @@ let _promise1,_url;
         ['form.position']:app.globalData.userMsgReq.position,
         "userMsgReq":app.globalData.userMsgReq,
         "headerHeight":app.globalData.headHeight,
-        "phoneModel":app.globalData.phoneModel        
       });
       if( _obj.enterType == 1 ){//编辑。。。。
         if( _item.itemcontent.demandAttach != "" ){

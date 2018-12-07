@@ -10,7 +10,7 @@
       <view class="sentType" style="height:{{ !isShowControlBar ? 0 : 170 }}px;padding:{{ !isShowControlBar ? 0 : '10px' }} 0;">
         <!-- 电话 -->
         <view class="sentType_col">
-          <image src="../../static/img/call.png" bindtap="callMe" style="width:50px;height:50px;"></image>
+          <image src="../../static/img/call.png" bindtap="selUser" data-type="tel" style="width:50px;height:50px;"></image>
           <text class="tit12" style="font-size:12px;margin:8px 0 5px 0;">语音通话</text>
         </view>
         <!-- 发送图片 -->
@@ -30,7 +30,7 @@
         </view>
         <!-- @成员 -->
         <view class="sentType_col">
-          <image src="../../static/img/Group4Copy@2x.png" bindtap="aite" data-type="9" style="width:50px;height:50px;"></image>              
+          <image src="../../static/img/Group4Copy@2x.png" bindtap="selUser" data-type="aite" style="width:50px;height:50px;"></image>              
           <text class="tit12" style="font-size:12px;margin:8px 0 5px 0;">@人</text>
         </view>
         <!-- 创建需求 -->
@@ -40,18 +40,20 @@
         </view>
         <!-- 办结 -->
         <view class="sentType_col">
-          <image src="../../static/img/pingjia.png" bindtap="aite" data-type="8" style="width:50px;height:50px;" wx:if="{{ sendInputMsg.isGroupManager }}"></image>   
+          <image src="../../static/img/pingjia.png" bindtap="selUser" data-type="confirm" style="width:50px;height:50px;" wx:if="{{ sendInputMsg.isGroupManager }}"></image>   
           <text class="tit12" style="font-size:12px;margin:8px 0 5px 0;" wx:if="{{ sendInputMsg.isGroupManager }}">办结评价</text>
         </view>
       </view>
-      <!-- <scroll-view scroll-x class="sentType" hidden="{{ transmit.isAite }}" style="height:100px;white-space:nowrap;">
-        <view style="display:{{ item.openId == sendInputMsg.fromUser ? 'none' : 'inline-block' }}" class="sentType_col" width="58" align="center" vertical-align="middle" data-isaite="true" data-index="{{ index }}" data-item="{{ item }}" wx:key="index" catchtap="selUser" wx:for="{{ theGroupMsg.groupUsers }}">
-          <image mode="aspectFit" style="height:72px;" src="{{ item.headImgUrl == null ? defaultImg : item.headImgUrl }}"></image>
+      <scroll-view scroll-x="{{ true }}" class="sentType" style="height:{{ isAite && !isShowControlBar ? '100px' : '0px'}};white-space:nowrap;">
+        <view style="" class="sentType_col sentType_col1" width="58" align="center" vertical-align="middle" data-isaite="true" data-index="{{ index }}" data-item="{{ item }}" wx:key="index" wx:for="{{ users }}">
+          <view class="imgWrap">
+            <image mode="aspectFit" src="{{ item.headImgUrl == null ? defaultImg : item.headImgUrl }}"></image>
+          </view>
           <text style="text-align:center;" class="txt9">{{ item.username }}</text>
           <text class="angleIcon angleIcon2 iconfont myWx-dui3" wx:if="{{ item.act }}"></text>
           <icon class="iconfont myWx-fenxiang-copy" catchtap="comeOver" style="left:0px;position:absolute;background-color:white;top:10px;font-size:37px;width:42px;border:none;border-radius:0px;" wx:if="{{ item.act && selUser.actType == 8 }}" size="23"></icon>
         </view>
-      </scroll-view> -->
+      </scroll-view>
     </view>
 </template>
 <script>
@@ -62,16 +64,16 @@ let app = getApp();
 export default {
   behaviors: [chatRoomBehavior],
   properties:{
-    pwx:{
-      type: Object, // 类型（必填），目前接受的类型包括：String, Number, Boolean, Object, Array, null（表示任意类型）
-      value: {}, // 属性初始值（可选），如果未指定则会根据类型选择一个
-      observer: function (newVal, oldVal) {}
-    },
     sendInputMsg:{
       type: Object, // 类型（必填），目前接受的类型包括：String, Number, Boolean, Object, Array, null（表示任意类型）
       value: {}, // 属性初始值（可选），如果未指定则会根据类型选择一个
       observer: function (newVal, oldVal) {}
-    }    
+    },
+    _obj:{
+      type: Object, // 类型（必填），目前接受的类型包括：String, Number, Boolean, Object, Array, null（表示任意类型）
+      value: {}, // 属性初始值（可选），如果未指定则会根据类型选择一个
+      observer: function (newVal, oldVal) {}
+    }
   },    
   data: {
     isVoice: false,
@@ -81,6 +83,8 @@ export default {
     isShowControlBar:false,//是否显示下面控制栏....
     isShowUserList:false,//是否显示下面用户列表...
     src:'../../static/img/voice2.png',//语音消息的图片地址
+    isAite:null,
+    users:[]
   },
   methods: {
     handleTap () {
@@ -103,38 +107,52 @@ export default {
       this.setData({
         "isShowControlBar":!this.data.isShowControlBar
       })
-      this.triggerEvent( "cheight" , { "type": "control", "showControlBar": this.data.isShowControlBar } );
+      this.triggerEvent( "cheight" , { "isShowControlBar": this.data.isShowControlBar  , "isAite": this.data.isAite } );
     },
-    aite(){
-      
+    selUser(e){
+      let _type_ = e.currentTarget.dataset.type;
+      let _t0 = _type_ == "aite" ? "checkbox" : "radio";
+      let that = this;
+      let obj = {
+        type:_type_,
+        checkType:_t0
+      }
+      wx.navigateTo({
+          url:`/pages/userList/index?obj=${ JSON.stringify(obj) }`,success(res){},fail(res){}
+      })
     },
     sendMsg(){
       var that = this;
-      let isTrue = false;
-      // if( this.data.selUser.actType == 9 ){//9为发送@消息
-      //   this.data.theGroupMsg.groupUsers.filter((item)=>{
-      //     if(item.act){
-      //       isTrue = true;
-      //       that.data.transmit.aiteContent += `@${item.username}(@\`-\`@)`;
-      //       that.setData({
-      //         ['sendInputMsg.toUser']:`${that.data.sendInputMsg.toUser},${item.openId}`
-      //       })
-      //     }
-      //   })
-      // }
-      if( isTrue ){
-        // this.setData({['sendInputMsg.msgType']: 7 ,['sendInputMsg.content']: that.data.transmit.aiteContent + that.data.inputVal});
+      if( this.data.isAite ){
+        let _userArray = wx.getStorageSync("selUser");
+        let _toUser = [];
+        let _name = ""
+        _userArray.map((item)=>{
+            _toUser.push( item.openId );
+            _name += `@${item.username}(@\`-\`@)`;
+        });
         this.data.sendInputMsg.msgType = 7;
-        this.data.sendInputMsg.content = that.data.transmit.aiteContent + that.data.inputVal;        
+        this.data.sendInputMsg.toUser = _toUser.join(',');
+        this.data.sendInputMsg.content = _name + that.data.inputVal;
       }else{
-        // this.setData({['sendInputMsg.msgType']: 0,['sendInputMsg.content']: that.data.inputVal});
         this.data.sendInputMsg.msgType = 0;
+        this.data.sendInputMsg.toUser = "";
         this.data.sendInputMsg.content = that.data.inputVal;
       }
       let _params = JSON.stringify( that.data.sendInputMsg );
       system.sendSocketMessage({
-        "_app":app.globalData,
-        "params": _params
+        "params": _params,
+        "callBack":()=>{
+          app.globalData.isAite = false;//将isAite清零...
+          wx.setStorage({//清理选中的人
+            key:"selUser",
+            data:[]
+          })
+          that.setData({
+            isAite:false
+          })
+          that.triggerEvent( "cheight" , { "isShowControlBar": this.data.isShowControlBar  , "isAite": this.data.isAite } );          
+        }
       })
     }
   }
@@ -162,7 +180,7 @@ export default {
     display: flex;
     flex-wrap: wrap;
     align-items:center;
-    align-content:center;
+    justify-content: flex-start;
     border-top:1px solid #eee;
     overflow: hidden;
     height: 0px;
@@ -170,9 +188,28 @@ export default {
       width:20%;
       text-align: center;
       position: relative;
+      display:inline-block;
+      .txt9{
+        font-size: 11px;
+        color: #666666;
+      }
+    }
+    .sentType_col1{
+      width: 17vw;
     }
     image{
+      margin:0 auto;
+    }
+    .imgWrap{
         margin:0 auto;
+        height: 58px;
+        width: 58px;
+        border-radius: 5px;
+        overflow: hidden;
+        margin-top:10px;
+        margin-bottom:5px;
+        image{
+        }
     }
     .iconfont{
       font-size:30px;

@@ -1,21 +1,14 @@
 <template>
-  <view>
     <view>
-        <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#267AFC',color:'#fff'} }}">
-            <ui-row height="40">
-                <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
-                    <icon class="iconfont myWx-iconfontqianjin2" style="font-size:20px;"></icon>
-                </ui-col>
-                <ui-col vertical-align="middle" align="center" class="center">
-                    群成员
-                </ui-col>
-                <ui-col vertical-align="middle" align="center" width="80">
-                </ui-col>
-            </ui-row>
-        </ui-nav-bar>    
-        <view style="height:{{ headerHeight }}px;width:100%;"></view>
         <scroll-view class="view_H" scroll-y style="width: 100%;height:{{ scrollHeight }};">
-          <ui-row class="radio-group" height="50" bindtap="radioChange" wx:for="{{ userList }}" wx:if="{{ item.openId != openId }}" space="10" id="{{ item.openId }}" data-index="{{ index }}">
+          <ui-row class="radio-group" height="50" bindtap="radioChange" space="10" id="@all" wx:if="{{option.checkType == 'checkbox'}}">
+              <ui-col vertical-align="middle" align="center" width="50">
+                <text wx:if="{{ isAll }}" class="iconfont myWx-dui3"></text>
+                <text wx:else class="iconfont"></text>
+              </ui-col>
+              <ui-col space-left="15" vertical-align="middle" align="left">@全部</ui-col>
+          </ui-row>          
+          <ui-row class="radio-group" height="50" bindtap="radioChange" wx:for="{{ userList }}" wx:key="index" wx:if="{{ item.openId != openId }}" space="10" id="{{ item.openId }}" data-index="{{ index }}">
               <ui-col vertical-align="middle" align="center" width="50">
                 <text wx:if="{{ item.checked }}" class="iconfont myWx-dui3"></text>
                 <text wx:else class="iconfont"></text>
@@ -29,12 +22,11 @@
         <ui-fixed-view bottom="0" left="0" right="0" class="fixBtn">
           <view class="fixed-view-content" style="padding:3px 35rpx;background-color:{{ scrollHeight == 'auto' ? 'rgba(0,0,0,0)' : 'white' }};border-top:1px solid {{ scrollHeight == 'auto' ? 'rgba(0,0,0,0)' : '#efefef' }};">
             <view class="btn-area">
-              <button type="primary" class="myBtnSuccess jingjingBtn" bindtap="callMe">沟通</button>
+              <button type="primary" class="myBtnSuccess jingjingBtn" bindtap="tabBtn">{{ btnText }}</button>
             </view>
           </view>
         </ui-fixed-view>
     </view>
-  </view>
 </template>
 
 <script>
@@ -45,16 +37,19 @@ export default {
     navigationBarTitleText: ''
   },
   data: {
-    headerHeight:"",//头部栏的高
-    phoneModel:"",//是否是刘海屏       
     userList:[],
     bottomHeight:148,
     scrollHeight:'',
     selOpenId:"",
-    openId:""
+    openId:"",
+    option:{},
+    btnText:"",//按钮文字....
+    selUser:[],//选中的人...
+    isAll:false//是否选中所有的人....
   },
   onLoad(options){
-    let userList = JSON.parse( options.userList );
+    let userList = app.globalData.groupMsg.groupUsers;
+    let _obj = JSON.parse( options.obj );
     userList.filter( item => {
       item.checked = false;
     });
@@ -63,27 +58,99 @@ export default {
       "userList":userList,
       "scrollHeight":this.data.scrollHeight,
       "openId":app.globalData.openId,
-      "headerHeight":app.globalData.headHeight,
-      "phoneModel":app.globalData.phoneModel      
+      "option":_obj
     })
+    this.setType();
+  },
+  setType(){//
+    if( this.data.option.type == "aite" ){
+      wx.setNavigationBarTitle({
+        title: "选择@人员"
+      })
+      this.setData({
+        "btnText":"确定"
+      })
+    }else if( this.data.option.type == "tel" ){
+      wx.setNavigationBarTitle({
+        title: "拨号"
+      })
+      this.setData({
+        "btnText":"沟通"
+      })      
+    }else if( this.data.option.type == "confirm" ){
+      wx.setNavigationBarTitle({
+        title: "选择确认人"
+      })
+      this.setData({
+        "btnText":"发送办结"
+      })      
+    }
   },
   navigateBack () {
     wx.navigateBack()
+  },
+  tabBtn(){//
+    let that = this;
+    if( that.data.selUser.length != 0 ){
+      if( this.data.option.type == "aite" || this.data.option.type == "confirm" ){
+          wx.setStorage({
+            key:"selUser",
+            data:that.data.selUser
+          })
+          wx.navigateBack();
+          app.globalData.isAite = true;
+      }else if( this.data.option.type == "tel" ){//拨号
+        this.callMe();
+      }else if( this.data.option.type == "confirm" ){
+        
+      }
+    }else{
+      system.stateMsg({ title:"未选中操作对象!",content:"",icon:"none",time:1500});   
+    }
   },
   radioChange(e){
     let that = this;
     let _curItem = e.currentTarget.dataset;
     let _openId = e.currentTarget.id;
-    this.data.userList.filter((item)=>{
-      if( item.openId == _openId ){
-        item.checked = true;
+    if( this.data.option.checkType == "checkbox" ){//多选......
+      if( _openId == "@all" ){//是否全选...
+        this.setData({
+          "isAll":!this.data.isAll
+        })
+        if( this.data.isAll ){//是否点击全选按钮.....
+          this.data.userList.filter((item)=>{
+            item.openId != this.data.openId ? item.checked = true : item.checked = false;
+          })
+        }else{
+          this.data.userList.filter((item)=>{
+              item.checked = false;
+          })
+        }
       }else{
-        item.checked = false;
+        this.data.userList.filter((item)=>{
+          if( item.openId == _openId ){
+            item.checked = !item.checked;
+          }
+        })
+      }
+    }else{//单选....
+        this.data.userList.filter((item)=>{
+          if( item.openId == _openId ){
+            item.checked = true;
+          }else{
+            item.checked = false;
+          }
+        })
+    }
+    let _selUser = this.data.userList.filter((item)=>{
+      if( item.checked == true ){
+        return item;
       }
     })
     this.setData({
       "userList":that.data.userList,
-      "selOpenId":_openId
+      "selOpenId":_openId,
+      "selUser":_selUser
     })
   },
   callMe(e){

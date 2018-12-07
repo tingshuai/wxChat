@@ -31,7 +31,6 @@ export default {
       success (res) {
         if( res.model == "iPhone X"){
           app.globalData.headHeight = 90;
-          app.globalData.phoneModel = "special";
         }else{
           app.globalData.headHeight = 66;
         }

@@ -63,7 +63,8 @@ export default {
     socketTask: {},
     registerState: '',
     headHeight: '',
-    phoneModel: 'custom',
+    isAite: false,
+    isConfirm:false,
     groupMsg:{},//当前群信息.....
   },
   onLaunch() {

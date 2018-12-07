@@ -219,7 +219,6 @@ export default {
     },
     data: {
         headerHeight:"",//头部栏的高
-        phoneModel:"",//是否是刘海屏        
         scroll:{
             toView:"",//定位滚动元素
             pageNum:1,//要查看的页码...
@@ -322,7 +321,6 @@ export default {
             "defaultHeadImg":app.globalData.defaultImg,
             "userMsgReq":app.globalData.userMsgReq,
             "headerHeight":app.globalData.headHeight,
-            "phoneModel":app.globalData.phoneModel
         })
         this.getHistoryMsg(1);
     },

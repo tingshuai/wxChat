@@ -96,7 +96,6 @@ export default {
   },
   data: {
     headerHeight:"",//头部栏的高
-    phoneModel:"",//是否是刘海屏    
     disabled:false,
     tip:{
       showTopTips:false,
@@ -157,7 +156,6 @@ export default {
       ['formData.startTime']:startTime,
       "edit":option.edit,
       "headerHeight":app.globalData.headHeight,
-      "phoneModel":app.globalData.phoneModel      
     })
     promise = new Promise((resolve,reject)=>{//先请求群列表再请求用户列表....
       let pro = new Promise((resolve2,reject2)=>{

@@ -80,7 +80,6 @@ var app = getApp();
         company:"",
         unionid:"",
         "headerHeight":app.globalData.headHeight,
-        "phoneModel":app.globalData.phoneModel    
       },
       validate:{
           username:{
@@ -122,7 +121,6 @@ var app = getApp();
         ['form.openId']:app.globalData.openId,
         ['form.unionid']:app.globalData.userMsgReq.unionId,
         "headerHeight":app.globalData.headHeight,
-        "phoneModel":app.globalData.phoneModel
       });
       if( option.register == 0){
         this.setData({

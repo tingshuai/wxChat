@@ -141,20 +141,20 @@ export default {
       app.globalData.promise.upDataGroupMsg = new Promise((resolve,reject)=>{
         switch ( _data.cmd ) {
           case 0://有人发消息过来..
+              if( _data.msgType == 7 ){//处理@消息....
+                _data.content = _data.content.split('(@\`-\`@)').join(" ");
+              }
               wx.getStorage({//更新存储的群信息....
                 key: _data.groupId,
                 success ( _data_ ) {
-                  _data_.data.splice(_data_.data.length, 0,_data);
-                  wx.setStorage({
-                    key: _data.groupId,
-                    data: _data_.data
-                  })
-                  resolve( { _old_:_data,_new_:_data_.data } )
+                  _data_.data.splice( _data_.data.length, 0, _data );
+                  wx.setStorageSync( _data.groupId , _data_.data );
+                  resolve( { _old_:_data,_new_:_data_.data } );
                 }
               })
               break;
           case 2://有群解散..
-              break;
+              break;          
           default:
               break;
         }
@@ -163,9 +163,10 @@ export default {
   },
   sendSocketMessage(obj) {//发送socket消息......
       let that = this;
-      obj._app.socketTask.send({
+      getApp().globalData.socketTask.send({
         data: obj.params,
         success(res){
+          obj.callBack() || null;
         },
         fail(res){
           wx.getNetworkType({

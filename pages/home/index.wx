@@ -23,7 +23,7 @@
     <!-- <view class="weui-loadmore weui-loadmore_line" wx:if="{{ (list1.length == 0 && tabBar.actItem == 0) || (overList.length == 0 && tabBar.actItem == 2) }}">
         <view class="weui-loadmore__tips weui-loadmore__tips_in-line" style="background-color:none;">暂无数据 可尝试下拉刷新</view>
     </view> -->
-    <view class="listContainer" style="top:{{ phoneModel == 'custom' ? 113 : 137 }}px" hidden="{{ overList.length != 0 }}">
+    <view class="listContainer" style="" hidden="{{ overList.length != 0 }}">
         <!-- 群组 -->
         <cc-grouplist wx:if="{{ tabBar.actItem == 0 }}" groupList="{{ list1 }}" bind:exData = "exData" tabBar="{{ tabBar }}"></cc-grouplist>
         <!-- 历史群组 -->
@@ -68,7 +68,6 @@ export default {
   data: {
     showPage:false,
     headerHeight:"",//头部栏的高
-    phoneModel:"",//是否是刘海屏
     isShow:false,
     inputShowed: false,
     inputVal: "",
@@ -113,7 +112,6 @@ export default {
             that.setData({
                 "userMsgReq":res.data,
                 "headerHeight":app.globalData.headHeight,
-                "phoneModel":app.globalData.phoneModel
             })
         }
     })

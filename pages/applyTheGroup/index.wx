@@ -30,7 +30,6 @@
     },
     data: {
       headerHeight:"",//头部栏的高
-      phoneModel:"",//是否是刘海屏          
       loading:false,
       disabled:false,
       title:"群信息"
@@ -39,7 +38,6 @@
       this.setData({
         groupMsg:JSON.parse (option.item),
         "headerHeight":app.globalData.headHeight,
-        "phoneModel":app.globalData.phoneModel        
       });
     },
     addTo(event){

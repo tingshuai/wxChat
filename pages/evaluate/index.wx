@@ -68,7 +68,6 @@ export default {
   },
   data: {
     headerHeight:"",//头部栏的高
-    phoneModel:"",//是否是刘海屏        
     disabled:{
       confirmDisabled:false
     },
@@ -117,7 +116,6 @@ export default {
     this.setData({
       "theGroupMsg": _option,
       "headerHeight":app.globalData.headHeight,
-      "phoneModel":app.globalData.phoneModel      
     })
     // this.httpEvaluateItem({"name":"非常差","id":1})//默认选中
   },

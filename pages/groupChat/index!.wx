@@ -217,7 +217,6 @@ export default {
   },
   data: {
     headerHeight:"",//头部栏的高
-    phoneModel:"",//是否是刘海屏    
     defaultImg:"",//默认群头像.....
     toView:'',//要滚动的位置...
     msgType:true, //0-文字，1-语音
@@ -302,11 +301,6 @@ export default {
     }
   },
   onLoad(options){
-    var that = this;
-    this.setData({
-      "phoneModel":app.globalData.phoneModel,
-      "scrollHeight":app.globalData.phoneModel == 'custom' ? this.data.scrollHeight : 23  + this.data.scrollHeight
-    })
     let _item = JSON.parse( options.item );
     let _currentPage = getCurrentPages();
     let _curPage = _currentPage[ _currentPage.length - 1 ].route;
@@ -1080,7 +1074,6 @@ export default {
       ['isHidden']:!that.data.isHidden,
       ['transmit.isAite']:!that.data.transmit.isAite,
       ["selUser.actType"]:e.currentTarget.dataset.type,
-      "scrollHeight": app.globalData.phoneModel == 'custom' ? wx.DEFAULT_CONTENT_HEIGHT - 85 : wx.DEFAULT_CONTENT_HEIGHT - 63
     })
   },
   navigateBack () {
@@ -1187,7 +1180,6 @@ export default {
     if( e.currentTarget.id == "viewport" ){
       this.setData({
         isHidden:true,
-        scrollHeight:app.globalData.phoneModel == 'custom' ? wx.DEFAULT_CONTENT_HEIGHT + 15 : wx.DEFAULT_CONTENT_HEIGHT + 38,
         ['transmit.isAite']:true
       })
     }else{

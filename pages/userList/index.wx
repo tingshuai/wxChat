@@ -77,7 +77,7 @@ export default {
       this.setData({
         "btnText":"沟通"
       })      
-    }else if( this.data.option.type == "confirm" ){
+    }else if( this.data.option.type == "isConfirm" ){
       wx.setNavigationBarTitle({
         title: "选择确认人"
       })
@@ -92,17 +92,19 @@ export default {
   tabBtn(){//
     let that = this;
     if( that.data.selUser.length != 0 ){
-      if( this.data.option.type == "aite" || this.data.option.type == "confirm" ){
+      if( this.data.option.type == "aite" || this.data.option.type == "isConfirm" ){
           wx.setStorage({
             key:"selUser",
             data:that.data.selUser
           })
+          if( this.data.option.type == "aite" ){
+            app.globalData.isAite = true;
+          }else{
+            app.globalData.isConfirm = true;
+          }
           wx.navigateBack();
-          app.globalData.isAite = true;
       }else if( this.data.option.type == "tel" ){//拨号
         this.callMe();
-      }else if( this.data.option.type == "confirm" ){
-        
       }
     }else{
       system.stateMsg({ title:"未选中操作对象!",content:"",icon:"none",time:1500});   

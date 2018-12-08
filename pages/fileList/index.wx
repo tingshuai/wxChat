@@ -1,20 +1,6 @@
 <template>
 
   <view>
-    <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#267AFC',color:'#fff'} }}">
-        <ui-row height="40">
-            <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
-                <icon class="iconfont myWx-iconfontqianjin2" style="font-size:20px;"></icon>
-            </ui-col>
-            <ui-col vertical-align="middle" align="center">
-                文件列表
-            </ui-col>
-            <ui-col vertical-align="middle" align="center" width="80">
-            </ui-col>
-        </ui-row>
-    </ui-nav-bar> 
-    <view style="height:66px;width:100%;"></view>
-
     <view class="weui-search-bar">
       <view class="weui-search-bar__form">
         <view class="weui-search-bar__box">
@@ -152,7 +138,7 @@ export default {
 <style lang="less">
 .top_tip{
     position:absolute;
-    top:113px;
+    top:48px;
     width:100%;
     bottom:0px;
     overflow:auto;

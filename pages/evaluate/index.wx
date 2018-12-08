@@ -1,5 +1,5 @@
 <template>
-  <view style="padding-top:{{ headerHeight }}px;">
+  <view>
       <view style="margin:20px 0 10px 0;background-color:white;padding:40px 10px 25px 10px">
         <ui-row>
           <ui-col align="center" wx:for="{{ face.list }}" wx:key="{{ index }}" style="padding:0 10px;">

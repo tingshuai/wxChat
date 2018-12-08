@@ -12,7 +12,7 @@
           </view>
       </view>
       <!-- 消息区 -->
-      <cc-group-chat id="groupChat" style="position:relative;top:{{ translateY }}px" bindaddData="addData" scrollHeight="{{ scrollHeight }}"  bindtouchstart="toggleHeight" chatData="{{ chatData }}"></cc-group-chat>
+      <cc-group-chat sendInputMsg="{{ sendInputMsg }}" id="groupChat" style="position:relative;top:{{ translateY }}px" bindaddData="addData" scrollHeight="{{ scrollHeight }}"  bindtouchstart="toggleHeight" chatData="{{ chatData }}"></cc-group-chat>
       <!-- 话筒 -->
       <ui-fixed-view top="30%" left="{{ voice.plVoice }}" style="z-index:9999;display:{{ voice.show ? 'block' : 'none' }}">
           <view class="fixed-view-content" style="background-color:rgba(0,0,0,0.5);padding:0px 35px 20px 35px;border-radius:7px;">
@@ -81,11 +81,19 @@ export default {
       title: _item.group.groupName || "欢迎进入群聊"
     })
     this.getChatData();
+    if( app.globalData.openId == app.globalData.groupMsg.managerId ){//判断是否是群主....
+      that.selectComponent("#chatTool").setData({
+        "isManager":true
+      })
+    }  
   },
   onShow(){
     system.getThis(this);
     let that = this;
     this.onMessage();
+    that.selectComponent("#groupChat").setData({
+      "groupMsg":app.globalData.groupMsg
+    })    
     if( app.globalData.isAite ){
       that.selectComponent("#chatTool").setData({
         "isShowControlBar":false,
@@ -102,9 +110,9 @@ export default {
       })
       this.setData({
         "translateY":  "-100"
-      })      
+      })
     }else if( app.globalData.isConfirm ){
-
+      that.selectComponent("#chatTool").comeOver();
     }
   },
   // 改变聊天窗口的高度...
@@ -188,6 +196,7 @@ export default {
             wx.getStorage({//更新存储的群信息....
               key: _data.groupId,
               success ( _data_ ) {
+                _data_.data = system.format( _data_.data );
                 that.setData({
                   chatData:_data_.data
                 })
@@ -196,6 +205,28 @@ export default {
                   "inputVal":"",
                   "isInputing":false
                 })                        
+              }
+            })
+            break;
+        case 100://办结评价.....
+            wx.getStorage({//更新存储的群信息....
+              key: _data.groupId,
+              success ( _data_ ) {
+                that.setData({
+                  chatData:_data_.data
+                })
+                that.scrollToBottom();       
+              }
+            })
+            break;
+        case 3://已读消息提醒
+            wx.getStorage({//更新存储的群信息....
+              key: _data.groupId,
+              success ( _data_ ) {
+                that.setData({
+                  chatData:_data_.data
+                })
+                that.scrollToBottom();       
               }
             })
             break;

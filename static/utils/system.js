@@ -136,18 +136,43 @@ export default {
     })
   },
   socketOnMessage( app , _me ){
+    let that = this;
     app.globalData.socketTask.onMessage((res)=>{
       var _data = JSON.parse( res.data );
       app.globalData.promise.upDataGroupMsg = new Promise((resolve,reject)=>{
         switch ( _data.cmd ) {
           case 0://有人发消息过来..
-              if( _data.msgType == 7 ){//处理@消息....
-                _data.content = _data.content.split('(@\`-\`@)').join(" ");
-              }
               wx.getStorage({//更新存储的群信息....
                 key: _data.groupId,
                 success ( _data_ ) {
                   _data_.data.splice( _data_.data.length, 0, _data );
+                  that.format( _data_.data );
+                  wx.setStorageSync( _data.groupId , _data_.data );
+                  resolve( { _old_:_data,_new_:_data_.data } );
+                }
+              })
+              break;
+          case 100://办结评价.....
+              wx.getStorage({//更新存储的群信息....
+                key: _data.groupId,
+                success ( _data_ ) {
+                  _data_.data.splice( _data_.data.length, 0, _data );
+                  wx.setStorageSync( _data.groupId , _data_.data );
+                  resolve( { _old_:_data,_new_:_data_.data } );
+                }
+              })
+              break;
+          case 3://已读消息提醒
+              wx.getStorage({//更新存储的群信息....
+                key: _data.groupId,
+                success ( _data_ ) {
+                  _data_.data.filter((val)=>{
+                    if( val.msgId == _data.msgId ){
+                      val.readStatus = 1;
+                      val.readCount = _data.readCount;
+                      return val;
+                    }
+                  })
                   wx.setStorageSync( _data.groupId , _data_.data );
                   resolve( { _old_:_data,_new_:_data_.data } );
                 }
@@ -193,8 +218,17 @@ export default {
     // s = s.match(reg);
     return( obj.str )
   },
+  format(_data){
+    _data.forEach((item,i,arr)=>{
+      if( item.msgType == 7 ){//处理@消息....
+        item.content = item.content.split('(@\`-\`@)').join(" ");
+      }
+    })
+    return _data;
+  },  
   getGroupMsg( app , num ,resolve){//请求群消息.......
     let _groupMsg = app.globalData.groupMsg;
+    let that = this;
     this.http({ 
       url:`/chat/msg/getGroupMsg`, method:"get",
       param:{
@@ -210,6 +244,7 @@ export default {
           key: _groupMsg.groupId,
           success (_data_) {
             let _newData = [..._resData.rows,..._data_.data]
+            _newData = that.format( _newData );
             resolve( _newData );
             wx.setStorage({
               key: _groupMsg.groupId,
@@ -217,6 +252,7 @@ export default {
             })
           },
           fail(){
+            _resData.rows = that.format( _resData.rows );            
             wx.setStorage({
               key: _groupMsg.groupId,
               data: _resData.rows

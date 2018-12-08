@@ -80,14 +80,14 @@
                               </view>
                           </view>
                           <view>
-                              <view align="center">
-                                  <text wx:if="{{ item.toUser == sendInputMsg.fromUser && transmit.tabBar.actItem == 0 }}" style="font-size:12px;color:#2A79FB;padding:9px 0;" catchtap="evaluateMe">点击评价</text>
-                                  <text wx:else style="font-size:12px;color:#bbb;padding:9px 0;">点击评价</text>
+                              <view class="evaluate"> 
+                                  <text wx:if="{{ item.toUser == sendInputMsg.fromUser }}" style="font-size:12px;color:#2A79FB;padding:9px 0;" catchtap="evaluateMe">点击评价</text>
+                                  <text wx:else style="font-size:12px;color:#bbb;padding:9px 0;" class="evaluate">点击评价</text>
                               </view>
                           </view>
                         </view>
                     </view>
-                    <view class="readMe" wx:if="{{ sendInputMsg.fromUser == item.fromUser }}" style="right:{{ sendInputMsg.fromUser == item.fromUser ? '5px' : '' }}">{{ theGroupMsg.groupUsers.length - item.readCount -1 >= 0 ? theGroupMsg.groupUsers.length - item.readCount -1 : '0'}} {{ item.readCount >= 0 ? "人未读" : ''}}</view>
+                    <view class="readMe" wx:if="{{ sendInputMsg.fromUser == item.fromUser }}" style="right:{{ sendInputMsg.fromUser == item.fromUser ? '5px' : '' }}">{{ groupMsg.groupUsers.length - item.readCount -1 >= 0 ? groupMsg.groupUsers.length - item.readCount - 1 : '0'}} {{ item.readCount >= 0 ? "人未读" : ''}}</view>
                 </view>
                 <view class="text" space-right="0" wx:if="{{ item.cmd == 1 }}" style="width:100%;text-align:center;">
                     <view class="historyLine">{{ item.fromUserName }} 撤回了一条消息</view>
@@ -119,6 +119,11 @@ export default {
       value: null, // 属性初始值（可选），如果未指定则会根据类型选择一个
       observer: function (newVal, oldVal) {}
     },
+    sendInputMsg:{
+      type: Object, // 类型（必填），目前接受的类型包括：String, Number, Boolean, Object, Array, null（表示任意类型）
+      value: {}, // 属性初始值（可选），如果未指定则会根据类型选择一个
+      observer: function (newVal, oldVal) {}
+    },    
     chatData:{
       type:Object,
       value:{},
@@ -127,25 +132,7 @@ export default {
   },  
   data: {
     h: wx.DEFAULT_CONTENT_HEIGHT -  49 - 40,
-    sendInputMsg :{
-      fromUser:app.globalData.openId,//发送人ID
-      fromUserName:"",//发送人姓名
-      toUser:'',//群聊不填，私聊必填
-      content:"",//消息体
-      cmd:0,//0发送消息，1-撤回消息,2-系统推送消息.
-      msgType:0,//消息类型0-text,1-image,2-voice,3-vedio,4-music,5-news
-      chatType:0,//聊天类型0-未知，1-公聊，2-私聊
-      groupId:'',//群聊ID....群聊必填..
-      attachUrl:'',//附件地址...
-      position:"",
-      msgId:'',
-      groupName:'',
-      status:0,
-      isGroupManager:false,
-      headImgUrl:app.globalData.userMsgReq.headImgUrl || '',
-      src:'../../static/img/voice2.png',//语音消息的图片地址
-    },
-    userMsg:{},
+    groupMsg:{},
     toView:"",
     scrollTop:1000
   },
@@ -161,9 +148,6 @@ export default {
     bindscrolltoupper(e){
       this.triggerEvent( "addData" , {  } );
     },
-    scrllView(e){
-  
-    },
     previewImage(e){//图片预览.....
       var imgUrl = e.currentTarget.dataset.item.attachUrl;
       var imgList = [];
@@ -176,7 +160,40 @@ export default {
           current: imgUrl, // 当前显示图片的http链接
           urls: imgList // 需要预览的图片http链接列表
       })
-    }    
+    },
+    evaluateMe(){//评价.....
+      let that = this;
+      wx.navigateTo({
+        url:`/pages/evaluate/index?groupMsg=${ JSON.stringify( app.globalData.groupMsg ) }`
+      })
+    },
+    sendReadedReceipt( item ){//发送已读消息回执....
+      let that = this;
+      wx.createIntersectionObserver(this,{
+        thresholds:[0],
+        initialRatio:100,
+        observeAll:true
+      }).relativeTo('#viewport').observe('.talkItem', (res) => {
+        console.log(res);
+      })
+      // this.data.chatData.forEach((val,i,arr)=>{
+      //   wx.createIntersectionObserver(0,0,true).select(`#the${i}`).boundingClientRect(function(rect){
+      //     var a = that.data.chatData[i].readStatus;
+      //     let _IF1 = ( that.data.chatData[i].readStatus == 1 && that.data.chatData[i].fromUser == app.globalData.openId );//消息来自自己切已读..
+      //     if( that.data.chatData[i].readStatus == 0 && rect.top >= 0 && that.data.chatData[i].fromUser != app.globalData.openId ){
+      //       val.readStatus = 1;
+      //       let _params = JSON.stringify({msgId:that.data.chatData[i].msgId,cmd:'3',groupId:that.data.sendInputMsg.groupId,fromUser:that.data.chatData[i].fromUser});
+      //       system.sendSocketMessage({
+      //         "params":_params,
+      //         callBack(){}
+      //       })
+      //     }
+      //   }).exec()
+      // })
+    },
+    scrllView(e){//滚动的时候发送已读消息回执...
+      this.sendReadedReceipt();
+    }
   },
   attached(){
     this.setData({
@@ -307,5 +324,18 @@ export default {
     position: relative;
     width:100%;
     overflow: hidden;
+  }
+  .evaluate{
+    text-align: right;
+  }
+  .text{
+    position: relative;
+    .readMe{
+        display: inline-block;
+        color:gray;
+        font-size: 10px;
+        position: absolute;
+        bottom: -15px;
+    }  
   }
 </style>

@@ -12,7 +12,7 @@ export default {
       'pages/login/index',
       'pages/home/index',
       'pages/applyTheGroup/index',
-      // 'pages/appTheApp/index',
+      'pages/appTheApp/index',
       'pages/fillInApplycation/index',
       'pages/groupChat/index',
       'pages/groupMsg/index',
@@ -65,6 +65,7 @@ export default {
     headHeight: '',
     isAite: false,
     isConfirm:false,
+    observeScroll:{},
     groupMsg:{},//当前群信息.....
   },
   onLaunch() {

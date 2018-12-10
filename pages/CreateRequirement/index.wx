@@ -1,7 +1,6 @@
 <template>
   <view style="height:100%;">
     <view  wx:if="{{ come_msg.enterType == '0' }}">
-        <view style="height:{{ headerHeight }}px;width:100%;"></view>    
         <!-- 需求单 -->
         <view class="weui-cells__title">需求描述</view>
         <view class="weui-cells weui-cells_after-title" style="display:block;">
@@ -55,7 +54,6 @@
         </view>
         <ui-popup show="{{ model.show }}" height="100%">
             <view style="height:100%;width:100%;overflow:hidden;">
-                <view style="height:70px;"></view>
                 <scroll-view scroll-y style="height:100%;border-top:1px solid #ddd;">
                     <ui-row height="55" wx:for="{{ groupMsg.groupUsers }}" wx:if="{{ item.openId != userMsgReq.openId }}" wx:key="{{ index }}" class="top_tip" border-bottom style="padding-right:35px;" data-parentItem="0" data-isaite="false" data-index="{{ index }}" data-item="{{ item }}" bindtap="selUser">
                         <ui-col width="55" align="center" vertical-align="middle" data-item="{{ item }}" style="padding:4px;">
@@ -79,7 +77,6 @@
     </view>
     <!-- 填好的需求确认单... -->
     <view wx:if="{{ come_msg.enterType == '1' }}" style="height:100%;overflow:auto;">
-        <view style="height:66px;width:100%;"></view>
         <view style="padding:5px 10px;background-color:white;margin-top:7px;">
             <ui-row style="margin-top:10px;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><ui-col>需求单{{ come_msg.item.content.demandNum }}</ui-col></ui-row>
             <view class="weui-cells__title" style="padding-left:0px;margin-top:1px;font-size:12px;">发起时间{{ come_msg.item.createAt }}</view>
@@ -116,14 +113,9 @@ let _promise1,_url;
       navigationBarTitleText: '申请填写'
     },
     data: {
-      headerHeight:"",//头部栏的高
-      tag:true,
-      disabled:true,
-      contentHeight: wx.WIN_HEIGHT - 180 + "px",
       model:{
         show:false
       },
-      modelHeight:wx.WIN_HEIGHT - 180 + 'px',
       form:{
         confirmUser :"",//需求确认人
         demandText :"",//需求内容
@@ -145,7 +137,6 @@ let _promise1,_url;
         selUserName:"",
         files:[],
       },
-      requireList:[{value:""}],
       validate:{
         reqMsg:{
             placeholder:"请输入申请留言",
@@ -163,8 +154,8 @@ let _promise1,_url;
     },
     onLoad(option){
       let that = this;
-      let _obj =  JSON.parse( app.globalData._obj );
-      let _groupMsg = _obj.groupMsg;
+      let _obj =  JSON.parse( option._obj );
+      let _groupMsg = app.globalData.groupMsg;
       let _item = _obj.item;
       _obj.enterType == 1 ? _url = 'demand/edit' : _url = 'demand/add';
       this.setData({
@@ -178,7 +169,6 @@ let _promise1,_url;
         ['form.headImgUrl']:app.globalData.userMsgReq.headImgUrl,
         ['form.position']:app.globalData.userMsgReq.position,
         "userMsgReq":app.globalData.userMsgReq,
-        "headerHeight":app.globalData.headHeight,
       });
       if( _obj.enterType == 1 ){//编辑。。。。
         if( _item.itemcontent.demandAttach != "" ){

@@ -85,7 +85,7 @@ export default {
       that.selectComponent("#chatTool").setData({
         "isManager":true
       })
-    }  
+    }
   },
   onShow(){
     system.getThis(this);
@@ -93,7 +93,7 @@ export default {
     this.onMessage();
     that.selectComponent("#groupChat").setData({
       "groupMsg":app.globalData.groupMsg
-    })    
+    })
     if( app.globalData.isAite ){
       that.selectComponent("#chatTool").setData({
         "isShowControlBar":false,
@@ -114,6 +114,7 @@ export default {
     }else if( app.globalData.isConfirm ){
       that.selectComponent("#chatTool").comeOver();
     }
+    that.selectComponent("#groupChat").sendReadedReceipt();
   },
   // 改变聊天窗口的高度...
   toggleHeight(){
@@ -171,7 +172,7 @@ export default {
           })
         },
         fail(){
-          system.getGroupMsg( app , 1 , resolve);
+          system.getGroupMsg( app , 1 , resolve );
         }
       })
     })
@@ -193,20 +194,14 @@ export default {
     let manager = (_data,_data_)=>{
       switch ( _data.cmd ) {
         case 0://有人发消息过来..
-            wx.getStorage({//更新存储的群信息....
-              key: _data.groupId,
-              success ( _data_ ) {
-                _data_.data = system.format( _data_.data );
-                that.setData({
-                  chatData:_data_.data
-                })
-                that.scrollToBottom();
-                that.selectComponent("#chatTool").setData({//发送成功清空输入框数据....
-                  "inputVal":"",
-                  "isInputing":false
-                })                        
-              }
+            that.setData({
+              chatData:_data_
             })
+            that.scrollToBottom();
+            that.selectComponent("#chatTool").setData({//发送成功清空输入框数据....
+              "inputVal":"",
+              "isInputing":false
+            })   
             break;
         case 100://办结评价.....
             wx.getStorage({//更新存储的群信息....

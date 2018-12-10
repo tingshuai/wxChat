@@ -53,7 +53,6 @@
     },
     data: {
       headerHeight:"",//头部栏的高
-      phoneModel:"",//是否是刘海屏
       headerHeight:app.globalData.headHeight,
       groupMsg:{},
       userList:[],
@@ -85,7 +84,6 @@
         ['submitData.groupDesc']:JSON.parse( option.item ).groupDesc,
         "userMsg":app.globalData.userMsgReq,
         "headerHeight":app.globalData.headHeight,
-        "phoneModel":app.globalData.phoneModel
       })
       if( _tabBar.actItem == 2 ){//是历史群组不显示底部栏
         this.setData({

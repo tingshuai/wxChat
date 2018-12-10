@@ -36,7 +36,7 @@
         <!-- 创建需求 -->
         <view class="sentType_col">
           <image src="../../static/img/Group5Copy@2x.png" bindtap="creatRequirement" data-type="7" style="width:50px;height:50px;"></image>              
-          <text class="tit12" style="font-size:12px;margin:8px 0 5px 0;">需求确认</text>
+          <text class="tit12" style="font-size:12px;margin:8px 0 5px 0;">添加需求</text>
         </view>
         <!-- 办结 -->
         <view class="sentType_col" wx:if="{{ isManager }}">
@@ -274,6 +274,18 @@ export default {
           ['voice.cancel']:false
         })
       }
+    },
+    creatRequirement(e){//新增需求......
+      let that = this;
+      let _item  = {}
+      let _obj = {
+        "item":_item,
+        "enterType":0
+      }
+      app.globalData._obj = JSON.stringify(_obj)
+      wx.navigateTo({
+        url:`/pages/CreateRequirement/index?_obj=${JSON.stringify( _obj )}`//新增进
+      })
     },
     comeOver(e){//这个是要发送办结消息.....
       let _me = this.data.sendInputMsg;

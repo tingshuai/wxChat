@@ -1,5 +1,5 @@
 <template>
-    <scroll-view class="content" scroll-y="true" bindscroll="scrllView" id="viewport" style="height: {{ scrollHeight }}px;padding: 0;overflow:hidden;" scroll-into-view="{{ toView }}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}" bindscrolltoupper="bindscrolltoupper"><!-- bindscrolltoupper="bindscrolltoupper"，，，，catch:touchstart="loadTouchstart" catch:touchend="loadTouchend" catch:touchmove="loadTouchmove"-->
+    <scroll-view class="content" scroll-y="true" bindscroll="scrllView" id="viewport" style="height: {{ scrollHeight }}px;padding: 0;overflow:hidden;" scroll-into-view="{{ toView }}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}"><!-- bindscrolltoupper="bindscrolltoupper"，，，，catch:touchstart="loadTouchstart" catch:touchend="loadTouchend" catch:touchmove="loadTouchmove"-->
         <checkbox-group bindchange="checkboxChange" class="checkboxGroup">
           <view hover-class="touchui-hover" class="talkItem {{ userMsg.openId == item.fromUser ? 'itemRight' : 'itemLeft' }}" wx:for="{{ chatData }}" wx:key="index" id="the{{index}}">
                 <view class="historyLine" wx:if="{{ (item.cmd == 'time' || item.cmd == '2') && item.content }}">{{ item.content }}</view>
@@ -167,13 +167,9 @@ export default {
         url:`/pages/evaluate/index?groupMsg=${ JSON.stringify( app.globalData.groupMsg ) }`
       })
     },
-    sendReadedReceipt( item ){//发送已读消息回执....
+    sendReadedReceipt(){//发送已读消息回执....
       let that = this;
-      wx.createIntersectionObserver(this,{
-        thresholds:[0],
-        initialRatio:100,
-        observeAll:true
-      }).relativeTo('#viewport').observe('.talkItem', (res) => {
+      app.globalData.observeScroll = wx.createIntersectionObserver(this,{thresholds:[100],initialRatio:100,observeAll:true}).relativeTo('#viewport').observe('.talkItem', (res) => {
         console.log(res);
       })
       // this.data.chatData.forEach((val,i,arr)=>{
@@ -192,7 +188,7 @@ export default {
       // })
     },
     scrllView(e){//滚动的时候发送已读消息回执...
-      this.sendReadedReceipt();
+      // this.sendReadedReceipt();
     }
   },
   attached(){

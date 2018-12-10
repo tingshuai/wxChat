@@ -142,14 +142,11 @@ export default {
       app.globalData.promise.upDataGroupMsg = new Promise((resolve,reject)=>{
         switch ( _data.cmd ) {
           case 0://有人发消息过来..
-              wx.getStorage({//更新存储的群信息....
-                key: _data.groupId,
-                success ( _data_ ) {
-                  _data_.data.splice( _data_.data.length, 0, _data );
-                  that.format( _data_.data );
-                  wx.setStorageSync( _data.groupId , _data_.data );
-                  resolve( { _old_:_data,_new_:_data_.data } );
-                }
+              that.format({
+                "onMessageData":_data,
+                "resolve":resolve,
+                "isPush":true,
+                callBack(){}
               })
               break;
           case 100://办结评价.....
@@ -162,6 +159,10 @@ export default {
                 }
               })
               break;
+          case 20:{//需求....
+            // that.format( _data_.data );
+            break;
+          }
           case 3://已读消息提醒
               wx.getStorage({//更新存储的群信息....
                 key: _data.groupId,
@@ -218,18 +219,28 @@ export default {
     // s = s.match(reg);
     return( obj.str )
   },
-  format(_data){
-    _data.forEach((item,i,arr)=>{
+  format(obj){//加入消息队列.....
+    var _data_ = wx.getStorageSync( getApp().globalData.groupMsg.groupId );//拿到缓存的群聊数据....
+    if( obj.isPush ){
+      _data_ = _data_.concat( obj.onMessageData );
+    }else{
+      _data_ = obj.onMessageData.concat( _data_ );
+    }
+    _data_.forEach((item,i,arr)=>{
       if( item.msgType == 7 ){//处理@消息....
         item.content = item.content.split('(@\`-\`@)').join(" ");
+      }else if( item.msgType == 20 || item.msgType == 21 || item.msgType == 22 ){
+        
       }
     })
-    return _data;
-  },  
+    wx.setStorageSync( getApp().globalData.groupMsg.groupId , _data_ );
+    obj.resolve( _data_ ) || null;
+    obj.callBack() || null;
+  },
   getGroupMsg( app , num ,resolve){//请求群消息.......
     let _groupMsg = app.globalData.groupMsg;
     let that = this;
-    this.http({ 
+    this.http({
       url:`/chat/msg/getGroupMsg`, method:"get",
       param:{
         groupId : _groupMsg.groupId ,//群ID
@@ -243,21 +254,21 @@ export default {
         wx.getStorage({
           key: _groupMsg.groupId,
           success (_data_) {
-            let _newData = [..._resData.rows,..._data_.data]
-            _newData = that.format( _newData );
-            resolve( _newData );
-            wx.setStorage({
-              key: _groupMsg.groupId,
-              data: _newData
-            })
+            that.format({
+              "onMessageData":_resData.rows,
+              "resolve":resolve,
+              "isPush":false,
+              callBack(){}
+            });
           },
           fail(){
-            _resData.rows = that.format( _resData.rows );            
-            wx.setStorage({
-              key: _groupMsg.groupId,
-              data: _resData.rows
-            })
-            resolve( _resData.rows );
+            wx.setStorageSync( _groupMsg.groupId , _resData.rows );
+            that.format({
+              "onMessageData":[],
+              "resolve":resolve,
+              "isPush":true,
+              callBack(){}
+            });
           }
         })
       }

@@ -43,7 +43,7 @@
         </view>    
         <!-- 选择需求对接人 -->
         <view class="weui-cells weui-cells_after-title" style="margin-top:20px;">
-            <navigator class="weui-cell weui-cell_access" url="" catchtap="sendTo" hover-class="weui-cell_active">
+            <navigator class="weui-cell weui-cell_access" url="#" catchtap="sendTo" hover-class="weui-cell_active">
                 <view class="weui-cell__bd">对接人</view>
                 <view class="weui-cell__ft weui-cell__ft_in-access">{{ form.confirmUserName || "选择需求对接人" }}</view>
             </navigator>

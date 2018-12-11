@@ -1,7 +1,7 @@
 <template>
     <scroll-view class="content" scroll-y="true" bindscroll="scrllView" id="viewport" style="height: {{ scrollHeight }}px;padding: 0;overflow:hidden;" scroll-into-view="{{ toView }}" upper-threshold="0" bindscrolltoupper="bindscrolltoupper" scroll-top="{{ scrollTop }}"><!-- bindscrolltoupper="bindscrolltoupper"，，，，catch:touchstart="loadTouchstart" catch:touchend="loadTouchend" catch:touchmove="loadTouchmove"-->
         <checkbox-group bindchange="checkboxChange" class="checkboxGroup">
-          <view hover-class="touchui-hover" class="talkItem {{ userMsg.openId == item.fromUser ? 'itemRight' : 'itemLeft' }}" wx:for="{{ chatData }}" wx:key="index" id="the{{index}}">
+          <view hover-class="touchui-hover" class="talkItem {{ userMsg.openId == item.fromUser ? 'itemRight' : 'itemLeft' }}" data-item="{{ item }}" wx:for="{{ chatData }}" wx:key="index" id="the{{index}}">
                 <view class="historyLine" wx:if="{{ (item.cmd == 'time' || item.cmd == '2') && item.content }}">{{ item.content }}</view>
                 <view class="head" width="60" wx:if="{{ (item.cmd == 0 || item.cmd == 100) && (userMsg.openId != item.fromUser)}}"><!--消息来自别人-->
                     <view class="left_icon left_icon1">
@@ -23,14 +23,14 @@
                           <view style="border-bottom:1px solid rgba(0,0,0,0.1);">
                               <view style="color:{{ item.content.demandState ? '#4EBF62' : '#267AFC' }};font-size:12px;">{{ item.msgType == 20 || item.msgType == 21 ? "需求确认" : "修改需求确认" }}</view>
                           </view>
-                          <view style="height:60px;padding:7px 0;">
-                              <view style="font-size:12px;" width="45">
+                          <view class="demandMsg">
+                              <view class="demandImg">
                                 <image mode="aspectFit" src="../../static/img/Group6Copy@2x.png"></image>
                               </view>
-                              <view style="font-size:12px;padding-left:10px;">
-                                <view style="white-space:nowrap;text-overflow:ellipsis;overflow:hidden;height:30px;">需求单{{ item.content.demandNum }}</view>
+                              <view class="demandTxt">
+                                <view style="white-space:nowrap;text-overflow:ellipsis;overflow:hidden;height:30px;line-height:32px;">需求单{{ item.content.demandNum }}</view>
                                 <!-- <view style="white-space:nowrap;height:30px;line-height:40px;" wx:if="{{ sendInputMsg.fromUser == item.content.createUser && (item.content.demandState == false) }}">发起人<text>@</text>{{ item.fromUserName }}</view> -->
-                                <view style="white-space:nowrap;height:30px;line-height:40px;">确认人<text style="color: #FF9D44;">@{{ item.content.confirmUserName }}</text></view>
+                                <view style="white-space:nowrap;height:30px;line-height:28px;">确认人<text style="color: #FF9D44;">@{{ item.content.confirmUserName }}</text></view>
                               </view>
                           </view>
                           <view>
@@ -110,6 +110,7 @@
 <script>
 import chatRoomBehavior from '../../static/data/chatRoomBehavior.js'
 import watch from '../../static/utils/watch'
+import system from '../../static/utils/system'
 let app = getApp();
 export default {
   behaviors: [chatRoomBehavior],
@@ -161,6 +162,19 @@ export default {
           urls: imgList // 需要预览的图片http链接列表
       })
     },
+    retOrConfirm(e){
+      let _item  = e.currentTarget.dataset;
+      let that = this;
+      let _obj = {
+        "groupMsg":app.globalData.groupMsg,
+        "item":_item,
+        "enterType":1
+      }
+      app.globalData._obj = JSON.stringify(_obj)
+      wx.navigateTo({
+        url:`/pages/CreateRequirement/index?_obj=${JSON.stringify( _obj )}`//编辑进
+      })
+    },
     evaluateMe(){//评价.....
       let that = this;
       wx.navigateTo({
@@ -170,25 +184,18 @@ export default {
     sendReadedReceipt(){//发送已读消息回执....
       let that = this;
       app.globalData.observeScroll = wx.createIntersectionObserver(this,{thresholds:[100],initialRatio:100,observeAll:true}).relativeTo('#viewport').observe('.talkItem', (res) => {
-        console.log(res);
-      })
-      // this.data.chatData.forEach((val,i,arr)=>{
-      //   wx.createIntersectionObserver(0,0,true).select(`#the${i}`).boundingClientRect(function(rect){
-      //     var a = that.data.chatData[i].readStatus;
-      //     let _IF1 = ( that.data.chatData[i].readStatus == 1 && that.data.chatData[i].fromUser == app.globalData.openId );//消息来自自己切已读..
-      //     if( that.data.chatData[i].readStatus == 0 && rect.top >= 0 && that.data.chatData[i].fromUser != app.globalData.openId ){
-      //       val.readStatus = 1;
-      //       let _params = JSON.stringify({msgId:that.data.chatData[i].msgId,cmd:'3',groupId:that.data.sendInputMsg.groupId,fromUser:that.data.chatData[i].fromUser});
-      //       system.sendSocketMessage({
-      //         "params":_params,
-      //         callBack(){}
-      //       })
-      //     }
-      //   }).exec()
-      // })
+        let _item = res.dataset.item;
+        if( res.intersectionRatio == 1 && _item.fromUser != app.globalData.openId && _item.cmd != "time" ){
+            let _params = JSON.stringify({msgId:_item.msgId,cmd:'3',groupId:_item.groupId,fromUser:_item.fromUser});
+            system.sendSocketMessage({
+              "params":_params,
+              callBack(){}
+            })
+        }
+      });
     },
     scrllView(e){//滚动的时候发送已读消息回执...
-      // this.sendReadedReceipt();
+      this.sendReadedReceipt();
     }
   },
   attached(){
@@ -202,6 +209,18 @@ export default {
 <style lang="less">
   @import '../styles/mixins.less';
   @import '../styles/icon.less';
+  .demandMsg{
+    height:60px;
+    display: flex;
+    font-size:12px;
+    justify-content: space-bewteen;
+    .demandImg{
+      width: 45px;
+    }
+    .demandTxt{
+      padding-left: 10px;
+    }
+  }
   .article{
     .fixed_bottom{
       background: #fff;

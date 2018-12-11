@@ -14,9 +14,9 @@
                 <text wx:else class="iconfont"></text>
               </ui-col>
               <ui-col vertical-align="middle" align="left" width="50">
-                  <image mode="aspectFit" src="{{  item.headImgUrl }}"/>
+                  <image mode="aspectFit" src="{{  item.headImgUrl || ''}}"/>
               </ui-col>
-              <ui-col space-left="15" vertical-align="middle" align="left">{{ item.username }}</ui-col>
+              <ui-col space-left="15" vertical-align="middle" align="left">{{ item.username || "" }}</ui-col>
           </ui-row>
         </scroll-view>
         <ui-fixed-view bottom="0" left="0" right="0" class="fixBtn">

@@ -1,7 +1,4 @@
 <template id="page">
-
-  <view style="height:{{ headerHeight }}px;width:100%;"></view>
-
   <view class="weui-toptips weui-toptips_warn" style="top:66px;" wx:if="{{ tip.showTopTips }}">{{ tip.tipMsg }}</view>
   <view class="pageContainer">
     <form catchsubmit="submitGroupData" catchreset="formCancel">
@@ -70,6 +67,7 @@
                  <icon type="success" size="15" class="figure" wx:if="{{ item.isAddMember }}"></icon>
                  <view bindtap="{{ userMsg.openId == item.openId ? '' : 'tabHead' }}" class="weui-cell__bd userNickName" data-item="{{ item }}" data-index="{{ index }}">{{ item.username || item.nickname }}</view>
                  <checkbox color="#267AFC" disabled="{{ userMsg.openId == item.openId }}" class="weui-check nickCheckbox" disabled="{{ submitFormData.managerId == item.openId }}" value="{{ item.openId }}" checked="{{ item.checked }}"/>
+                 <!-- {{ userMsg.openId }}-{{ item.openId }} -->
               </view>
           </checkbox-group>
       </view>

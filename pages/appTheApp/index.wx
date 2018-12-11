@@ -1,7 +1,5 @@
 <template>
   <view>
-    <view style="height:{{ headerHeight }}px;width:100%;"></view>
-
     <form bindsubmit="formSubmit" wx:if="{{ !show }}">
       <view class="weui-cells__title"></view>
       <view class="weui-cells weui-cells_after-title applyForm">

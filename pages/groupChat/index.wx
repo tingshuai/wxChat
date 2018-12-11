@@ -47,21 +47,21 @@ export default {
     chatData:[],
     translateY:0,
     sendInputMsg :{
-      fromUser:"",//发送人ID
-      fromUserName:"",//发送人姓名
-      toUser:'',//群聊不填，私聊必填
-      content:"",//消息体
-      cmd:0,//0发送消息，1-撤回消息,2-系统推送消息.
-      msgType:0,//消息类型0-text,1-image,2-voice,3-vedio,4-music,5-news
-      chatType:0,//聊天类型0-未知，1-公聊，2-私聊
-      groupId:'',//群聊ID....群聊必填..
-      attachUrl:'',//附件地址...
-      position:"",
-      msgId:'',
-      groupName:'',
-      status:0,
-      isGroupManager:false,
-      headImgUrl:app.globalData.userMsgReq.headImgUrl || '',
+      "fromUser":"",//发送人ID
+      "fromUserName":"",//发送人姓名
+      "toUser":'',//群聊不填，私聊必填
+      "content":"",//消息体
+      "cmd":0,//0发送消息，1-撤回消息,2-系统推送消息.
+      "msgType":0,//消息类型0-text,1-image,2-voice,3-vedio,4-music,5-news
+      "chatType":0,//聊天类型0-未知，1-公聊，2-私聊
+      "groupId":'',//群聊ID....群聊必填..
+      "attachUrl":'',//附件地址...
+      "position":"",
+      "msgId":'',
+      "groupName":'',
+      "status":0,
+      "isGroupManager":false,
+      "headImgUrl":app.globalData.userMsgReq.headImgUrl || '',
     }
   },
   onLoad(options){
@@ -114,7 +114,6 @@ export default {
     }else if( app.globalData.isConfirm ){
       that.selectComponent("#chatTool").comeOver();
     }
-    that.selectComponent("#groupChat").sendReadedReceipt();
   },
   // 改变聊天窗口的高度...
   toggleHeight(){
@@ -201,7 +200,7 @@ export default {
             that.selectComponent("#chatTool").setData({//发送成功清空输入框数据....
               "inputVal":"",
               "isInputing":false
-            })   
+            })
             break;
         case 100://办结评价.....
             wx.getStorage({//更新存储的群信息....
@@ -221,7 +220,7 @@ export default {
                 that.setData({
                   chatData:_data_.data
                 })
-                that.scrollToBottom();       
+                that.scrollToBottom();
               }
             })
             break;

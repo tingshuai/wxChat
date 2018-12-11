@@ -38,6 +38,7 @@ export default {
   socketOnClose(app){
     let that = this;
     app.globalData.socketTask.onClose(()=>{
+      console.log( "关闭" );
       setTimeout(()=>{
         that.connectSocket( getApp(), { type:"next" } )
       },200)
@@ -50,10 +51,8 @@ export default {
       content: options.content,
       success: function(res) {
         if (res.confirm) {
-          console.log('确定')
           options.scb();
         } else if (res.cancel) {
-          console.log('取消')
           options.ccb();
         }
       }
@@ -78,8 +77,8 @@ export default {
     })
   },
   formatTime( _timer ){
-    let _time = new Date( _timer.replace( new RegExp("-","gm"),"/") );
-    return `${_time.getFullYear()}-${_time.getUTCMonth() + 1}-${_time.getUTCDate()}`;
+    return new Date( _timer.replace( new RegExp("-","gm"),"/") );
+    // return `${_time.getFullYear()}-${_time.getUTCMonth() + 1}-${_time.getUTCDate()}`;
   },
   reqGroupList(obj){//请求群列表树
     let that = this;
@@ -90,7 +89,7 @@ export default {
   connectSocket(app,_obj){//连接socket.......
     let that = this;
       app.globalData.socketTask = wx.connectSocket({
-        url: app.globalData.socketHost + `/websocket/${ app.globalData.openId }`,//用户id
+        url: app.globalData.socketHost + `/websocket/miniapp/${ app.globalData.openId }`,//用户id
         data:{},
         header:{'content-type': 'application/json'},
         success:function(msg){
@@ -117,21 +116,23 @@ export default {
   socketOnOpen(app,callBack){},
   netChange(){
     let that = this;
-    wx.onNetworkStatusChange(function(res) {
-      if( !res.isConnected ){
-        that.stateMsg({ title:"网络连接断开...",content:"",icon:"none",time:2000});   
-        that.closeSocket( getApp() );
-      }else{
-        that.connectSocket( getApp() );
-        that.stateMsg({ title:"网络已连接",content:"",icon:"none",time:2000});  
-      }
-    })    
+    // wx.onNetworkStatusChange((res)=>{
+    //   if( !res.isConnected ){
+    //     that.stateMsg({ title:"网络连接断开...",content:"",icon:"none",time:2000});   
+    //   }else{
+    //     that.closeSocket( getApp() );
+    //     wx.nextTick(()=>{
+    //       that.connectSocket( getApp(),{ type:"next" } );
+    //     })
+    //     that.stateMsg({ title:"网络已连接",content:"",icon:"none",time:2000});  
+    //   }
+    // })
   },
-  socketOnError(app,_tip){
+  socketOnError(app){
     //监听WebSocket错误。
     let that = this;
     app.globalData.socketTask.onError(function(res){
-        that.msgTip({title: '提示',content: _tip,scb(){},ccb(){}});
+        that.stateMsg({title: 'socket链接失败.',icon:"none",time:1000});
         that.closeSocket( getApp() );
     })
   },
@@ -189,21 +190,19 @@ export default {
   },
   sendSocketMessage(obj) {//发送socket消息......
       let that = this;
-      getApp().globalData.socketTask.send({
-        data: obj.params,
-        success(res){
-          obj.callBack() || null;
-        },
-        fail(res){
-          wx.getNetworkType({
-            success (res) {
-              if( res.networkType == "none" ){
-                that.msgTip({title: '提示',content: "发送失败! 网络未连接",scb(){},ccb(){}})
-              }else{
-                that.msgTip({title: '提示',content: "未知错误.",scb(){},ccb(){}})
-              }
-            }
-          })          
+      wx.getNetworkType({
+        success (resNet) {
+          if( resNet.networkType == "none" ){
+            that.msgTip({title: '提示',content: "发送失败! 网络未连接",scb(){},ccb(){}})
+          }else{
+            getApp().globalData.socketTask.send({
+              data: obj.params,
+              success(res){
+                obj.callBack() || null;
+              },
+              fail(res){}
+            })
+          }
         }
       })
   },
@@ -230,7 +229,17 @@ export default {
       if( item.msgType == 7 ){//处理@消息....
         item.content = item.content.split('(@\`-\`@)').join(" ");
       }else if( item.msgType == 20 || item.msgType == 21 || item.msgType == 22 ){
-        
+        if(typeof item.content == "object"){
+          return item.content;
+        }else{
+          item.content = JSON.parse( item.content )
+        }
+        item.content.createAt = this.formatTime( item.content.createAt );
+        _data_.filter((val)=>{
+          if( val.msgId == item.content.disableMsgId ){
+            val.content.editable = false
+          }
+        })
       }
     })
     wx.setStorageSync( getApp().globalData.groupMsg.groupId , _data_ );

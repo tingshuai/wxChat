@@ -333,9 +333,8 @@ export default {
         this.data.sendInputMsg.toUser = "";
         this.data.sendInputMsg.content = that.data.inputVal;
       }
-      let _params = JSON.stringify( that.data.sendInputMsg );
       system.sendSocketMessage({
-        "params": _params,
+        "params":JSON.stringify(that.data.sendInputMsg),
         "callBack":()=>{
           app.globalData.isAite = false;//将isAite清零...
           wx.setStorage({//清理选中的人

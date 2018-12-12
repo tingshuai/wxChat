@@ -6,7 +6,7 @@
       </ui-fixed-view>
       <!-- 群信息按钮 -->
       <view class="weui-cells weui-cells_after-title noafter" style="height:40px;position:relative;z-index:100;background-color:#EFEFF4;">
-          <view class="weui-cell weui-cell_link noafter" style="padding-left:10px;padding-right:5px;height:100%;background-color:rgba(38,122,252,0.6);" bindtap="groupMsg">
+          <view class="weui-cell weui-cell_link noafter" style="padding-left:10px;padding-right:5px;height:100%;background-color:rgba(38,122,252,0.6);" bindtap="toGroupMsg">
               <view class="weui-cell__bd noafter" style="color:white;font-size:12px;">群信息</view>
               <view><icon class="iconfont myWx-xiangyou" style="font-size:16px;color:white;line-height:35px;"></icon></view>
           </view>
@@ -115,6 +115,12 @@ export default {
       that.selectComponent("#chatTool").comeOver();
     }
   },
+  toGroupMsg(){//点击群信息......
+    var that = this;
+    wx.navigateTo({
+      url: `/pages/groupMsg/index?tabBar=${ JSON.stringify( that.data._item.tabBar ) }`
+    })
+  },  
   // 改变聊天窗口的高度...
   toggleHeight(){
     this.setData({

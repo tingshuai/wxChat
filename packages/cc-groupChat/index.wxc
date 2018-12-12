@@ -17,9 +17,9 @@
                             </view>
                         </view>
                         <!--文本类型-->
-                        <text selectable='true' class="talkContent" data-item="{{item}}" bind:longpress="{{transmit.tabBar.actItem == 0 ? 'openActionsheet' : ''}}" wx:if="{{ ( item.msgType == 0 && item.cmd != 100 ) || item.msgType == 7}}" style="background-color: white;">{{ item.content }} </text>
+                        <text selectable='true' class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ ( item.msgType == 0 && item.cmd != 100 ) || item.msgType == 7}}" style="background-color: white;">{{ item.content }} </text>
                         <!--需求类型-->
-                        <view class="talkContent" data-item="{{item}}" bind:longpress="{{transmit.tabBar.actItem == 0 ? 'openActionsheet' : ''}}" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="retOrConfirm" wx:if="{{ item.msgType == 20 || item.msgType == 22 || item.msgType == 21 }}" style="background-color: white;width:100%;">
+                        <view class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="retOrConfirm" wx:if="{{ item.msgType == 20 || item.msgType == 22 || item.msgType == 21 }}" style="background-color: white;width:100%;">
                           <view style="border-bottom:1px solid rgba(0,0,0,0.1);">
                               <view style="color:{{ item.content.demandState ? '#4EBF62' : '#267AFC' }};font-size:12px;">{{ item.msgType == 20 || item.msgType == 21 ? "需求确认" : "修改需求确认" }}</view>
                           </view>
@@ -39,11 +39,11 @@
                         </view>
                         <!--图片类型-->
                         <view class="talkContent" wx:if="{{ item.msgType == 1 }}" style="height:100px;background-color:rgba(0,0,0,0);width:40%;">
-                          <image lazy-load="true" mode="aspectFill" data-item="{{item}}" bindtap="previewImage" bind:longpress="{{transmit.tabBar.actItem == 0 ? 'openActionsheet' : ''}}" style="height:100%;width:auto" src="{{ item.attachUrl }}"></image>
+                          <image lazy-load="true" mode="aspectFill" data-item="{{item}}" bindtap="previewImage" bind:longpress="openActionsheet" style="height:100%;width:auto" src="{{ item.attachUrl }}"></image>
                           <view class="myProgress" wx:if="{{ item.progress >0 && item.progress < 100 }}" style="height:1px;width:{{ item.progress }}%;background-color: {{ item.progress == 100 && item.readCount >= 0 ? '#49CC8D' : 'rgba(255,100,100,0.8)' }}"></view></view>
                         <!--语音类型-->
-                        <view class="talkContent" wx:if="{{ item.msgType == 2 }}" style="width:{{ item.seeWord ? 'auto' : '100px' }};min-width:100px;" catchtap="playVoice" bind:longpress="{{transmit.tabBar.actItem == 0 ? 'openActionsheet' : ''}}" data-index="{{ index }}" data-item="{{item}}">
-                            <image mode="aspectFit" style="height:20px;width:20px;float:{{ sendInputMsg.fromUser == item.fromUser ? 'left' : 'right'}}" src="{{ item.src ? item.src : '../../static/img/voice2.png' }}"></image>
+                        <view class="talkContent" wx:if="{{ item.msgType == 2 }}" style="width:{{ item.seeWord ? 'auto' : '100px' }};min-width:100px;" catchtap="playVoice" bind:longpress="openActionsheet" data-index="{{ index }}" data-item="{{item}}">
+                            <image mode="aspectFit" style="height:20px;width:20px;float:{{ sendInputMsg.fromUser == item.fromUser ? 'left' : 'right'}}" src="{{ item.voiceState ? '../../static/img/voice.gif' : '../../static/img/voice2.png' }}"></image>
                             <view style="border-top:1rpx solid #ddd;padding-top:3px;margin-top:28px;font-size:26rpx;color:#666;" class="voiceContent" wx:if="{{item.content != '' && item.content != null && item.seeWord }}">{{ item.content }}</view>
                             <view style="border-top:1rpx solid #ddd;padding-top:3px;margin-top:28px;color:rgba(255,100,100,0.8);font-size:26rpx;" class="voiceContent" wx:elif="{{ item.seeWord }}"> 无可识别内容 </view>
                             <!-- <view class="myProgress" wx:if="{{ item.progress }}" style="height:1px;width:{{ item.progress }}px;background-color: {{ item.progress == 100 ? '#49CC8D' : 'rgba(255,100,100,0.8)' }}"></view> -->
@@ -56,7 +56,7 @@
                         <!--文件类型-->
                         <view class="talkContent" wx:if="{{ item.msgType == 6 }}" data-item="{{item}}" style="width:80%;" catchtap="openFile">
                           <view>
-                              <view span="9" data-item="{{item}}" catch:longpress="{{transmit.tabBar.actItem == 0 ? 'openActionsheet' : ''}}">
+                              <view span="9" data-item="{{item}}" catch:longpress="openActionsheet">
                                   <view style="font-size:13px;color:#333333;width:100%;">{{ item.content }}</view>
                               </view>
                               <view span="3">
@@ -111,6 +111,7 @@
 import chatRoomBehavior from '../../static/data/chatRoomBehavior.js'
 import watch from '../../static/utils/watch'
 import system from '../../static/utils/system'
+let _audio = wx.createInnerAudioContext();
 let app = getApp();
 export default {
   behaviors: [chatRoomBehavior],
@@ -135,7 +136,9 @@ export default {
     h: wx.DEFAULT_CONTENT_HEIGHT -  49 - 40,
     groupMsg:{},
     toView:"",
-    scrollTop:1000
+    scrollTop:1000,
+    oldAudioIndex:null,
+    paused:true
   },
   methods: {
     handleTap () {
@@ -160,6 +163,36 @@ export default {
       wx.previewImage({
           current: imgUrl, // 当前显示图片的http链接
           urls: imgList // 需要预览的图片http链接列表
+      })
+    },
+    playVoice(e){
+      var that = this;
+      var _item = e.currentTarget.dataset.item;
+      var _i = e.currentTarget.dataset.index;
+      _audio.src = _item.attachUrl;
+      this.data.chatData.forEach((item,i,arr)=>{
+        if( item.msgType == 2 ){//音频...
+          if( i == _i ){
+            item.voiceState = !item.voiceState;
+          }else{
+            item.voiceState = false;
+          }
+        }
+      })
+      if( this.data.chatData[_i].voiceState ){//播放状态....
+        _audio.pause();
+        _audio.play();
+      }else{//停止
+        _audio.pause();
+      }
+      _audio.onEnded((e)=>{
+          this.data.chatData[_i].voiceState = false
+          that.setData({
+            chatData:that.data.chatData
+          })          
+      })
+      that.setData({
+        chatData:that.data.chatData
       })
     },
     retOrConfirm(e){
@@ -196,6 +229,69 @@ export default {
     },
     scrllView(e){//滚动的时候发送已读消息回执...
       this.sendReadedReceipt();
+    },
+    openActionsheet(e){
+      var that = this;
+      var dataset = e.currentTarget.dataset;
+      var item = e.currentTarget.dataset.item;
+      var typeCode = e.currentTarget.dataset.item.msgType;
+      var list = [];
+      let creatTime = '';
+      if(item.createAt.toString().search('-') != -1){
+        creatTime = Date.parse(item.createAt.toString().replace(/-/g,"/"))
+      }else{
+        creatTime = item.createAt
+      }
+      function toggle(){
+        if(new Date().getTime() - creatTime > 120000){
+          typeCode == 2 ? list = ['转发',"语音转文字"] : ( (typeCode == 20 || typeCode == 21 || typeCode == 22 || typeCode == 30) ? list = [] : list = ['转发']);
+        }else{
+          typeCode == 2 ? list = ['转发','撤回',"语音转文字"] : ( (typeCode == 20 || typeCode == 21 || typeCode == 22) ? list = [] : list = ['转发','撤回']);
+        }
+      }
+      if( item.fromUser == that.data.sendInputMsg.fromUser ){
+        toggle();
+      }else{
+        typeCode == 2 ? list = ["转发","语音转文字"] : list = ["转发"];
+      }
+      // 语音转文字后更新内容.....
+      function changeData(){
+        that.data.chatData[dataset.index].seeWord = true;
+        that.setData({
+          'chatData':that.data.chatData
+        })
+      }
+      function _implement (code){
+        if( list[code] == "语音转文字"){
+          changeData();
+        }else if( list[code] == "转发" ){
+          that.data.chatData.filter((item_0)=>{
+            if(item_0.msgId == item.msgId){
+              item_0.checked = true;
+              that.data.transmit.transData.push( item_0.msgId )
+            }
+          })
+          that.setData({
+            "chatData":that.data.chatData,
+            ["transmit.isTransmit"]:true,
+            ['inputIn.isLeft']:true,
+          })
+        }else if( list[code] == "撤回" ){
+          let _params = JSON.stringify({msgId:item.msgId,cmd:'1',groupId:item.groupId,fromUser:item.fromUser,fromUserName:item.fromUserName});
+          system.sendSocketMessage({
+            "_app":app.globalData,
+            "params":_params
+          })
+        }
+      }
+      if( list.length != 0 ){
+        wx.showActionSheet({
+            itemList: list,
+            success: function(res) {
+                _implement(res.tapIndex);
+            }
+        });
+      }
     }
   },
   attached(){

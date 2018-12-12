@@ -78,7 +78,7 @@
       let that = this;
       let _tabBar = JSON.parse( option.tabBar );
       this.setData({
-        groupMsg:JSON.parse( option.item ),
+        groupMsg:app.globalData.groupMsg,
         ['submitData.groupId']:JSON.parse( option.item ).groupId,
         ['submitData.groupName']:JSON.parse( option.item ).groupName,
         ['submitData.groupDesc']:JSON.parse( option.item ).groupDesc,
@@ -119,7 +119,7 @@
       let that = this;
       system.http({ url:'chat/groups',
         method:"get",
-        param: {groupId:that.data.submitData.groupId},
+        param: {groupId:app.globalData.groupMsg.groupId},
         scb(res){
           if ( res.data.status == 200) {
               that.setData({

@@ -90,7 +90,7 @@ import system from '../../static/utils/system'
 var app = getApp();
 export default {
   config: {
-    navigationBarTitleText: ''
+    navigationBarTitleText: '新建群组'
   },
   data: {
     headerHeight:"",//头部栏的高
@@ -149,12 +149,14 @@ export default {
     let startTime = `${time.getFullYear()}-${time.getUTCMonth() + 1}-${time.getUTCDate()}`
     that.setData({
       "addMenu":option.addMenu,
-      "title":option.edit == "true" ? option.addMenu == 'true' ? "添加成员" : "编辑群组" : "新建群组",
       "userMsg":app.globalData.userMsgReq,
       ['formData.startTime']:startTime,
       "edit":option.edit,
       "headerHeight":app.globalData.headHeight,
     })
+    wx.setNavigationBarTitle({
+      title: option.edit == "true" ? option.addMenu == 'true' ? "添加成员" : "编辑群组" : "新建群组",
+    })    
     promise = new Promise((resolve,reject)=>{//先请求群列表再请求用户列表....
       let pro = new Promise((resolve2,reject2)=>{
         that.reqGroupList(resolve2);//请求群组列表.........
@@ -425,7 +427,7 @@ export default {
       that.data.formData.userList.forEach((val,i,arr)=>{
         val.isAddMember == true ? that.data.submitFormData.addMemberOpenIds.push(val.openId) : null;
       })
-      this.setData({
+      that.setData({
         ['submitFormData.addMemberOpenIds']:that.data.submitFormData.addMemberOpenIds
       })
       let formData = Object.assign({},e.detail.value,that.data.submitFormData);
@@ -452,9 +454,9 @@ export default {
           }
         },
         fcb(res){
-          this.setData({
+          that.setData({
             "disabled":false
-          })              
+          })
           system.stateMsg({title:that.data.edit == 'true' ? "修改群组失败" : '新增群组失败',icon:"none",time:1000})
         }
       })

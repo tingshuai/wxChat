@@ -240,6 +240,8 @@ export default {
             val.content.editable = false
           }
         })
+      }else if( item.msgType == 2 ){
+        item.voiceState = false;//初始化话筒....
       }
     })
     wx.setStorageSync( getApp().globalData.groupMsg.groupId , _data_ );

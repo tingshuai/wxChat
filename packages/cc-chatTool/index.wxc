@@ -100,6 +100,7 @@ export default {
       play:'../../static/img/voice2.png',//聊天列表中的语音icon
       curItem:{},
       cancel:false,
+      audioSrc:""
     },
     isManager:false
   },
@@ -150,8 +151,6 @@ export default {
         wx.chooseImage({
           count:5,
           success(res) {
-            console.log( res );
-            
             let promises = res.tempFilePaths.map(( val,i,arr )=>{
               return that.upload( val , _type , 1 );
             });
@@ -159,11 +158,10 @@ export default {
                 obj_i.forEach((val,i,arr)=>{
                   that.data.sendInputMsg.attachUrl = JSON.parse(val).data;
                   let _params = JSON.stringify( that.data.sendInputMsg );
-                  debugger
-                  // system.sendSocketMessage({
-                  //   "params":_params,
-                  //   callBack(){}
-                  // })
+                  system.sendSocketMessage({
+                    "params":_params,
+                    callBack(){}
+                  })
                 })
             }).catch((err) => {
                 console.log(err);
@@ -177,7 +175,6 @@ export default {
         let uploadTask;
         that.setData({
           ['sendInputMsg.msgType']: _typeCode,
-          // ['sendInputMsg.attachUrl']:tempFile,
           ['sendInputMsg.progress']:0,
           ['sendInputMsg.createAt']:new Date().getTime(),
         });
@@ -187,21 +184,19 @@ export default {
               filePath: _typeCode == 1 ? tempFile : tempFile.tempFilePath,
               name: 'file',
               formData:{
-                "watermark": _type == "watermark" ? true : false
+                "watermark": _type == "watermark" ? 1 : 0
               },
               header:{'content-type':'multipart/form-data'},
               success: function(res){
                   var data = res.data;
-                  console.log(res);
                   if( _typeCode == 2 ){//发送语音
                     that.data.sendInputMsg.attachUrl = JSON.parse(data).data;
                     that.data.sendInputMsg.content = tempFile.result;
                     let _params = JSON.stringify( that.data.sendInputMsg);
-                    debugger;
-                    // system.sendSocketMessage({
-                    //   "_app":app.globalData,
-                    //   "params":_params
-                    // })
+                    system.sendSocketMessage({
+                      "params":_params,
+                      callBack(){}
+                    })
                   }
                   resolve( res.data );
               },
@@ -241,7 +236,6 @@ export default {
         console.log("current onRecognize", res)
       }
       wx_manager.onStop = function(res) {
-        console.log("录音",res);
         if( !that.data.voice.cancel ){
           that.upload(res , false, 2 );
         }

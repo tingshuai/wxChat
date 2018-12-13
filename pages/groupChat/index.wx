@@ -12,7 +12,7 @@
           </view>
       </view>
       <!-- 消息区 -->
-      <cc-group-chat sendInputMsg="{{ sendInputMsg }}" id="groupChat" style="position:relative;top:{{ translateY }}px" bindaddData="addData" scrollHeight="{{ scrollHeight }}"  bindtouchstart="toggleHeight" chatData="{{ chatData }}"></cc-group-chat>
+      <cc-group-chat sendInputMsg="{{ sendInputMsg }}" bindtransData="transData" id="groupChat" style="position:relative;top:{{ translateY }}px" bindaddData="addData" scrollHeight="{{ scrollHeight }}"  bindtouchstart="toggleHeight" chatData="{{ chatData }}"></cc-group-chat>
       <!-- 话筒 -->
       <ui-fixed-view top="30%" left="{{ voice.plVoice }}" style="z-index:9999;display:{{ voice.show ? 'block' : 'none' }}">
           <view class="fixed-view-content" style="background-color:rgba(0,0,0,0.5);padding:0px 35px 20px 35px;border-radius:7px;">
@@ -20,8 +20,19 @@
             <text style="display:block;text-align:center;color:white;background-color:{{ voice.color }}">{{ voice.content }}</text>
           </view>
       </ui-fixed-view>
+      <ui-fixed-view bottom="0" left="0" right="0" class="fixBtn" style="display:{{ !isTransData ? 'none' : 'block'}};">
+        <view class="fixed-view-content" style="background-color:white;border-top:1px solid #efefef;">
+          <view class="btn-area" bindtap="transData">
+            <text class="iconfont myWx-houtui1" style="font-size:32px;text-align:center;"></text>
+          </view>
+          <view class="line"></view>
+          <view class="btn-area" bindtap="transMe">
+            <text class="iconfont myWx-fasong4" style="font-size:32px;text-align:center;"></text>
+          </view>
+        </view>
+      </ui-fixed-view>
       <!--底部输入工具-->
-      <ui-fixed-view bottom="0" left="0" right="0">
+      <ui-fixed-view bottom="0" left="0" right="0" style="display:{{ isTransData ? 'none' : 'block'}};">
           <cc-chat-tool sendInputMsg="{{ sendInputMsg }}" id="chatTool" bindcheight="changeHeight" bindscrollToBottom="scrollToBottom"></cc-chat-tool>
       </ui-fixed-view>
   </view>
@@ -46,6 +57,7 @@ export default {
     _item:{},
     chatData:[],
     translateY:0,
+    isTransData:false,
     sendInputMsg :{
       "fromUser":"",//发送人ID
       "fromUserName":"",//发送人姓名
@@ -67,7 +79,6 @@ export default {
   onLoad(options){
     let that = this;
     let _item = JSON.parse( options.item );
-    app.globalData.groupMsg = _item.group;//当前群信息
     this.setData({
       "_item":_item,
       ['sendInputMsg.groupId']:_item.group.groupId,
@@ -114,6 +125,25 @@ export default {
     }else if( app.globalData.isConfirm ){
       that.selectComponent("#chatTool").comeOver();
     }
+    this.setData({
+      "isTransData":false
+    })
+    that.selectComponent("#groupChat").setData({
+      ['transmit.isTransmit']:false
+    });
+  },
+  transData(){
+    this.setData({
+      isTransData:!this.data.isTransData
+    })
+    this.selectComponent("#groupChat").setData({
+      ['transmit.isTransmit']:this.data.isTransData
+    })
+  },
+  transMe(){//转发..
+    wx.navigateTo({
+      url: `/pages/groupList/index`
+    })
   },
   toGroupMsg(){//点击群信息......
     var that = this;
@@ -130,7 +160,7 @@ export default {
       "isShowControlBar":false,
       "isAite":false,
       "isInputing":false,
-      "users":[]
+      "users":[],
     })
   },
   changeHeight(e){
@@ -258,6 +288,22 @@ export default {
   #groupChat  {
     transition: all 0.2s;
   }
+  .fixed-view-content{
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    .line{
+      width:1px;
+      height:40px;
+      background-color:#ddd;
+      top:5px;
+      position:relative;
+    }
+    .btn-area{
+      flex-grow: 1;
+      text-align:center;
+    }
+  }  
   .msgTransCheckbox{
     .checkbox{
       .wx-checkbox-input{

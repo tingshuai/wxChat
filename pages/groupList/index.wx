@@ -1,16 +1,5 @@
 <template>
-    <ui-nav-bar slot="nav-bar" class="nav_bar" custom-style="{{ {backgroundColor:'#267AFC',color:'#fff'} }}">
-        <ui-row height="40">
-            <ui-col vertical-align="middle" align="center" width="60" bindtap="navigateBack">
-                <icon class="iconfont myWx-iconfontqianjin2" style="font-size:20px;"></icon>
-            </ui-col>
-            <ui-col vertical-align="middle" align="center" class="center">选择群组</ui-col>
-            <ui-col vertical-align="middle" align="center" width="80"></ui-col>
-        </ui-row>
-    </ui-nav-bar>
     <view class="popup1">
-        <!-- <text class="title0">选择要转发到的群组</text> -->
-        <scroll-view scroll-y style="height:{{ modelHeight }};border-top:1px solid #ddd;">
         <ui-accordion bindchange="slide" wx:for="{{ transmit.groupList }}" header-height="50" wx:key="index" show-arrow="{{ item.children.length != 0 }}">
             <view slot="header" class="accorHeader">
                 <ui-row height="80" class="top_tip" border-bottom style="padding-right:35px;" data-parentItem="0" data-isaite="false" data-index="{{ index }}" data-item="{{ item }}" bindtap="selGroup">
@@ -58,15 +47,9 @@
             </view>
         </ui-accordion>
         </scroll-view>
-        <!-- <view class="button-sp-area">
-            <button bindtap="navigateBack" type="default">取消</button>
-            <button bindtap="transMsg" type="primary" class="myBtnSuccess">确定</button>
-        </view> -->
         <ui-fixed-view bottom="0" left="0" right="0" class="fixBtn">
             <view class="fixed-view-content" style="padding:10px 35rpx;background-color:white;border-top:1px solid #efefef;">
             <view class="btn-area">
-                <!-- <button type="primary" formType="submit" class="myBtnSuccess jingjingBtn">{{ btnTitle.title0 }}</button> -->
-                <!-- <button formType="reset" class="jingjingBtn">取消</button> -->
                 <button bindtap="navigateBack" type="default" class="jingjingBtn">取消</button>
                 <button bindtap="transMsg" type="primary" class="myBtnSuccess jingjingBtn">确定</button>
             </view>
@@ -78,6 +61,9 @@
 import system from '../../static/utils/system'
 var app = getApp();
 export default {
+    config: {
+      navigationBarTitleText: '群组列表',
+    },    
     data: {
       transmit:{
           transData:[],
@@ -85,25 +71,26 @@ export default {
           groupList:[],
           selMe:""
       },
-      chatData:[],
-      modelHeight:wx.DEFAULT_CONTENT_HEIGHT - 135 + 'px',
+      groupMsg:{}
     },
     onLoad(option){
-      let _obj = JSON.parse( app.globalData._obj );
       let that = this;
-      this.setData({
-        chatData:_obj.chatData,
-        ["transmit.transData"]:_obj.transData
-      })
       this.reqGroupList();
+      this.setData({
+          groupMsg:app.globalData.groupMsg
+      })
     },
     reqGroupList(e){
         let that = this;
         system.http({ url:`chat/groups/tree`, method:"get",param:{pageSize:0,openId:app.globalData.openId} ,header:{'content-type': 'application/x-www-form-urlencoded'},scb(res){
-            res.data.data.rows[0].act = true;
+            let _data = res.data.data.rows;
+            let _newData = _data.filter((item)=>{
+                return item.groupId != app.globalData.groupMsg.groupId
+            })
+            _newData[0].act = true;
             that.setData({
-                ['transmit.groupList']:res.data.data.rows,
-                ['transmit.selMe']:res.data.data.rows[0]
+                ['transmit.groupList']:_newData,
+                ['transmit.selMe']:_newData[0]
             })
         }})
     },  
@@ -114,33 +101,39 @@ export default {
         let that = this;
         let _sendMsg = {"fromUser": "","fromUserName": "","toUser": "","cmd": 0,"msgType": 0,"chatType": 0,"groupId": "","attachUrl": '',"createAt": "","content": "","headImgUrl": "","post": "","position": "","checked": false,"groupName": ""};
         let _me = app.globalData.userMsgReq;
-        this.data.chatData.forEach(( val,i,arr )=>{
-        this.data.transmit.transData.forEach((value,ii,array)=>{
-            if( val.msgId == value ){
-              _sendMsg.groupId = that.data.transmit.selMe.groupId;
-              _sendMsg.groupName = that.data.transmit.selMe.groupName;
-              _sendMsg.fromUser = _me.openId;
-              _sendMsg.position = _me.position;
-              _sendMsg.content = val.content || "";
-              _sendMsg.fromUserName = _me.username;
-              _sendMsg.headImgUrl = _me.headImgUrl;
-              _sendMsg.attachUrl = val.attachUrl;
-              _sendMsg.msgType = val.msgType;
-              _sendMsg.isForward = true;
-              app.globalData.socketTask.send({
-                  data: JSON.stringify( _sendMsg ),
-                  success(res){
-                    if( that.data.transmit.transData.length == ii + 1){
-                        system.stateMsg({title:"消息转发成功",icon:"success",time:1000})
-                        setTimeout(() => {
-                            that.navigateBack();
-                        }, 1200);
-                    }
-                  },
-                  fail(res){}
-              })
+        wx.getStorage({
+            key: app.globalData.groupMsg.groupId,
+            success(res) {
+                res.data.forEach(( val,i,arr )=>{
+                    app.globalData.transData.forEach((value,ii,array)=>{
+                        if( val.msgId == value ){
+                        _sendMsg.groupId = that.data.transmit.selMe.groupId;
+                        _sendMsg.groupName = that.data.transmit.selMe.groupName;
+                        _sendMsg.fromUser = _me.openId;
+                        _sendMsg.position = _me.position;
+                        _sendMsg.content = val.content || "";
+                        _sendMsg.fromUserName = _me.username;
+                        _sendMsg.headImgUrl = _me.headImgUrl;
+                        _sendMsg.attachUrl = val.attachUrl;
+                        _sendMsg.msgType = val.msgType;
+                        _sendMsg.isForward = true;
+                        app.globalData.socketTask.send({
+                            data: JSON.stringify( _sendMsg ),
+                            success(res){
+                                if( app.globalData.transData.length == ii + 1){
+                                    app.globalData.transData = []
+                                    system.stateMsg({title:"消息转发成功",icon:"success",time:1000})
+                                    setTimeout(() => {
+                                        that.navigateBack();
+                                    }, 1000);
+                                }
+                            },
+                            fail(res){}
+                        })
+                        }
+                    })
+                })
             }
-        })
         })
     },    
     selGroup(e){//选择群组.....
@@ -175,10 +168,10 @@ export default {
 </script>
 <style lang="less">
   .popup1{
-    height: 100%;
-    // padding:0 20rpx;
-    padding-top:66px;
-    overflow: hidden;
+    height:100%;
+    overflow:hidden;
+    overflow:auto;
+    padding-bottom:135px;
     .title0{
       color:#333;
       font-size:14px;

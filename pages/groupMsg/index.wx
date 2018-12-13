@@ -1,6 +1,5 @@
 <template id="page">
   <view class="content" style="">
-    <view style="height:{{ headerHeight }}px;width:100%;"></view>
     <!-- 群成员头像 -->
     <view class="talkItem" >
         <view width="60" style="vertical-align:top;" align="left" vertical-align="top" bindtap="sel" data-index="{{index}}" data-item="{{item}}" class="mycol" wx:for="{{ groupMsg.groupUsers }}" wx:key="{{index}}">
@@ -31,7 +30,7 @@
         <view style="width:60%;display:inline-block;text-align:right;"><icon class="iconfont myWx-xiangyou" style="font-size:20px;vertical-align:top;color:#c7c7c7;"></icon></view>
     </view>
     <!--退群按钮-->
-    <view class="fixed-view-content" style="padding:0 35rpx;padding-top:28px;">
+    <view class="fixed-view-content" style="padding:0 35rpx;padding-top:28px;" wx:if="{{ tabBar.actItem == 0 }}">
       <view class="btn-area">
         <button type="warn" class="fixed_bottom jingjingBtn" wx:if="{{ userMsg.openId == groupMsg.managerId  }}" data-disband="true" bindtap="exitGroup">解散群组</button>
         <button type="warn" class="fixed_bottom jingjingBtn" wx:else data-disband="false" bindtap="exitGroup">退出群组</button>
@@ -49,11 +48,9 @@
   var app = getApp();
   export default {
     config: {
-      navigationBarTitleText: '',
+      navigationBarTitleText: '群信息',
     },
     data: {
-      headerHeight:"",//头部栏的高
-      headerHeight:app.globalData.headHeight,
       groupMsg:{},
       userList:[],
       userMsg:{},
@@ -77,27 +74,24 @@
     onLoad( option ){
       let that = this;
       let _tabBar = JSON.parse( option.tabBar );
+      let _groupMsg = app.globalData.groupMsg;
       this.setData({
-        groupMsg:app.globalData.groupMsg,
-        ['submitData.groupId']:JSON.parse( option.item ).groupId,
-        ['submitData.groupName']:JSON.parse( option.item ).groupName,
-        ['submitData.groupDesc']:JSON.parse( option.item ).groupDesc,
+        groupMsg:_groupMsg,
+        ['submitData.groupId']:_groupMsg.groupId,
+        ['submitData.groupName']:_groupMsg.groupName,
+        ['submitData.groupDesc']:_groupMsg.groupDesc,
         "userMsg":app.globalData.userMsgReq,
-        "headerHeight":app.globalData.headHeight,
+        tabBar:_tabBar,
       })
-      if( _tabBar.actItem == 2 ){//是历史群组不显示底部栏
-        this.setData({
-          tabBar:_tabBar,
-        })
-      }
       wx.setNavigationBarTitle({//设置页面标题....
-        title: JSON.parse( option.item ).groupName
+        title: _groupMsg.groupName
       })
       this.canAddMenuber();
-      this.onMessage();
     },
     onShow(){
-      this.getGroupMsg();
+      if( this.data.tabBar.actItem == 0 ){
+        this.getGroupMsg();
+      }
     },
     canAddMenuber(){
       let that = this;
@@ -148,7 +142,7 @@
                 if( _data.msgType == 13 ){//更新群列表.....
                     setTimeout(()=>{
                       that.setData({
-                        "groupMsg":_data.groupDate
+                        "groupMsg":_data
                       })
                       that.canAddMenuber();
                     },1000)

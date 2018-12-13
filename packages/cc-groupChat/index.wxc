@@ -89,12 +89,10 @@
                     </view>
                     <view class="readMe" wx:if="{{ sendInputMsg.fromUser == item.fromUser }}" style="right:{{ sendInputMsg.fromUser == item.fromUser ? '5px' : '' }}">{{ groupMsg.groupUsers.length - item.readCount -1 >= 0 ? groupMsg.groupUsers.length - item.readCount - 1 : '0'}} {{ item.readCount >= 0 ? "人未读" : ''}}</view>
                 </view>
-                <view class="text" space-right="0" wx:if="{{ item.cmd == 1 }}" style="width:100%;text-align:center;">
-                    <view class="historyLine">{{ item.fromUserName }} 撤回了一条消息</view>
-                </view>
+                <view class="historyLine" wx:if="{{ item.cmd == 1 }}">{{ item.fromUserName }} 撤回了一条消息</view>
+                <view class="historyLine" wx:if="{{ item.cmd == 100 && item.content }}">{{ item.content || ''}} </view>
                 <!-- 办结消息 -->
-                <!-- <view class="text" space-right="0" wx:if="{{ item.cmd == 100 }}">
-                    <view class="historyLine">{{ item.content }} </view>
+                <!-- <view class="text" space-right="0">
                 </view> -->
                 <view width="60" wx:if="{{ item.cmd != 'time' && ( userMsg.openId == item.fromUser ) && item.cmd != 2 && item.cmd != 1 }}"><!--消息来自自己-->
                     <view class="left_icon left_icon1">
@@ -138,7 +136,10 @@ export default {
     toView:"",
     scrollTop:1000,
     oldAudioIndex:null,
-    paused:true
+    paused:true,
+    transmit:{
+      isTransmit:false
+    }
   },
   methods: {
     handleTap () {
@@ -230,6 +231,10 @@ export default {
     scrllView(e){//滚动的时候发送已读消息回执...
       this.sendReadedReceipt();
     },
+    checkboxChange(e){ //消息转发选项框选中事件......
+      let that = this;
+      app.globalData.transData = e.detail.value;
+    },
     openActionsheet(e){
       var that = this;
       var dataset = e.currentTarget.dataset;
@@ -268,14 +273,14 @@ export default {
           that.data.chatData.filter((item_0)=>{
             if(item_0.msgId == item.msgId){
               item_0.checked = true;
-              that.data.transmit.transData.push( item_0.msgId )
+              app.globalData.transData.push(item_0.msgId);
             }
           })
           that.setData({
             "chatData":that.data.chatData,
             ["transmit.isTransmit"]:true,
-            ['inputIn.isLeft']:true,
           })
+          that.triggerEvent("transData")
         }else if( list[code] == "撤回" ){
           let _params = JSON.stringify({msgId:item.msgId,cmd:'1',groupId:item.groupId,fromUser:item.fromUser,fromUserName:item.fromUserName});
           system.sendSocketMessage({
@@ -346,6 +351,14 @@ export default {
 .checkboxGroup{
   padding-bottom:15px;
   padding:0px 8px;
+}
+.msgTransCheckbox{
+  text-align:right;
+  width:40px;
+  .checkbox{
+    display:inline-block;
+    width:25px;
+  }
 }
 .content{
     transition: all 0.2s;

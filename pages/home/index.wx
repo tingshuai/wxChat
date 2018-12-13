@@ -138,16 +138,6 @@ export default {
   exData(_data){
       console.log( _data );
   },
-  toChat(event){//跳转到群聊页面.....
-    let item = {};
-    let that = this;
-    item.group = event.currentTarget.dataset.item;
-    item.user = app.globalData.userMsgReq;
-    item.tabBar = that.data.tabBar;
-    wx.navigateTo({
-      url: `/pages/groupChat/index?item=${JSON.stringify(item)}`
-    })
-  },
   toggleTab(e){
     let _item = e.currentTarget.dataset;
     let that = this;

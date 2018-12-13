@@ -39,9 +39,6 @@ export default {
     let that = this;
     app.globalData.socketTask.onClose(()=>{
       console.log( "关闭" );
-      setTimeout(()=>{
-        that.connectSocket( getApp(), { type:"next" } )
-      },200)
     })
   },
   // 消息提示....
@@ -116,17 +113,17 @@ export default {
   socketOnOpen(app,callBack){},
   netChange(){
     let that = this;
-    // wx.onNetworkStatusChange((res)=>{
-    //   if( !res.isConnected ){
-    //     that.stateMsg({ title:"网络连接断开...",content:"",icon:"none",time:2000});   
-    //   }else{
-    //     that.closeSocket( getApp() );
-    //     wx.nextTick(()=>{
-    //       that.connectSocket( getApp(),{ type:"next" } );
-    //     })
-    //     that.stateMsg({ title:"网络已连接",content:"",icon:"none",time:2000});  
-    //   }
-    // })
+    wx.onNetworkStatusChange((res)=>{
+      if( !res.isConnected ){
+        that.stateMsg({ title:"网络连接断开...",content:"",icon:"none",time:2000});   
+      }else{
+        that.closeSocket( getApp() );
+        wx.nextTick(()=>{
+          that.connectSocket( getApp(),{ type:"next" } );
+        })
+        that.stateMsg({ title:"网络已连接",content:"",icon:"none",time:2000});  
+      }
+    })
   },
   socketOnError(app){
     //监听WebSocket错误。
@@ -219,7 +216,7 @@ export default {
     return( obj.str )
   },
   format(obj){//加入消息队列.....
-    var _data_ = wx.getStorageSync( getApp().globalData.groupMsg.groupId );//拿到缓存的群聊数据....
+    var _data_ = wx.getStorageSync( obj.onMessageData.groupId || getApp().globalData.groupMsg.groupId ) || [];//拿到缓存的群聊数据....
     if( obj.isPush ){
       _data_ = _data_.concat( obj.onMessageData );
     }else{
@@ -240,11 +237,11 @@ export default {
             val.content.editable = false
           }
         })
-      }else if( item.msgType == 2 ){
+      }else if( item.msgType == 2 ){//语音
         item.voiceState = false;//初始化话筒....
       }
     })
-    wx.setStorageSync( getApp().globalData.groupMsg.groupId , _data_ );
+    wx.setStorageSync( obj.onMessageData.groupId || getApp().globalData.groupMsg.groupId , _data_ );
     obj.resolve( _data_ ) || null;
     obj.callBack() || null;
   },

@@ -238,6 +238,12 @@ export default {
               "isInputing":false
             })
             break;
+        case 1://撤回消息..
+            that.setData({
+              chatData:_data_
+            })
+            that.scrollToBottom();
+            break;            
         case 100://办结评价.....
             wx.getStorage({//更新存储的群信息....
               key: _data.groupId,

@@ -17,7 +17,7 @@
                             </view>
                         </view>
                         <!--文本类型-->
-                        <text selectable='true' class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ ( item.msgType == 0 && item.cmd != 100 ) || item.msgType == 7}}" style="background-color: white;">{{ item.content }} </text>
+                        <text selectable='true' class="talkContent" data-index="{{ index }}" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ ( item.msgType == 0 && item.cmd != 100 ) || item.msgType == 7}}" style="background-color: white;">{{ item.content }} </text>
                         <!--需求类型-->
                         <view class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="retOrConfirm" wx:if="{{ item.msgType == 20 || item.msgType == 22 || item.msgType == 21 }}" style="background-color: white;width:100%;">
                           <view style="border-bottom:1px solid rgba(0,0,0,0.1);">
@@ -39,7 +39,7 @@
                         </view>
                         <!--图片类型-->
                         <view class="talkContent" wx:if="{{ item.msgType == 1 }}" style="height:100px;background-color:rgba(0,0,0,0);width:40%;">
-                          <image lazy-load="true" mode="aspectFill" data-item="{{item}}" bindtap="previewImage" bind:longpress="openActionsheet" style="height:100%;width:auto" src="{{ item.attachUrl }}"></image>
+                          <image lazy-load="true" mode="aspectFill" data-item="{{item}}" bindtap="previewImage" bind:longpress="openActionsheet" style="height:100%;width:auto" data-index="{{ index }}" src="{{ item.attachUrl }}"></image>
                           <view class="myProgress" wx:if="{{ item.progress >0 && item.progress < 100 }}" style="height:1px;width:{{ item.progress }}%;background-color: {{ item.progress == 100 && item.readCount >= 0 ? '#49CC8D' : 'rgba(255,100,100,0.8)' }}"></view></view>
                         <!--语音类型-->
                         <view class="talkContent" wx:if="{{ item.msgType == 2 }}" style="width:{{ item.seeWord ? 'auto' : '100px' }};min-width:100px;" catchtap="playVoice" bind:longpress="openActionsheet" data-index="{{ index }}" data-item="{{item}}">
@@ -56,7 +56,7 @@
                         <!--文件类型-->
                         <view class="talkContent" wx:if="{{ item.msgType == 6 }}" data-item="{{item}}" style="width:80%;" catchtap="openFile">
                           <view>
-                              <view span="9" data-item="{{item}}" catch:longpress="openActionsheet">
+                              <view span="9" data-item="{{item}}" catch:longpress="openActionsheet" data-index="{{ index }}">
                                   <view style="font-size:13px;color:#333333;width:100%;">{{ item.content }}</view>
                               </view>
                               <view span="3">
@@ -284,8 +284,15 @@ export default {
         }else if( list[code] == "撤回" ){
           let _params = JSON.stringify({msgId:item.msgId,cmd:'1',groupId:item.groupId,fromUser:item.fromUser,fromUserName:item.fromUserName});
           system.sendSocketMessage({
-            "_app":app.globalData,
-            "params":_params
+            "params":_params,
+            callBack(){
+              let _data = wx.getStorageSync(item.groupId);
+              _data.splice( dataset.index , 1 );
+              wx.setStorageSync(item.groupId,_data);
+              that.setData({
+                chatData:_data
+              })
+            }
           })
         }
       }

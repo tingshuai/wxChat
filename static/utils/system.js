@@ -147,6 +147,14 @@ export default {
                 callBack(){}
               })
               break;
+          case 1://有人发消息过来..
+              that.format({
+                "onMessageData":_data,
+                "resolve":resolve,
+                "isPush":true,
+                callBack(){}
+              })
+              break;              
           case 100://办结评价.....
               wx.getStorage({//更新存储的群信息....
                 key: _data.groupId,
@@ -239,11 +247,13 @@ export default {
         })
       }else if( item.msgType == 2 ){//语音
         item.voiceState = false;//初始化话筒....
+      }else if( item.msgType == 1 ){//撤回...
+
       }
     })
+    obj.callBack() || null;
     wx.setStorageSync( obj.onMessageData.groupId || getApp().globalData.groupMsg.groupId , _data_ );
     obj.resolve( _data_ ) || null;
-    obj.callBack() || null;
   },
   getGroupMsg( app , num ,resolve){//请求群消息.......
     let _groupMsg = app.globalData.groupMsg;

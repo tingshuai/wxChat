@@ -84,7 +84,7 @@ export default {
     }})
   },
   connectSocket(app,_obj){//连接socket.......
-    let that = this;
+      let that = this;
       app.globalData.socketTask = wx.connectSocket({
         url: app.globalData.socketHost + `/websocket/miniapp/${ app.globalData.openId }`,//用户id
         data:{},
@@ -97,7 +97,7 @@ export default {
             that.socketOnError(getApp());
             thisChatRoom == null ? null : thisChatRoom.onMessage();//断开重连
             if( _obj.type == 'login' ){//如果是第一次登陆来的。。。。
-              wx.redirectTo({
+              wx.reLaunch({
                 url: '/pages/home/index?actItem=0'
               })
             }else if( _obj.type == 'next' ){
@@ -136,10 +136,14 @@ export default {
   socketOnMessage( app , _me ){
     let that = this;
     app.globalData.socketTask.onMessage((res)=>{
+      let _curPageThis = getApp().globalData._me;
       var _data = JSON.parse( res.data );
       app.globalData.promise.upDataGroupMsg = new Promise((resolve,reject)=>{
         switch ( _data.cmd ) {
           case 0://有人发消息过来..
+              if( _curPageThis.route == "pages/home/index"){
+                _curPageThis.requestGroupList( '/chat/groups/tree','over',2, _data.groupId );
+              }
               that.format({
                 "onMessageData":_data,
                 "resolve":resolve,
@@ -166,7 +170,12 @@ export default {
               })
               break;
           case 20:{//需求....
-            // that.format( _data_.data );
+            that.format({
+              "onMessageData":_data,
+              "resolve":resolve,
+              "isPush":true,
+              callBack(){}
+            })
             break;
           }
           case 3://已读消息提醒
@@ -186,6 +195,16 @@ export default {
               })
               break;
           case 2://有群解散..
+              if( _curPageThis.route == "pages/home/index" ){
+                _curPageThis.setGroupList( _data );
+              }else if( _curPageThis.route == "pages/groupChat/index" ){
+                if( _data.groupId == app.globalData.groupMsg.groupId ){
+                  that.stateMsg({"title":"本群已被群主解散!",icon:"none",time:1000});
+                  setTimeout(()=>{
+                    wx.navigateBack();
+                  },1000)
+                }
+              }
               break;          
           default:
               break;
@@ -225,10 +244,13 @@ export default {
   },
   format(obj){//加入消息队列.....
     var _data_ = wx.getStorageSync( obj.onMessageData.groupId || getApp().globalData.groupMsg.groupId ) || [];//拿到缓存的群聊数据....
+    let _cur = null;
+    let _curPageThis = getApp().globalData._me;
     if( obj.isPush ){
       _data_ = _data_.concat( obj.onMessageData );
     }else{
       _data_ = obj.onMessageData.concat( _data_ );
+      _cur = obj.onMessageData.length;
     }
     _data_.forEach((item,i,arr)=>{
       if( item.msgType == 7 ){//处理@消息....
@@ -252,7 +274,25 @@ export default {
       }
     })
     obj.callBack() || null;
+    let setData = ()=>{
+      _curPageThis.setData({
+        chatData:_data_
+      })  
+    }
     wx.setStorageSync( obj.onMessageData.groupId || getApp().globalData.groupMsg.groupId , _data_ );
+    if( _curPageThis.route == "pages/groupChat/index" ){//群聊页面......
+      if( obj.isPush ){
+        setData();
+        _curPageThis.scrollToBottom();
+        _curPageThis.selectComponent("#chatTool").setData({//发送成功清空输入框数据....
+          "inputVal":"",
+          "isInputing":false
+        })
+      }else{
+        setData();
+        _curPageThis.getThePoint(_cur);
+      }
+    }
     obj.resolve( _data_ ) || null;
   },
   getGroupMsg( app , num ,resolve){//请求群消息.......
@@ -276,7 +316,7 @@ export default {
               "onMessageData":_resData.rows,
               "resolve":resolve,
               "isPush":false,
-              callBack(){}
+              callBack(num){}
             });
           },
           fail(){

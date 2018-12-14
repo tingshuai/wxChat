@@ -68,68 +68,21 @@ export default {
     transData:[],//要转发的消息...
     observeScroll:{},
     groupMsg:{},//当前群信息.....
+    _me:null
   },
   onLaunch() {
     system.attachInfo()
-    var that = this
-    wx.request({
-      url: `${that.globalData.httpHost}/chat/attach/logo`, //请求已加入群组或者未加入群组
-      data: {},
-      method: 'get',
-      header: {
-        'content-type': 'application/json' // 默认值
-      },
-      success(res) {
-        if (res.data.status == 200) {
-          wx.setStorage({
-            key: 'wxImg',
-            data: res.data.data.base64Str
-          })
-        }
-      }
-    })
-    // 可以通过 wx.getSetting 先查询一下用户是否授权了 "scope.record" 这个 scope
-    wx.getSetting({
-      success(res) {
-        var loginMsg = {}
-        wx.getStorage({
-          key: 'loginMsg',
-          success(res) {
-            loginMsg = res.data
-          }
-        })
-        if (res.authSetting['scope.userInfo'] && loginMsg.code == 200) {
-          wx.getUserInfo({
-            timeout: 5000,
-            success(res) {
-              that.globalData.userMsg = res.userInfo
-            },
-            fail(res) {
-              system.msgTip({
-                title: '提示',
-                content: res.errMsg,
-                scb() {},
-                ccb() {}
-              })
-            }
-          })
-          wx.reLaunch({
-            url: `/pages/home/index`
-          })
-        }
-      },
-      fail(res) {
-        system.msgTip({
-          title: '提示',
-          content: res.errMsg,
-          scb() {},
-          ccb() {}
-        })
-        // system.stateMsg({title:res})
-      }
-    })
+    if( wx.getStorageSync('openId') != "" && wx.getStorageSync('userMsgReq') != "" ){//已登录
+      this.globalData.openId = wx.getStorageSync('openId');
+      this.globalData.userMsgReq = wx.getStorageSync('userMsgReq');
+      system.connectSocket(this,{type:"login"})//连接socket.......
+      system.netChange(this)//中断连接时重新连接......
+      console.log("已登录")
+    }else{
+      console.log("未登录")
+    }
   },
-  onHide: function() {}
+  onHide: function() {},
 }
 </script>
 

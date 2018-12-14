@@ -96,8 +96,6 @@ export default {
         success: function(res) {
             app.globalData.openId = res.data;
             that.requestGroupList( '/chat/groups/tree','over',1 );
-            //连接状态
-            that.onMessage();//监听socket更新群列表...
         },
         fail(res){
             wx.redirectTo({
@@ -119,12 +117,12 @@ export default {
   },
   onShow(e){
     let that = this;
+    app.globalData._me = this;
     this.requestGroupList( '/history/groups/tree','history');
     this.requestGroupList( '/chat/groups/tree','over',1 );
     system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:20000});
     wx.onNetworkStatusChange(function(res) {
       if( res.isConnected ){
-        that.onMessage();
         if( that.data.tabBar.actItem == 0 ){
             that.requestGroupList( '/chat/groups/tree','over',1 );
         }else{
@@ -133,7 +131,6 @@ export default {
       }
     })
     system.getThis(this);
-    this.onMessage();
   },
   exData(_data){
       console.log( _data );
@@ -200,31 +197,17 @@ export default {
     })
     return head_message.concat( tail_message );//将有消息的群放在前面
   },
-  onMessage(){
-      let that = this;
-      app.globalData.socketTask.onMessage((res)=>{
-        var _data = JSON.parse( res.data );
-        switch (_data.cmd ) {
-            case 0://有人发消息过来
-                that.requestGroupList( '/chat/groups/tree','over',2, _data.groupId );
-                break;
-            case 2:
-                if( _data.msgType == 11 ){//有群解散.....
-                    let promise = new Promise((resolve,reject)=>{
-                        that.arrList1( _data.groupId , that.data.list1 ,resolve );
-                    })
-                    promise.then((_obj)=>{
-                        that.data.list1.splice(_obj._i,1);
-                        that.setData({
-                            "list1":that.data.list1
-                        })
-                    })
-                }
-                break;
-            default:
-                break;
-        }
-      })
+  setGroupList(_data){
+    let that = this;
+    let promise = new Promise((resolve,reject)=>{
+        that.arrList1( _data.groupId , that.data.list1 ,resolve );
+    })
+    promise.then((_obj)=>{
+        that.data.list1.splice(_obj._i,1);
+        that.setData({
+            "list1":that.data.list1
+        })
+    })      
   },
   exitGroup(e){
     let that = this;

@@ -224,7 +224,8 @@ export default {
             wx.authorize({
               scope: 'scope.record',
                 success() {
-                  music();
+                  // music();
+                  return;
                 }
             })
           }else{

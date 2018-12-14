@@ -79,6 +79,7 @@ export default {
   onLoad(options){
     let that = this;
     let _item = JSON.parse( options.item );
+    app.globalData.groupMsg = _item.group;
     this.setData({
       "_item":_item,
       ['sendInputMsg.groupId']:_item.group.groupId,
@@ -101,7 +102,7 @@ export default {
   onShow(){
     system.getThis(this);
     let that = this;
-    this.onMessage();
+    app.globalData._me = this;
     that.selectComponent("#groupChat").setData({
       "groupMsg":app.globalData.groupMsg
     })
@@ -178,13 +179,12 @@ export default {
       system.getGroupMsg( app , ++_curPage , resolve);
     })
     promise.then(( _data_ )=>{
-      let _cur = _data_.length - this.data.chatData.length;
-      that.setData({
-        chatData: _data_
-      })
-      that.selectComponent("#groupChat").setData({
-        "toView":`the${_cur}`
-      })
+
+    })
+  },
+  getThePoint(id){
+    this.selectComponent("#groupChat").setData({
+      "toView":`the${id}`
     })
   },
   getChatData(){//获取首次数据.....
@@ -223,65 +223,6 @@ export default {
     this.selectComponent("#groupChat").setData({
       "scrollTop":10000
     })      
-  },
-  onMessage(){//更新聊天记录.....
-    let that = this;
-    let manager = (_data,_data_)=>{
-      switch ( _data.cmd ) {
-        case 0://有人发消息过来..
-            that.setData({
-              chatData:_data_
-            })
-            that.scrollToBottom();
-            that.selectComponent("#chatTool").setData({//发送成功清空输入框数据....
-              "inputVal":"",
-              "isInputing":false
-            })
-            break;
-        case 1://撤回消息..
-            that.setData({
-              chatData:_data_
-            })
-            that.scrollToBottom();
-            break;            
-        case 100://办结评价.....
-            wx.getStorage({//更新存储的群信息....
-              key: _data.groupId,
-              success ( _data_ ) {
-                that.setData({
-                  chatData:_data_.data
-                })
-                that.scrollToBottom();       
-              }
-            })
-            break;
-        case 3://已读消息提醒
-            wx.getStorage({//更新存储的群信息....
-              key: _data.groupId,
-              success ( _data_ ) {
-                that.setData({
-                  chatData:_data_.data
-                })
-                that.scrollToBottom();
-              }
-            })
-            break;
-        case 2://有群解散..
-            break;
-        case 3://有人读消息.....
-            break;
-        default:
-            break;
-      }
-    }
-    wx.nextTick(()=>{
-      app.globalData.socketTask.onMessage((res)=>{
-        var _data = JSON.parse( res.data );
-        app.globalData.promise.upDataGroupMsg.then((_data_)=>{
-          manager(_data,_data_)
-        })
-      })
-    })    
   }
 }
 </script>

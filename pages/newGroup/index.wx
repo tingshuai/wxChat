@@ -418,7 +418,8 @@ export default {
         })
         setTimeout(function(){
           that.setData({
-            ["tip.showTopTips"]:false
+            ["tip.showTopTips"]:false,
+            "disabled":false
           })
         },1000)
       }

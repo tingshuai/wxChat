@@ -72,9 +72,18 @@ export default {
   },
   onLaunch() {
     system.attachInfo();
-    system.isLogin(this);
+    console.log("launch");
   },
-  onHide: function() {},
+  onHide() {
+    system.closeSocket(getApp());
+    console.log("切到后台");
+    console.log("socket",this.globalData.socketTask);
+  },
+  onShow(){
+    system.isLogin(this);
+    console.log("切到前台");
+    console.log("socket",this.globalData.socketTask);
+  }
 }
 </script>
 

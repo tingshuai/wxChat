@@ -81,6 +81,7 @@ export default {
     let _item = JSON.parse( options.item );
     app.globalData.groupMsg = _item.group;
     system.isLogin(app);
+    console.log("socket",app.globalData.socketTask);
     app.globalData._me = this;
     this.setData({
       "_item":_item,
@@ -190,10 +191,12 @@ export default {
   },
   getChatData(){//获取首次数据.....
     let that = this;
+    console.log("进入获取首次数据函数");
     let promise = new Promise((resolve,reject)=>{
       wx.getStorage({
         key: that.data._item.group.groupId,
         success ( _data_ ) {
+          console.log("获取首次数据成功");
           if( _data_.data.length > 80 ){
             _data_.data = _data_.data.splice( -30 , _data_.data.length - 1 )
           }
@@ -208,7 +211,7 @@ export default {
           })
         },
         fail(){
-          console.log("获取首次数据");
+          console.log("获取首次数据失败");
           system.getGroupMsg( app , 1 , resolve );
         }
       })

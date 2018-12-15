@@ -27,8 +27,7 @@ export default {
       duration: options.time
     })
   },
-  closeSocket(app,fun){
-      let that = this;
+  closeSocket(app){
       app.globalData.socketTask.close();
   },
   socketOnClose(app){
@@ -289,7 +288,7 @@ export default {
     if( wx.getStorageSync('openId') != "" && wx.getStorageSync('userMsgReq') != "" ){//已登录
       app.globalData.openId = wx.getStorageSync('openId');
       app.globalData.userMsgReq = wx.getStorageSync('userMsgReq');
-      if( app.globalData.socketTask.OPEN != 1 ){
+      if( Number(app.globalData.socketTask.readyState) != 1 ){
         this.connectSocket(app)//连接socket.......
         this.netChange(app)//中断连接时重新连接......
       }

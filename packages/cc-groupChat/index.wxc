@@ -5,7 +5,7 @@
                 <view class="historyLine" wx:if="{{ (item.cmd == 'time' || item.cmd == '2') && item.content }}">{{ item.content }}</view>
                 <view class="head" width="60" wx:if="{{ (item.cmd == 0 || item.cmd == 100) && (userMsg.openId != item.fromUser)}}"><!--消息来自别人-->
                     <view class="left_icon left_icon1">
-                        <image src="{{  item.headImgUrl }}"/>
+                        <image class="headImg" src="{{  item.headImgUrl }}"/>
                     </view>
                 </view>
                 <!-- <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && (sendInputMsg.fromUser == item.fromUser) && transmit.isTransmit }}"><checkbox-group data-item="{{ item }}" bindchange="checkboxChange"><label><checkbox class="checkbox" value="{{item.msgId}}"/></label></checkbox-group></view>消息转发选项框...... -->

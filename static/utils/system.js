@@ -1,8 +1,4 @@
-let thisChatRoom = null;
 export default {
-  getThis(me){
-    thisChatRoom = me;
-  },
   attachInfo () {
     let res = wx.getSystemInfoSync()
 
@@ -83,8 +79,9 @@ export default {
       return res.data.data.rows
     }})
   },
-  connectSocket(app,_obj){//连接socket.......
+  connectSocket(app){//连接socket.......
       let that = this;
+      console.log("链接socket的openid" , app.globalData.openId );
       app.globalData.socketTask = wx.connectSocket({
         url: app.globalData.socketHost + `/websocket/miniapp/${ app.globalData.openId }`,//用户id
         data:{},
@@ -95,14 +92,6 @@ export default {
             that.socketOnClose(getApp());
             that.socketOnOpen(getApp(),()=>{});
             that.socketOnError(getApp());
-            thisChatRoom == null ? null : thisChatRoom.onMessage();//断开重连
-            if( _obj.type == 'login' ){//如果是第一次登陆来的。。。。
-              wx.reLaunch({
-                url: '/pages/home/index?actItem=0'
-              })
-            }else if( _obj.type == 'next' ){
-              console.log( "重连" );
-            }
           })
         },
         fail:function(msg){
@@ -129,8 +118,8 @@ export default {
     //监听WebSocket错误。
     let that = this;
     app.globalData.socketTask.onError(function(res){
+      that.closeSocket( getApp() );
         that.stateMsg({title: 'socket链接失败.',icon:"none",time:1000});
-        that.closeSocket( getApp() );
     })
   },
   socketOnMessage( app , _me ){
@@ -294,6 +283,22 @@ export default {
       }
     }
     obj.resolve( _data_ ) || null;
+  },
+  isLogin(app){
+    if( wx.getStorageSync('openId') != "" && wx.getStorageSync('userMsgReq') != "" ){//已登录
+      app.globalData.openId = wx.getStorageSync('openId');
+      app.globalData.userMsgReq = wx.getStorageSync('userMsgReq');
+      if( app.globalData.socketTask.OPEN != 1 ){
+        this.connectSocket(app)//连接socket.......
+        this.netChange(app)//中断连接时重新连接......
+      }
+      console.log("已登录")
+    }else{
+      console.log("未登录")
+      wx.reLaunch({
+        url: '/pages/login/index'
+      })      
+    }    
   },
   getGroupMsg( app , num ,resolve){//请求群消息.......
     let _groupMsg = app.globalData.groupMsg;

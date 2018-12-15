@@ -80,6 +80,7 @@ export default {
     let that = this;
     let _item = JSON.parse( options.item );
     app.globalData.groupMsg = _item.group;
+    system.isLogin(app);
     this.setData({
       "_item":_item,
       ['sendInputMsg.groupId']:_item.group.groupId,
@@ -100,7 +101,6 @@ export default {
     }
   },
   onShow(){
-    system.getThis(this);
     let that = this;
     app.globalData._me = this;
     that.selectComponent("#groupChat").setData({

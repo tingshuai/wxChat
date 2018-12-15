@@ -9,8 +9,8 @@ export default {
   config: {
     usingComponents: {},
     pages: [
-      'pages/login/index',
       'pages/home/index',
+      'pages/login/index',
       'pages/applyTheGroup/index',
       'pages/appTheApp/index',
       'pages/fillInApplycation/index',
@@ -71,16 +71,8 @@ export default {
     _me:null
   },
   onLaunch() {
-    system.attachInfo()
-    if( wx.getStorageSync('openId') != "" && wx.getStorageSync('userMsgReq') != "" ){//已登录
-      this.globalData.openId = wx.getStorageSync('openId');
-      this.globalData.userMsgReq = wx.getStorageSync('userMsgReq');
-      system.connectSocket(this,{type:"login"})//连接socket.......
-      system.netChange(this)//中断连接时重新连接......
-      console.log("已登录")
-    }else{
-      console.log("未登录")
-    }
+    system.attachInfo();
+    system.isLogin(this);
   },
   onHide: function() {},
 }

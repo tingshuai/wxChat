@@ -81,6 +81,7 @@ export default {
     let _item = JSON.parse( options.item );
     app.globalData.groupMsg = _item.group;
     system.isLogin(app);
+    app.globalData._me = this;
     this.setData({
       "_item":_item,
       ['sendInputMsg.groupId']:_item.group.groupId,
@@ -207,6 +208,7 @@ export default {
           })
         },
         fail(){
+          console.log("获取首次数据");
           system.getGroupMsg( app , 1 , resolve );
         }
       })

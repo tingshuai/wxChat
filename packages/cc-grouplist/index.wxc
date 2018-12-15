@@ -4,7 +4,7 @@
          <view class="top_tip" style="" data-index="{{ index }}" data-item="{{ item }}" bindtap="selGroup">
              <view class="parentList list_1" style="height:70px;padding:10px 15px;position:relative;" catchtap="toChat" data-item = "{{ item }}">
                  <view class="left_icon left_icon1" style="">
-                     <image src="{{ item.icon || defaultHeadImg }}"></image>
+                     <image class="headImg" src="{{ item.icon || defaultHeadImg }}"></image>
                      <text class="angleIcon angleIcon1" wx:if="{{ item.unreadCount != 0 }}">{{ item.unreadCount >= 100 ? '99+' : item.unreadCount }}</text>
                  </view>
                  <view class="text" style="" vertical-align="middle" space="20" data-item="{{ item }}">
@@ -137,6 +137,9 @@ export default {
         text-align: center;
         line-height: 50px;
         position: relative;
+        .headImg{
+          border-radius: 5px;
+        }
     }
     .left_icon2{
         width: 40px;

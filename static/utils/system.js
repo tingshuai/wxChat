@@ -266,12 +266,13 @@ export default {
     let setData = ()=>{
       _curPageThis.setData({
         chatData:_data_
-      })  
+      })
     }
     wx.setStorageSync( obj.onMessageData.groupId || getApp().globalData.groupMsg.groupId , _data_ );
     if( _curPageThis.route == "pages/groupChat/index" ){//群聊页面......
       if( obj.isPush ){
         setData();
+        console.log("整理数据并更新群聊",obj);
         _curPageThis.scrollToBottom();
         _curPageThis.selectComponent("#chatTool").setData({//发送成功清空输入框数据....
           "inputVal":"",
@@ -297,7 +298,7 @@ export default {
       console.log("未登录")
       wx.reLaunch({
         url: '/pages/login/index'
-      })      
+      })
     }    
   },
   getGroupMsg( app , num ,resolve){//请求群消息.......
@@ -313,6 +314,7 @@ export default {
       },
       header:{'content-type': 'application/x-www-form-urlencoded'},
       scb(res){
+        console.log("请求到数据",res);
         let _resData = res.data.data;
         wx.getStorage({
           key: _groupMsg.groupId,
@@ -325,6 +327,7 @@ export default {
             });
           },
           fail(){
+            console.log("请求到数据首次写入内存",res);
             wx.setStorageSync( _groupMsg.groupId , _resData.rows );
             that.format({
               "onMessageData":[],

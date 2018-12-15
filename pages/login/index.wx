@@ -28,6 +28,9 @@ export default {
     this.getLogo();
     this.login();
   },
+  onShow(){
+    app.globalData._me = this;
+  },
   login(){
     wx.login({
       success(res) {
@@ -39,7 +42,7 @@ export default {
             method:"get",
             scb(res){
               if (res.data.status == '500') {
-                that.setData({
+                app.globalData._me.setData({
                   loginMsg:res.data
                 })
               } else {

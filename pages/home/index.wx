@@ -353,7 +353,7 @@ export default {
           url:'chat/attach/defaultGroupIcon',
           method:'get',
           scb(res){
-              that.setData({
+              app.globalData._me.setData({
                   "defaultHeadImg":res.data.data.base64Str
               })
           },fcb(res){}

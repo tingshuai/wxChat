@@ -37,6 +37,25 @@
                               <view style="white-space:nowrap;font-size:12px;" wx:if="{{ item.content.demandState == true }}">确认日期{{ item.createAt }}</view>
                           </view>
                         </view>
+                        <!--压图类型-->
+                        <view class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="yatu" wx:if="{{ item.msgType == 40 }}" style="background-color: white;width:100%;">
+                          <view style="border-bottom:1px solid rgba(0,0,0,0.1);">
+                              <view style="color:{{ item.signStatus ? '#4EBF62' : '#267AFC' }};font-size:12px;">{{ item.signStatus ? "已确认" : "待签收"}}</view>
+                          </view>
+                          <view class="demandMsg">
+                              <view class="demandImg">
+                                <image mode="aspectFit" src="../../static/img/Group6Copy@2x.png"></image>
+                              </view>
+                              <view class="demandTxt">
+                                <view style="white-space:nowrap;text-overflow:ellipsis;overflow:hidden;height:30px;line-height:32px;">压图{{ item.content.diagramNum }}</view>
+                                <!-- <view style="white-space:nowrap;height:30px;line-height:40px;" wx:if="{{ sendInputMsg.fromUser == item.content.createUser && (item.content.demandState == false) }}">发起人<text>@</text>{{ item.fromUserName }}</view> -->
+                                <view style="white-space:nowrap;height:30px;line-height:28px;">对接人<text style="color: #FF9D44;">@{{ item.content.toUserName }}</text></view>
+                              </view>
+                          </view>
+                          <view>
+                              <view style="white-space:nowrap;font-size:12px;" wx:if="{{ item.content.demandState == true }}">确认日期{{ item.createAt }}</view>
+                          </view>
+                        </view>
                         <!--图片类型-->
                         <view class="talkContent" wx:if="{{ item.msgType == 1 }}" style="height:100px;background-color:rgba(0,0,0,0);width:40%;">
                           <image lazy-load="true" mode="aspectFill" data-item="{{item}}" bindtap="previewImage" bind:longpress="openActionsheet" style="height:100%;width:auto" data-index="{{ index }}" src="{{ item.attachUrl }}"></image>
@@ -148,6 +167,12 @@ export default {
     setScrollTop(_top){
       this.setData({
         scrollTop: _top
+      })
+    },
+    yatu(e){
+      let _item  = e.currentTarget.dataset;
+      wx.navigateTo({
+        url:`/pages/mapping/index?_obj=${JSON.stringify( _item.item )}`//编辑进
       })
     },
     bindscrolltoupper(e){

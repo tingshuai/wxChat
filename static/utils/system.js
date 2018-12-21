@@ -28,7 +28,9 @@ export default {
     })
   },
   closeSocket(app){
+    if( app.globalData.socketTask != "" ){
       app.globalData.socketTask.close();
+    }
   },
   socketOnClose(app){
     let that = this;
@@ -81,21 +83,24 @@ export default {
   connectSocket(app){//连接socket.......
       let that = this;
       console.log("链接socket的openid" , app.globalData.openId );
-      app.globalData.socketTask = wx.connectSocket({
-        url: app.globalData.socketHost + `/websocket/miniapp/${ app.globalData.openId }`,//用户id
-        data:{},
-        header:{'content-type': 'application/json'},
-        success:function(msg){
-          wx.nextTick(()=>{
-            that.socketOnMessage(getApp());
-            that.socketOnClose(getApp());
-            that.socketOnOpen(getApp(),()=>{});
-            that.socketOnError(getApp());
-          })
-        },
-        fail:function(msg){
-          that.msgTip({title: '提示',content: "会话连接失败！请检查网络并重新进入小程序",scb(){},ccb(){}})
-        }
+      this.closeSocket(app);
+      wx.nextTick(()=>{
+        app.globalData.socketTask = wx.connectSocket({
+          url: app.globalData.socketHost + `/websocket/miniapp/${ app.globalData.openId }`,//用户id
+          data:{},
+          header:{'content-type': 'application/json'},
+          success:function(msg){
+            wx.nextTick(()=>{
+              that.socketOnMessage(app);
+              that.socketOnClose(app);
+              that.socketOnOpen(app,()=>{});
+              that.socketOnError(app);
+            })
+          },
+          fail:function(msg){
+            that.msgTip({title: '提示',content: "会话连接失败！请检查网络并重新进入小程序",scb(){},ccb(){}})
+          }
+        })
       })
   },
   socketOnOpen(app,callBack){},
@@ -105,10 +110,6 @@ export default {
       if( !res.isConnected ){
         that.stateMsg({ title:"网络连接断开...",content:"",icon:"none",time:2000});   
       }else{
-        that.closeSocket( getApp() );
-        wx.nextTick(()=>{
-          that.connectSocket( getApp(),{ type:"next" } );
-        })
         that.stateMsg({ title:"网络已连接",content:"",icon:"none",time:2000});  
       }
     })
@@ -118,7 +119,7 @@ export default {
     let that = this;
     app.globalData.socketTask.onError(function(res){
       that.closeSocket( getApp() );
-        that.stateMsg({title: 'socket链接失败.',icon:"none",time:1000});
+      console.log("socket链接失败",res);
     })
   },
   socketOnMessage( app , _me ){
@@ -193,7 +194,10 @@ export default {
                   },1000)
                 }
               }
-              break;          
+              break;
+          case 1000://有群解散..
+            console.log( "cmd:1000" , JSON.stringify(_data) );
+            break;                
           default:
               break;
         }
@@ -202,18 +206,31 @@ export default {
   },
   sendSocketMessage(obj) {//发送socket消息......
       let that = this;
+      let _ready = getApp().globalData.socketTask
+      let _sendMsg = (_obj)=>{
+        getApp().globalData.socketTask.send({data: obj.params})
+        console.log("再连");
+      }
+      let _send = (obj)=>{
+        getApp().globalData.socketTask.send({
+          data: obj.params,
+          success(res){
+            obj.callBack() || null;
+          },
+          fail(res){
+            that.connectSocket(getApp());
+            setTimeout(()=>{
+              _sendMsg(getApp());
+            },300)
+          }
+        })
+      }
       wx.getNetworkType({
         success (resNet) {
           if( resNet.networkType == "none" ){
             that.msgTip({title: '提示',content: "发送失败! 网络未连接",scb(){},ccb(){}})
           }else{
-            getApp().globalData.socketTask.send({
-              data: obj.params,
-              success(res){
-                obj.callBack() || null;
-              },
-              fail(res){}
-            })
+            _send(obj);
           }
         }
       })
@@ -232,6 +249,7 @@ export default {
   },
   format(obj){//加入消息队列.....
     var _data_ = wx.getStorageSync( obj.onMessageData.groupId || getApp().globalData.groupMsg.groupId ) || [];//拿到缓存的群聊数据....
+    console.log("storage" , obj.onMessageData.groupId || getApp().globalData.groupMsg.groupId , _data_);
     let _cur = null;
     let _curPageThis = getApp().globalData._me;
     if( obj.isPush ){
@@ -259,6 +277,14 @@ export default {
         item.voiceState = false;//初始化话筒....
       }else if( item.msgType == 1 ){//撤回...
 
+      }else if( item.msgType == 40 ){
+        if(typeof item.content == "object"){
+          return item.content;
+        }else{
+          item.content = JSON.parse( item.content );
+          item.content.createAt = this.formatTime( item.content.createAt );
+          item.content.diagramText = JSON.parse( item.content.diagramText );
+        }
       }
     })
     obj.callBack() || null;
@@ -271,6 +297,7 @@ export default {
     if( _curPageThis.route == "pages/groupChat/index" ){//群聊页面......
       if( obj.isPush ){
         setData();
+        console.log( _curPageThis.data.chatData ,obj.onMessageData);
         console.log("整理数据并更新群聊",obj);
         _curPageThis.scrollToBottom();
         _curPageThis.selectComponent("#chatTool").setData({//发送成功清空输入框数据....
@@ -288,10 +315,7 @@ export default {
     if( wx.getStorageSync('openId') != "" && wx.getStorageSync('userMsgReq') != "" ){//已登录
       app.globalData.openId = wx.getStorageSync('openId');
       app.globalData.userMsgReq = wx.getStorageSync('userMsgReq');
-      if( Number(app.globalData.socketTask.readyState) != 1 ){
-        this.connectSocket(app)//连接socket.......
-        this.netChange(app)//中断连接时重新连接......
-      }
+      // this.connectSocket( app );//连接socket;
       console.log("已登录")
     }else{
       console.log("未登录")
@@ -299,6 +323,15 @@ export default {
         url: '/pages/login/index'
       })
     }    
+  },
+  socketHeartBeat(app){
+    let that = this;
+    app.globalData.socketHeartBeat = setInterval(() => {
+      if( app.globalData.socketTask.readyState != 1 ){
+        that.connectSocket(app);
+      }
+      console.log(app.globalData.socketTask);
+    },1000);
   },
   getGroupMsg( app , num ,resolve){//请求群消息.......
     let _groupMsg = app.globalData.groupMsg;
@@ -309,33 +342,28 @@ export default {
         groupId : _groupMsg.groupId ,//群ID
         pageSize : 10,//一页几条
         pageNum : num,//第几页
-        openId: _groupMsg.openId
+        openId: app.globalData.openId
       },
       header:{'content-type': 'application/x-www-form-urlencoded'},
       scb(res){
-        console.log("请求到数据",res);
+        console.log("请求到数据",num,_groupMsg,res);
         let _resData = res.data.data;
-        wx.getStorage({
-          key: _groupMsg.groupId,
-          success (_data_) {
-            that.format({
-              "onMessageData":_resData.rows,
-              "resolve":resolve,
-              "isPush":false,
-              callBack(num){}
-            });
-          },
-          fail(){
-            console.log("请求到数据首次写入内存",res);
-            wx.setStorageSync( _groupMsg.groupId , _resData.rows );
-            that.format({
-              "onMessageData":[],
-              "resolve":resolve,
-              "isPush":true,
-              callBack(){}
-            });
-          }
-        })
+        if( num == 1 ){//第一次进来....
+          wx.setStorageSync( _groupMsg.groupId , [] );
+          that.format({
+            "onMessageData":_resData.rows,
+            "resolve":resolve,
+            "isPush":true,
+            callBack(){}
+          });
+        }else{//翻页....
+          that.format({
+            "onMessageData":_resData.rows,
+            "resolve":resolve,
+            "isPush":false,
+            callBack(num){}
+          });
+        }
       }
     })
   }

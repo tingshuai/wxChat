@@ -25,6 +25,11 @@ export default {
     loading: false
   },
   onLoad(options){
+    if( wx.getStorageSync('openId') != "" && wx.getStorageSync('userMsgReq') != "" ){
+      wx.redirectTo({
+        url: '/pages/home/index'
+      })
+    }
     this.getLogo();
     this.login();
   },
@@ -127,7 +132,7 @@ export default {
                 data:_response
               })
               wx.redirectTo({url: '/pages/home/index'})
-              that.connectSocket();//连接socket;
+              // system.connectSocket(getApp());//连接socket;
             }else if( _response.state == 0 ){
               system.stateMsg({
                 title:"已注册，请静待审核结果",

@@ -24,6 +24,7 @@ export default {
       'pages/evaluate/index',
       'pages/groupList/index',
       'pages/userList/index',
+      'pages/mapping/index',
     ],
     plugins: {
       WechatSI: {
@@ -47,9 +48,9 @@ export default {
     }
   },
   globalData: {
-    socketHost: 'wss://www.comayi.com', // 祝天洋 'wss://192.168.0.49', 沈鑫：192.168.1.145，192.168.1.230线上：www.china-cms.com
-    httpHost: 'https://www.comayi.com', //'https://192.168.0.144',
-    httpUpload: 'https://www.comayi.com', //文件上传地址......
+    socketHost: 'wss://192.168.1.157:8443', // 祝天洋 'wss://192.168.0.49', 沈鑫：192.168.1.145，192.168.1.230线上：www.china-cms.com
+    httpHost: 'https://192.168.1.157:8443', //'https://192.168.0.144',
+    httpUpload: 'https://192.168.1.157:8443', //文件上传地址......
     userMsg: {},
     openId: '', //'oc6Hd1BHJF55T1jIWr2eC2AEYoUQ',
     sessionId: '',
@@ -60,7 +61,7 @@ export default {
     },
     wxImg: '',
     defaultImg: '', //默认群头像...
-    socketTask: {},
+    socketTask: "",
     registerState: '',
     headHeight: '',
     isAite: false,
@@ -68,20 +69,24 @@ export default {
     transData:[],//要转发的消息...
     observeScroll:{},
     groupMsg:{},//当前群信息.....
-    _me:null
+    _me:null,
+    socketHeartBeat:""
   },
   onLaunch() {
     system.attachInfo();
-    console.log("launch");
+    system.netChange();
   },
   onHide() {
-    system.closeSocket(getApp());
+    clearInterval(this.globalData.socketHeartBeat);
+    setTimeout(()=>{
+      system.closeSocket(this);
+    },1000)
     console.log("切到后台");
     console.log("socket",this.globalData.socketTask);
   },
   onShow(){
     system.isLogin(this);
-    console.log("切到前台");
+    system.socketHeartBeat(this);
     console.log("socket",this.globalData.socketTask);
   }
 }

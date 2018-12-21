@@ -80,9 +80,9 @@ export default {
     let that = this;
     let _item = JSON.parse( options.item );
     app.globalData.groupMsg = _item.group;
-    system.isLogin(app);
     console.log("socket",app.globalData.socketTask);
     app.globalData._me = this;
+    system.isLogin(app);
     this.setData({
       "_item":_item,
       ['sendInputMsg.groupId']:_item.group.groupId,
@@ -95,7 +95,7 @@ export default {
     wx.setNavigationBarTitle({
       title: _item.group.groupName || "欢迎进入群聊"
     })
-    this.getChatData();
+    system.getGroupMsg( app , 1 ,()=>{});
     if( app.globalData.openId == app.globalData.groupMsg.managerId ){//判断是否是群主....
       that.selectComponent("#chatTool").setData({
         "isManager":true
@@ -105,6 +105,7 @@ export default {
   onShow(){
     let that = this;
     app.globalData._me = this;
+    system.isLogin(app);
     that.selectComponent("#groupChat").setData({
       "groupMsg":app.globalData.groupMsg
     })
@@ -177,56 +178,16 @@ export default {
       return item.cmd != "time";
     })
     let _curPage = Math.ceil( _msgLength.length / 10 );
-    let promise = new Promise((resolve,reject)=>{
-      system.getGroupMsg( app , ++_curPage , resolve);
-    })
-    promise.then(( _data_ )=>{
-
-    })
+    system.getGroupMsg( app , ++_curPage , ()=>{});
   },
   getThePoint(id){
     this.selectComponent("#groupChat").setData({
       "toView":`the${id}`
     })
   },
-  getChatData(){//获取首次数据.....
-    let that = this;
-    console.log("进入获取首次数据函数");
-    let promise = new Promise((resolve,reject)=>{
-      wx.getStorage({
-        key: that.data._item.group.groupId,
-        success ( _data_ ) {
-          console.log("获取首次数据成功");
-          if( _data_.data.length > 80 ){
-            _data_.data = _data_.data.splice( -30 , _data_.data.length - 1 )
-          }
-          wx.setStorage({
-            key:that.data._item.group.groupId,
-            data:_data_.data
-          })
-          that.setData({
-            chatData:_data_.data
-          },()=>{
-            that.scrollToBottom();
-          })
-        },
-        fail(){
-          console.log("获取首次数据失败");
-          system.getGroupMsg( app , 1 , resolve );
-        }
-      })
-    })
-    promise.then(( _data_ )=>{
-      that.setData({
-        chatData: _data_
-      },()=>{
-        that.scrollToBottom();
-      })
-    })
-  },
   scrollToBottom(){//滚动到最下面....
     this.selectComponent("#groupChat").setData({
-      "scrollTop":10000
+      "scrollTop":1000000
     })      
   }
 }

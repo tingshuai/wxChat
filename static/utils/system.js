@@ -277,7 +277,7 @@ export default {
         item.voiceState = false;//初始化话筒....
       }else if( item.msgType == 1 ){//撤回...
 
-      }else if( item.msgType == 40 ){
+      }else if( item.msgType == 40 || item.msgType == 42 || item.msgType == 41 ){//41编辑42签收
         if(typeof item.content == "object"){
           return item.content;
         }else{

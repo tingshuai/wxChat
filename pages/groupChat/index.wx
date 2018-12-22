@@ -95,7 +95,9 @@ export default {
     wx.setNavigationBarTitle({
       title: _item.group.groupName || "欢迎进入群聊"
     })
-    system.getGroupMsg( app , 1 ,()=>{});
+    system.getGroupMsg( app , 1 ,()=>{
+      that.selectComponent("#groupChat").sendReadedReceipt();    
+    });
     if( app.globalData.openId == app.globalData.groupMsg.managerId ){//判断是否是群主....
       that.selectComponent("#chatTool").setData({
         "isManager":true

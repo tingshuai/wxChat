@@ -1,7 +1,5 @@
 <template>
-    <ui-fixed-view bottom="20vh" left="10vw" right="10vw">
-      <view class="fixed-view-content">底部固定</view>
-    </ui-fixed-view>
+
 </template>
 
 <script>

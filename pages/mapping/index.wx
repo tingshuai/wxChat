@@ -22,7 +22,7 @@
             </view>
         </view>
     </view>
-    <ui-fixed-view bottom="0" left="0" right="0" wx:if="{{ (yatuMsg.content.editable == false || yatuMsg.content.editable == 'false') && openId == yatuMsg.content.toUser }}">
+    <ui-fixed-view bottom="0" left="0" right="0" wx:if="{{ (yatuMsg.content.editable == true || yatuMsg.content.editable == 'true') && openId == yatuMsg.content.toUser }}">
       <view class="tiaokuan">
           <view class="left">
             <label class="checkbox">
@@ -127,11 +127,12 @@ export default {
             url:'diagram/confirm',
             param:{
                 msgId:this.data.yatuMsg.msgId,
-                diagramId:this.data.yatuMsg.diagramId,
+                diagramId:this.data.yatuMsg.content.diagramId,
                 groupId:this.data.yatuMsg.groupId,
                 signerOpenId:app.globalData.openId,
                 signerName:app.globalData.userMsgReq.username
             },
+            header:{'content-type': 'application/x-www-form-urlencoded'},
             method:"post",
             scb(res){
             if( res.data.status == 200 ){

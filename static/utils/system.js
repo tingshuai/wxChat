@@ -284,6 +284,10 @@ export default {
           item.content = JSON.parse( item.content );
           item.content.createAt = this.formatTime( item.content.createAt );
           item.content.diagramText = JSON.parse( item.content.diagramText );
+          if( item.msgType == 42 && item.msgId == obj.onMessageData.msgId ){
+            item.content.editable = false;
+            debugger;
+          }
         }
       }
     })

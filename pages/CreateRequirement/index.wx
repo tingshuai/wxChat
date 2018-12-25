@@ -335,7 +335,7 @@ let _promise1,_url;
                     system.stateMsg( {title: "文件上传失败", icon:"none", time:1000} )
                 }
             })
-        });        
+        });
     },
     sendTo(e){
         let that = this;

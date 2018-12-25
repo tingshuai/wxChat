@@ -40,7 +40,7 @@
                         <!--压图类型-->
                         <view class="talkContent" data-item="{{item}}" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="yatu" wx:if="{{ item.msgType == 40 || item.msgType == 42 || item.msgType == 41 }}" style="background-color: white;width:100%;">
                           <view style="border-bottom:1px solid rgba(0,0,0,0.1);">
-                              <view style="color:{{ item.signStatus ? '#4EBF62' : '#267AFC' }};font-size:12px;">{{ !item.editable ? "已签收" : "待签收"}}</view>
+                              <view style="color:{{ !item.content.editable ? '#4EBF62' : '#267AFC' }};font-size:12px;">{{ !item.editable ? "已签收" : "待签收"}}</view>
                           </view>
                           <view class="demandMsg">
                               <view class="demandImg">

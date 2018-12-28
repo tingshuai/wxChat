@@ -3,7 +3,7 @@
     <view class="part part1">
         <text class="tit">{{ yatuMsg.content.editable == true || yatuMsg.content.editable == 'true' ? "待签收" : "已签收" }}</text>
         <view class="msgList">
-            <view><text class="l">出图汇总：</text><text class="r">新图{{ yatuMsg.content.diagramText.dataList[0].total }} 修改 {{ yatuMsg.content.diagramText.dataList[1].total }} 辅助设计{{ yatuMsg.content.diagramText.dataList[2].total }}</text></view>
+            <view><text class="l">出图汇总：</text><text class="r">新图{{ yatuMsg.content.diagramText.dataList[0].data.length }} 修改 {{ yatuMsg.content.diagramText.dataList[1].data.length }} 辅助设计{{ yatuMsg.content.diagramText.dataList[2].data.length }}</text></view>
             <view><text class="l">发起人：</text><text class="r">{{ yatuMsg.content.fromUserName }}</text></view>
             <view><text class="l">客服签收人：</text><text class="r">{{ yatuMsg.content.toUserName }}</text></view>
             <view><text class="l">发起时间：</text><text class="r">{{ yatuMsg.createAt }}</text></view>

@@ -48,10 +48,6 @@
                 <view class="weui-cell__ft weui-cell__ft_in-access">{{ form.confirmUserName || "选择需求对接人" }}</view>
             </navigator>
         </view>
-        <picker mode="date" class="pickerDate" bindchange="bindDateChange" value="{{ form.planCompleteAt }}" start="2010-09-01" end="2050-09-01">
-            <view class="dateTit">预计完成日期</view>
-            <view class="dateTit">{{ form.planCompleteAt }}</view>                
-        </picker>
         <view class="btn-area">
             <button catchtap="submit" type="primary" class="myBtnSuccess jingjingBtn">提交需求</button>
         </view>
@@ -84,7 +80,6 @@
             <ui-row style="margin-top:10px;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><ui-col>需求单{{ come_msg.item.content.demandNum }}</ui-col></ui-row>
             <view class="weui-cells__title" style="padding-left:0px;margin-top:1px;font-size:12px;">发起时间{{ come_msg.item.createAt }}</view>
             <view class="weui-cells__title" style="padding-left:0px;font-size:12px;margin-top:20px;">发起人：{{ come_msg.item.content.fromUserName }}</view>
-            <view class="weui-cells__title" style="padding-left:0px;font-size:12px;margin-top:20px;">需求截止日期：{{ come_msg.item.planCompleteAt }}</view>
             <view class="weui-cells__title" style="padding-left:0px;font-size:12px;margin-top:0px;">对接人：{{ come_msg.item.content.confirmUserName }}</view>
             <view class="weui-cells__title" style="padding-left:0px;font-size:12px;color:black;font-size:15px;">需求内容</view>
             <view style="display:block;color:#999;">
@@ -99,6 +94,10 @@
                 </block>
             </view>         
         </view>
+        <picker mode="date" wx:if="{{ come_msg.item.content.editable && come_msg.item.toUser == userMsgReq.openId }}" class="pickerDate" bindchange="bindDateChange" value="{{ form.planCompleteAt }}" start="2010-09-01" end="2050-09-01">
+            <view class="dateTit">计划完成日期</view>
+            <view class="dateTit">{{ form.planCompleteAt }}</view>                
+        </picker>
         <view class="btn-area" style="margin-top:35px;">
             <button catchtap="editRequirement" wx:if="{{ come_msg.item.content.editable && come_msg.item.toUser == userMsgReq.openId }}" type="primary" class="myBtnSuccess jingjingBtn">修改需求</button>
             <button class="jingjingBtn" catchtap="confirmRequirement" style="margin-top:15px;" type="default" wx:if="{{ come_msg.item.content.editable == true && !come_msg.item.content.demandState && ( come_msg.item.toUser == userMsgReq.openId ) }}">确认需求</button>
@@ -160,7 +159,7 @@ let _promise1,_url;
     },
     onLoad(option){
       let that = this;
-      let _obj =  JSON.parse( option._obj );
+      let _obj =  JSON.parse( app.globalData._obj );
       let _groupMsg = app.globalData.groupMsg;
       let _item = _obj.item;
       _obj.enterType == 1 ? _url = 'demand/edit' : _url = 'demand/add';
@@ -177,17 +176,17 @@ let _promise1,_url;
         "userMsgReq":app.globalData.userMsgReq,
       });
       if( _obj.enterType == 1 ){//编辑。。。。
-        if( _item.itemcontent.demandAttach != "" ){
+        if( _item.content.demandAttach != "" ){
             this.setData({
-                ["form.demandAttach"]:_item.itemcontent.demandAttach.replace(/,$/gi,"").split( ',' ),
-                ['form.fromUser']:_item.item.fromUser,
-                ['form.fromUserName']:_item.item.fromUserName,
-                ['form.demandAttachName']:_item.itemcontent.demandAttachName.replace(/,$/gi,"").split( ',' ),
+                ["form.demandAttach"]:_item.content.demandAttach.replace(/,$/gi,"").split( ',' ),
+                ['form.fromUser']:_item.fromUser,
+                ['form.fromUserName']:_item.fromUserName,
+                ['form.demandAttachName']:_item.content.demandAttachName.replace(/,$/gi,"").split( ',' ),
             })
         }
         this.setData({
-            ['form.msgId']:_item.item.msgId,
-            ['come_msg.item']:_item.item,
+            ['form.msgId']:_item.msgId,
+            ['come_msg.item']:_item,
         })
       }
     },
@@ -197,22 +196,22 @@ let _promise1,_url;
         let _me = app.globalData.userMsgReq;
         this.setData({
             ["come_msg.enterType"]:0,
-            ["form.demandText"]:_itemMsg.itemcontent.demandText,
-            // ["form.fromUser"]:_itemMsg.item.fromUser,
-            // ["form.fromUserName"]:_itemMsg.item.fromUserName,
-            ["form.demandId"]:_itemMsg.itemcontent.demandId,
+            ["form.demandText"]:_itemMsg.content.demandText,
+            // ["form.fromUser"]:_itemMsg.fromUser,
+            // ["form.fromUserName"]:_itemMsg.fromUserName,
+            ["form.demandId"]:_itemMsg.content.demandId,
         })
-        if( _itemMsg.item.toUser== _me.openId ){//对接人是自己
+        if( _itemMsg.toUser== _me.openId ){//对接人是自己
             this.setData({
-                ["form.confirmUserName"]:_itemMsg.item.fromUserName || '',
-                ["form.confirmUser"]:_itemMsg.item.fromUser || '',
+                ["form.confirmUserName"]:_itemMsg.fromUserName || '',
+                ["form.confirmUser"]:_itemMsg.fromUser || '',
                 ["form.fromUser"]:_me.openId || '',
                 ["form.fromUserName"]:_me.username || '',
             })
         }else{
             this.setData({
-                ["form.confirmUserName"]:_itemMsg.item.content.confirmUserName,
-                ["form.confirmUser"]:_itemMsg.item.toUser,
+                ["form.confirmUserName"]:_itemMsg.content.confirmUserName,
+                ["form.confirmUser"]:_itemMsg.toUser,
             })
         }
         this.data.groupMsg.groupUsers.filter((val)=>{//重置确认人
@@ -231,14 +230,15 @@ let _promise1,_url;
       let _itemMsg = that.data.come_msg.itemMsg;
       let _userMsg = app.globalData.userMsgReq;
       let _params = {
-        "demandId":_itemMsg.item.content.demandId,
+        "demandId":_itemMsg.content.demandId,
         "fromUser":_userMsg.openId,
         "fromUserName":_userMsg.username,
-        "groupId":_itemMsg.item.groupId,
-        "groupName":_itemMsg.item.groupName,
+        "groupId":_itemMsg.groupId,
+        "groupName":_itemMsg.groupName,
         "headImgUrl":_userMsg.headImgUrl,
-        "msgId":_itemMsg.item.msgId,
-        "position":_itemMsg.item.position
+        "msgId":_itemMsg.msgId,
+        "position":_itemMsg.position,
+        "planCompleteAt":this.data.form.planCompleteAt
       }
       system.http({
         url:'demand/confirm',
@@ -266,8 +266,8 @@ let _promise1,_url;
                 system.stateMsg({title:"需求内容不能为空",icon:"none",time:1000})
             }else if( that.data.form.confirmUser == '' ){
                 system.stateMsg({title:"确认人不能为空",icon:"none",time:1000})
-            }else if( that.data.form.planCompleteAt == '' ){
-                system.stateMsg({title:"截止日期不能为空",icon:"none",time:1000})
+            }else if( that.data.come_msg.enterType != 0 && that.data.form.planCompleteAt == '' ){
+                system.stateMsg({title:"完成日期不能为空",icon:"none",time:1000})
             }else{
                 let promises = that.data.come_msg.files.map((val,i,arr)=>{
                     return that.upload({'val':val,"resolve":resolve,'i':i,"arr":arr});
@@ -397,7 +397,7 @@ let _promise1,_url;
     bindDateChange: function (e) {
         console.log('picker发送选择改变，携带值为', e.detail.value)
         this.setData({
-            ["form.planCompleteAt"]: e.detail.value
+            ["form.planCompleteAt"]: e.detail.value + " 00:00:00"
         })
     },
     selUser(e){//选择群成员.....

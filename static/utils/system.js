@@ -133,12 +133,14 @@ export default {
               if( _curPageThis.route == "pages/home/index"){
                 _curPageThis.requestGroupList( '/chat/groups/tree','over',2, _data.groupId );
               }
-              that.format({
-                "onMessageData":_data,
-                "resolve":resolve,
-                "isPush":true,
-                callBack(){}
-              })
+              if( _data.groupId == app.globalData.groupMsg.groupId ){
+                that.format({
+                  "onMessageData":_data,
+                  "resolve":resolve,
+                  "isPush":true,
+                  callBack(){}
+                })
+              }
               break;
           case 1://有人发消息过来..
               that.format({
@@ -195,9 +197,22 @@ export default {
                 }
               }
               break;
-          case 1000://有群解散..
-            console.log( "cmd:1000" , JSON.stringify(_data) );
-            break;                
+          case 1000://取消成功..
+            that.format({
+              "onMessageData":_data,
+              "resolve":resolve,
+              "isPush":true,
+              callBack(){}
+            })
+            break;
+          case 999://取消提醒..
+            that.format({
+              "onMessageData":_data,
+              "resolve":resolve,
+              "isPush":true,
+              callBack(){}
+            })            
+            break;                          
           default:
               break;
         }
@@ -275,8 +290,12 @@ export default {
         })
       }else if( item.msgType == 2 ){//语音
         item.voiceState = false;//初始化话筒....
-      }else if( item.msgType == 1 ){//撤回...
-
+      }else if( item.msgType == 23 ){//撤回...
+        if(typeof item.content == "object"){
+          return item.content;
+        }else{
+          item.content = JSON.parse( item.content )
+        }
       }else if( item.msgType == 40 || item.msgType == 42 || item.msgType == 41 ){//41编辑42签收
         if(typeof item.content == "object"){
           return item.content;
@@ -286,7 +305,6 @@ export default {
           item.content.diagramText = JSON.parse( item.content.diagramText );
           if( item.msgType == 42 && item.msgId == obj.onMessageData.msgId ){
             item.content.editable = false;
-            debugger;
           }
         }
       }

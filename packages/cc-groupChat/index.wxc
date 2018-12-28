@@ -3,7 +3,7 @@
         <checkbox-group bindchange="checkboxChange" class="checkboxGroup">
           <view hover-class="touchui-hover" class="talkItem {{ userMsg.openId == item.fromUser ? 'itemRight' : 'itemLeft' }}" data-item="{{ item }}" wx:for="{{ chatData }}" wx:key="index" id="the{{index}}">
                 <view class="historyLine" wx:if="{{ (item.cmd == 'time' || item.cmd == '2') && item.content }}">{{ item.content }}</view>
-                <view class="head" width="60" wx:if="{{ (item.cmd == 0 || item.cmd == 100) && (userMsg.openId != item.fromUser)}}"><!--消息来自别人-->
+                <view class="head" width="60" wx:if="{{ (item.cmd == 0 || item.cmd == 100) && (userMsg.openId != item.fromUser) && item.cmd != 999 && item.cmd != 1000}}"><!--消息来自别人-->
                     <view class="left_icon left_icon1">
                         <image class="headImg" src="{{  item.headImgUrl }}"/>
                     </view>
@@ -19,7 +19,7 @@
                         <!--文本类型-->
                         <text selectable='true' class="talkContent" data-index="{{ index }}" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ ( item.msgType == 0 && item.cmd != 100 ) || item.msgType == 7}}" style="background-color: white;">{{ item.content }} </text>
                         <!--需求类型-->
-                        <view class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="retOrConfirm" wx:if="{{ item.msgType == 20 || item.msgType == 22 || item.msgType == 21 }}" style="background-color: white;width:100%;">
+                        <view class="talkContent" data-item="{{ item }}" bind:longpress="openActionsheet" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="retOrConfirm" wx:if="{{ item.msgType == 20 || item.msgType == 22 || item.msgType == 21 }}" style="background-color: white;width:100%;">
                           <view style="border-bottom:1px solid rgba(0,0,0,0.1);">
                               <view style="color:{{ item.content.demandState ? '#4EBF62' : '#267AFC' }};font-size:12px;">{{ item.msgType == 20 || item.msgType == 21 ? "需求确认" : "修改需求确认" }}</view>
                           </view>
@@ -28,9 +28,9 @@
                                 <image mode="aspectFit" src="../../static/img/Group6Copy@2x.png"></image>
                               </view>
                               <view class="demandTxt">
-                                <view style="white-space:nowrap;text-overflow:ellipsis;overflow:hidden;height:30px;line-height:32px;">需求单{{ item.content.demandNum }}</view>
+                                <view style="white-space:nowrap;text-overflow:ellipsis;overflow:hidden;height:30px;line-height:32px;font-size:15px;">需求单{{ item.content.demandNum }}</view>
                                 <!-- <view style="white-space:nowrap;height:30px;line-height:40px;" wx:if="{{ sendInputMsg.fromUser == item.content.createUser && (item.content.demandState == false) }}">发起人<text>@</text>{{ item.fromUserName }}</view> -->
-                                <view style="white-space:nowrap;height:30px;line-height:28px;">确认人<text style="color: #FF9D44;">@{{ item.content.confirmUserName }}</text></view>
+                                <view style="white-space:nowrap;height:30px;line-height:28px;color:#8B969C;">确认人<text style="color: #FF9D44;">@{{ item.content.confirmUserName }}</text></view>
                               </view>
                           </view>
                           <view>
@@ -40,20 +40,20 @@
                         <!--压图类型-->
                         <view class="talkContent" data-item="{{item}}" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="yatu" wx:if="{{ item.msgType == 40 || item.msgType == 42 || item.msgType == 41 }}" style="background-color: white;width:100%;">
                           <view style="border-bottom:1px solid rgba(0,0,0,0.1);">
-                              <view style="color:{{ !item.content.editable ? '#4EBF62' : '#267AFC' }};font-size:12px;">{{ !item.editable ? "已签收" : "待签收"}}</view>
+                              <view style="color:{{ !item.content.editable ? '#4EBF62' : '#267AFC' }};font-size:14px;">{{ !item.content.editable ? "已签收" : "待签收"}}</view>
                           </view>
                           <view class="demandMsg">
                               <view class="demandImg">
-                                <image mode="aspectFit" src="../../static/img/Group6Copy@2x.png"></image>
+                                <image mode="aspectFit" src="../../static/img/Group6Copy10.png"></image>
                               </view>
                               <view class="demandTxt">
-                                <view style="white-space:nowrap;text-overflow:ellipsis;overflow:hidden;height:30px;line-height:32px;">压图{{ item.content.diagramNum }}</view>
+                                <view style="white-space:nowrap;text-overflow:ellipsis;overflow:hidden;height:30px;line-height:32px;font-size:14px;">压图{{ item.content.diagramNum }}</view>
                                 <!-- <view style="white-space:nowrap;height:30px;line-height:40px;" wx:if="{{ sendInputMsg.fromUser == item.content.createUser && (item.content.demandState == false) }}">发起人<text>@</text>{{ item.fromUserName }}</view> -->
-                                <view style="white-space:nowrap;height:30px;line-height:28px;">对接人<text style="color: #FF9D44;">@{{ item.content.toUserName }}</text></view>
+                                <view style="white-space:nowrap;height:30px;line-height:28px;color:#8B969C;">对接人<text style="color: #FF9D44;">@{{ item.content.toUserName }}</text></view>
                               </view>
                           </view>
                           <view>
-                              <view style="white-space:nowrap;font-size:12px;" wx:if="{{ item.content.demandState == true }}">确认日期{{ item.createAt }}</view>
+                              <view style="white-space:nowrap;font-size:12px;" wx:if="{{ !item.content.editable }}">日期{{ item.createAt }}</view>
                           </view>
                         </view>
                         <!--图片类型-->
@@ -110,10 +110,17 @@
                 </view>
                 <view class="historyLine" wx:if="{{ item.cmd == 1 }}">{{ item.fromUserName }} 撤回了一条消息</view>
                 <view class="historyLine" wx:if="{{ item.cmd == 100 && item.content }}">{{ item.content || ''}} </view>
+                <view class="historyLine" wx:if="{{ item.cmd == 999 }}" style="width:90%;">
+                  {{ item.msgTemplate }}
+                  <view class="cancelAlert" bindtap="cancelAlert" data-item="{{ item }}" wx:if="{{ item.content.createUser == sendInputMsg.openId }}">取消提醒</view>
+                </view>   
+                <view class="historyLine" wx:if="{{ item.cmd == 1000 }}" style="width:90%;">
+                  {{ item.msgTemplate }}
+                </view>                   
                 <!-- 办结消息 -->
                 <!-- <view class="text" space-right="0">
                 </view> -->
-                <view width="60" wx:if="{{ item.cmd != 'time' && ( userMsg.openId == item.fromUser ) && item.cmd != 2 && item.cmd != 1 }}"><!--消息来自自己-->
+                <view width="60" wx:if="{{ item.cmd != 'time' && ( userMsg.openId == item.fromUser ) && item.cmd != 2 && item.cmd != 1 && item.cmd != 999 && item.cmd != 1000 }}"><!--消息来自自己-->
                     <view class="left_icon left_icon1">
                         <image src="{{  userMsg.headImgUrl }}"/>
                     </view>
@@ -225,13 +232,12 @@ export default {
       let _item  = e.currentTarget.dataset;
       let that = this;
       let _obj = {
-        "groupMsg":app.globalData.groupMsg,
-        "item":_item,
+        "item":_item.item,
         "enterType":1
       }
       app.globalData._obj = JSON.stringify(_obj)
       wx.navigateTo({
-        url:`/pages/CreateRequirement/index?_obj=${JSON.stringify( _obj )}`//编辑进
+        url:`/pages/CreateRequirement/index`//编辑进
       })
     },
     evaluateMe(){//评价.....
@@ -259,6 +265,26 @@ export default {
     checkboxChange(e){ //消息转发选项框选中事件......
       let that = this;
       app.globalData.transData = e.detail.value;
+    },
+    cancelAlert(e){
+      let _item  = e.currentTarget.dataset;
+      let _params = {
+        msgId:_item.item.msgId,
+        demandId: JSON.parse(_item.item.content).demandId,
+        groupId:_item.item.groupId,
+        groupName:app.globalData.groupMsg.groupName,
+        fromUser:_item.item.fromUser,
+        fromUserName:_item.item.fromUserName,
+        headImgUrl:_item.item.headImgUrl,
+        position:_item.item.position || ''
+      }
+      system.http({ url:'/demand/prompt/cancel', method:"post",header:{'content-type': 'application/x-www-form-urlencoded'},param:_params,scb(res){
+          if ( res.data.status == 200) {
+              system.stateMsg({title:"取消成功",icon:"success",time:1500});
+          }else{
+            system.stateMsg({title:res.data.message,icon:"none",time:1500});
+          }
+      }})
     },
     openActionsheet(e){
       var that = this;
@@ -427,6 +453,9 @@ export default {
     font-size: 10px;
     margin:0 auto;
     color: white;
+    .cancelAlert{
+      color: #67c23a;
+    }
   }
     .left_icon{
         width: 50px;

@@ -294,12 +294,20 @@ export default {
         method:"post",
         header:{'content-type': 'application/x-www-form-urlencoded'},
         scb(res){
-          system.stateMsg({
-            title:"发送评价成功",
-            icon:"success",
-            time:1500
-          })
-          app.globalData.isConfirm = false;
+          if( res.data.status == 500 ){
+            system.stateMsg({
+              title:res.data.message,
+              icon:"none",
+              time:1500
+            })
+          }else{
+            system.stateMsg({
+              title:"发送评价成功",
+              icon:"success",
+              time:1500
+            })
+            app.globalData.isConfirm = false;
+          }
         },
         fcb(res){
           system.stateMsg({

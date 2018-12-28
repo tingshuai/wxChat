@@ -31,9 +31,9 @@ export default {
       })
     }
     this.getLogo();
-    this.login();
   },
   onShow(){
+    this.login();
     app.globalData._me = this;
   },
   login(){
@@ -41,6 +41,8 @@ export default {
       success(res) {
         if (res.code) {
           //发起网络请求
+          console.log( "code",res.code );
+          
           system.http({
             url:`wechat/miniapp/login/${res.code}`,
             param:{},

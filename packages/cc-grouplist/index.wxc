@@ -64,14 +64,14 @@ export default {
       let item = {};
       item.group = event.currentTarget.dataset.item;
       item.user = app.globalData.userMsgReq;
-      item.tabBar = that.data.tabBar;      
+      item.tabBar = that.data.tabBar;
       if( that.data.tabBar.actItem == 0 ){
         wx.navigateTo({
           url: `/pages/groupChat/index?item=${JSON.stringify(item)}`
         })
       }else{
         wx.navigateTo({
-          url: `/pages/groupMsg/index?tabBar=${ JSON.stringify( that.data.tabBar ) }`
+          url: `/pages/historyMsg/index?item=${JSON.stringify(item)}`
         })
       }
     },

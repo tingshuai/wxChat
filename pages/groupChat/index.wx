@@ -32,7 +32,7 @@
         </view>
       </ui-fixed-view>
       <!--底部输入工具-->
-      <ui-fixed-view bottom="0" left="0" right="0" style="display:{{ isTransData ? 'none' : 'block'}};">
+      <ui-fixed-view bottom="0" wx:if="{{ _item.tabBar.actItem == 0 }}" left="0" right="0" style="display:{{ isTransData ? 'none' : 'block'}};">
           <cc-chat-tool sendInputMsg="{{ sendInputMsg }}" id="chatTool" bindcheight="changeHeight" bindscrollToBottom="scrollToBottom"></cc-chat-tool>
       </ui-fixed-view>
   </view>
@@ -40,10 +40,6 @@
 <script>
 import system from '../../static/utils/system'
 var app = getApp();
-var plugin = requirePlugin("WechatSI");
-let wx_manager = plugin.getRecordRecognitionManager();
-var recorderManager,wx_timer,wx_timer2,wx_n1=0,wx_n2=1,wx_promiseSubmitRequire;
-var backgroundAudioManager=wx.getBackgroundAudioManager();
 export default {
   config: {
     navigationBarTitleText: "",
@@ -80,7 +76,6 @@ export default {
     let that = this;
     let _item = JSON.parse( options.item );
     app.globalData.groupMsg = _item.group;
-    console.log("socket",app.globalData.socketTask);
     app.globalData._me = this;
     system.isLogin(app);
     this.setData({

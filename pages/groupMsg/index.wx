@@ -68,7 +68,7 @@
         addMemberOpenIds:[]
       },
       tabBar:{
-        "actItem":0
+        "actItem":2
       }
     },
     onLoad( option ){
@@ -89,9 +89,7 @@
       this.canAddMenuber();
     },
     onShow(){
-      if( this.data.tabBar.actItem == 0 ){
-        this.getGroupMsg();
-      }
+      this.getGroupMsg();
     },
     canAddMenuber(){
       let that = this;
@@ -129,8 +127,12 @@
     },
     selChatList(e){
       let that = this;
+      let item = {};
+      item.group = app.globalData.groupMsg;
+      item.user = app.globalData.userMsgReq;
+      item.tabBar =  { "actItem":2 };    
       wx.navigateTo({
-        url:`/pages/historyMsg/index?item=${ JSON.stringify( that.data.groupMsg ) }&tabBar=${ JSON.stringify( that.data.tabBar) }`
+        url: `/pages/historyMsg/index?item=${JSON.stringify(item)}`
       })
     },
     onMessage(){

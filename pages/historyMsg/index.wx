@@ -46,124 +46,19 @@
                 </picker>
             </view>
         </view> 
-    </view>   
-    <view style="position:relative;">
-        <ui-fixed-view bottom="20" right="40" class="groupMsgBtn" wx:if="{{ transmit.isTransmit }}">
-            <button bindtap="showModel" class="seeGroupMsg cBtn0">转发</button>
-        </ui-fixed-view>
-        <scroll-view scroll-y="true" id="viewport" style="height:{{ scrollHeight }}px;" bindscrolltolower="bindscrolltoupper" style="overflow:hidden;" scroll-into-view="{{ toView }}" upper-threshold="0" scroll-top="{{ scrollTop }}" catchtap="toggleIsHidden">
-          <view class="content" id="content">
-            <checkbox-group bindchange="checkboxChange">
-              <ui-row hover-class="touchui-hover" class="talkItem" wx:for="{{ chatData }}" wx:key="index" id="the{{index}}">
-                    <view class="historyLine" wx:if="{{ (item.cmd == 'time' || item.cmd == '2') && item.content }}">{{ item.content }}</view>
-                    <ui-col width="60" align="left" vertical-align="top" wx:if="{{ (item.cmd == 0 || item.cmd == 100) &&  (sendInputMsg.fromUser != item.fromUser)}}"><!--消息来自别人-->
-                        <view class="left_icon left_icon1">
-                            <image src="{{  item.headImgUrl }}"/>
-                        </view>
-                    </ui-col>
-                    <!-- <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && (sendInputMsg.fromUser == item.fromUser) && transmit.isTransmit }}"><checkbox-group data-item="{{ item }}" bindchange="checkboxChange"><label><checkbox class="checkbox" value="{{item.msgId}}"/></label></checkbox-group></view>消息转发选项框...... -->
-                    <ui-col class="text" align="left" vertical-align="top" space-left="0" space-right="5" wx:if="{{ item.cmd == 0 || item.cmd == 100 }}">
-                        <view style="width: 100%; text-align:{{ sendInputMsg.fromUser == item.fromUser ? 'right' : 'left' }};">
-                            <ui-row height="20" wx:if="{{ sendInputMsg.fromUser != item.fromUser }}">
-                                <ui-col align="{{ sendInputMsg.fromUser == item.fromUser ? 'right' : 'left'}}" vertical-align="top">
-                                    <view class="userMsg"><text class="name">{{ item.fromUserName || ""}}</text><text decode="true">&nbsp;&nbsp;</text><text class="job">{{ item.position || "" }}</text></view>
-                                </ui-col>
-                            </ui-row>
-                            <!--文本类型-->
-                            <text selectable='true' class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ item.msgType == 0 || item.msgType == 7}}" style="background-color: {{ sendInputMsg.fromUser == item.fromUser ? '#A0E75A' : 'white' }}">{{ item.content }} </text>
-                            <!--需求类型-->
-                            <view class="talkContent" data-item="{{item}}" bind:longpress="openActionsheet" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" wx:if="{{ item.msgType == 20 || item.msgType == 22 || item.msgType == 21}}" style="background-color: white;width:100%;">
-                              <ui-row style="border-bottom:1px solid rgba(0,0,0,0.1);">
-                                  <ui-col style="color:{{ item.content.demandState ? '#4EBF62' : '#267AFC' }};font-size:12px;">{{ item.msgType == 20 || item.msgType == 21 ? "需求确认" : "修改需求确认" }}</ui-col>
-                              </ui-row>
-                              <ui-row style="height:60px;padding:7px 0;">
-                                  <ui-col style="font-size:12px;" width="45">
-                                    <image mode="aspectFit" src="../../static/img/Group6Copy@2x.png"></image>
-                                  </ui-col>
-                                  <ui-col style="font-size:12px;padding-left:10px;">
-                                    <view style="white-space:nowrap;text-overflow:ellipsis;overflow:hidden;height:30px;">需求单{{ item.content.demandNum || ""}}</view>
-                                    <!-- <view style="white-space:nowrap;height:30px;line-height:40px;" wx:if="{{ sendInputMsg.fromUser == item.content.createUser && (item.content.demandState == false) }}">发起人<text>@</text>{{ item.fromUserName || ""}}</view> -->
-                                    <view style="white-space:nowrap;height:30px;line-height:40px;">确认人<text style="color: #FF9D44;">@{{ item.content.confirmUserName || ""}}</text></view>
-                                  </ui-col>
-                              </ui-row>
-                              <ui-row>
-                                    <ui-col style="white-space:nowrap;font-size:12px;" wx:if="{{ item.content.demandState == true }}">确认日期{{ item.content.createAt || ""}}</ui-col>
-                              </ui-row>
-                            </view>
-                            <!--图片类型-->
-                            <view class="talkContent" wx:if="{{ item.msgType == 1 }}" style="height:100px;background-color:rgba(0,0,0,0);width:40%;">
-                              <image lazy-load="true" mode="aspectFit" data-item="{{item}}" bindtap="previewImage" catch:longpress="openActionsheet" style="height:100%;width:auto" src="{{ item.attachUrl }}"></image>
-                              <view class="myProgress" wx:if="{{ item.progress >0 && item.progress < 100 }}" style="height:1px;width:{{ item.progress }}%;background-color: {{ item.progress == 100 && item.readCount >= 0 ? '#49CC8D' : 'rgba(255,100,100,0.8)' }}"></view></view>
-                            <!--语音类型-->
-                            <view class="talkContent" wx:if="{{ item.msgType == 2 }}" style="width:{{ item.seeWord ? 'auto' : '100px' }};min-width:100px;" catchtap="playVoice" bind:longpress="openActionsheet" data-index="{{ index }}" data-item="{{item}}">
-                                <image mode="aspectFit" style="height:20px;width:20px;float:{{ sendInputMsg.fromUser == item.fromUser ? 'left' : 'right'}}" src="{{ item.src ? item.src : '../../static/img/voice2.png' }}"></image>
-                                <view style="border-top:1rpx solid #ddd;padding-top:3px;margin-top:28px;font-size:26rpx;color:#666;" class="voiceContent" wx:if="{{item.content != '' && item.content != null && item.seeWord }}">{{ item.content }}</view>
-                                <view style="border-top:1rpx solid #ddd;padding-top:3px;margin-top:28px;color:rgba(255,100,100,0.8);font-size:26rpx;" class="voiceContent" wx:elif="{{ item.seeWord }}"> 无可识别内容 </view>
-                                <!-- <view class="myProgress" wx:if="{{ item.progress }}" style="height:1px;width:{{ item.progress }}px;background-color: {{ item.progress == 100 ? '#49CC8D' : 'rgba(255,100,100,0.8)' }}"></view> -->
-                            </view>
-                            <!--视频类型-->
-                            <view class="talkContent" wx:if="{{ item.msgType == 3 }}" style="width:90%;">
-                                <video style="width:100%;height:117px;" src="{{ item.attachUrl }}" controls></video>
-                                <view class="myProgress" wx:if="{{ item.progress }}" style="height:1px;width:{{ item.progress }}px;background-color: {{ item.progress == 100 ? '#49CC8D' : 'rgba(255,100,100,0.8)' }}"></view>
-                            </view>
-                            <!--文件类型-->
-                            <view class="talkContent" wx:if="{{ item.msgType == 6 }}" data-item="{{item}}" style="width:80%;" catchtap="openFile">
-                              <ui-row>
-                                  <ui-col span="9" align="left" vertical-align="top" data-item="{{item}}" catch:longpress="openActionsheet">
-                                      <view style="font-size:13px;color:#333333;">{{ item.content }}</view>
-                                  </ui-col>
-                                  <ui-col span="3">
-                                    <text class="iconfont myWx-552cd47fba2cc" style="font-size:32px;text-align:center;"></text>
-                                  </ui-col>
-                              </ui-row>
-                              <view style="border-top:1xp solid blue;"></view>
-                              <view class="myProgress" wx:if="{{ item.progress }}" style="height:1px;width:{{ item.progress }}px;background-color: {{ item.progress == 100 ? '#49CC8D' : 'rgba(255,100,100,0.8)' }}"></view>
-                            </view>
-                            <!-- 评价 -->
-                            <view class="talkContent" wx:if="{{ item.msgType == 30 }}" style="width:80%;">
-                              <ui-row space-bottom="" style="height:30px;line-height:26px;">
-                                  <ui-col align="left" vertical-align="top">
-                                      <text style="font-size:14px;color:#333333;">项目办结消息提醒</text>
-                                  </ui-col>
-                              </ui-row>
-                              <ui-row style="border-bottom:1px solid #EFEFEF;padding:0px 0 10px 0;">
-                                  <ui-col align="left" vertical-align="top">
-                                      <!-- <text style="font-size:13px;color:#333333;text-align:right;display:block;width:100%;font-size:13px;">{{ item.fromUserName }}邀请你对本次服务进行评价。</text> -->
-                                      <text style="font-size:12px;color:#5C6466;text-align:left;display:block;width:100%;font-size:13px;">尊敬的客户你好，你的项目已经完结请对我们的服务进行评价。</text>
-                                  </ui-col>
-                              </ui-row>
-                              <ui-row>
-                                  <ui-col align="center" vertical-align="top">
-                                      <text wx:if="{{ item.toUser == sendInputMsg.fromUser}}" style="font-size:12px;color:#2A79FB;padding:9px 0;">点击评价</text>
-                                      <text wx:else style="font-size:12px;color:#bbb;padding:9px 0;">点击评价</text>
-                                  </ui-col>
-                              </ui-row>
-                            </view>
-                        </view>
-                        <view class="readMe" wx:if="{{ sendInputMsg.fromUser == item.fromUser }}" style="right:{{ sendInputMsg.fromUser == item.fromUser ? '5px' : '' }}">{{ item.readCount >= 0 ? theGroupMsg.groupUsers.length - item.readCount : item.msgType != 1 && item.msgType != 2 ? '发送失败' : item.progress + '%' }} {{ item.readCount >= 0 ? "人未读" : ''}}</view>
-                    </ui-col>
-                    <ui-col class="text" align="center" vertical-align="top" space-left="0" space-right="0" wx:if="{{ item.cmd == 1 }}">
-                        <view class="historyLine">{{ item.fromUserName }} 撤回了一条消息</view>
-                    </ui-col>
-                    <!-- 办结消息 -->
-                    <!-- <ui-col class="text" align="center" vertical-align="top" space-left="0" space-right="0" wx:if="{{ item.cmd == 100 }}">
-                        <view class="historyLine">{{ item.content }} </view>
-                    </ui-col> -->
-                    <ui-col width="60" align="left" vertical-align="top" wx:if="{{ item.cmd != 'time' && (sendInputMsg.fromUser == item.fromUser) && item.cmd != 2 && item.cmd != 1 }}"><!--消息来自自己-->
-                        <view class="left_icon left_icon1">
-                            <image src="{{  userMsg.headImgUrl }}"/>
-                        </view>
-                        <!-- 消息转发选项框...... -->
-                    </ui-col>
-                    <view class="msgTransCheckbox" wx:if="{{ item.cmd == 0 && item.msgType != 20 && item.msgType != 21 && item.msgType != 22 && tabBar.actItem == 0 && item.msgType != 30 }}"><checkbox color="#267AFC" checked="{{ item.checked }}" class="checkbox" value="{{ item.msgId }}"/></view>
-                </ui-row>
-              </checkbox-group>
-              <view wx:if="{{ chatData.length == 0 }}" style="color:#555;text-align:center;padding:20px 0;">无匹配内容</view>
-          </view>
-        </scroll-view>
-        <!-- 全屏弹窗.... -->
-        <ui-popup show="{{ model.show }}" height="100%"></ui-popup>
-    </view>
+    </view> 
+    <cc-group-chat sendInputMsg="{{ sendInputMsg }}" bindtransData="transData" id="groupChat" style="position:relative;top:{{ translateY }}px" bindaddData="addData" scrollHeight="{{ scrollHeight }}"  bindtouchstart="toggleHeight" chatData="{{ chatData }}"></cc-group-chat>
+    <ui-fixed-view bottom="0" left="0" right="0" class="fixBtn" style="display:{{ !isTransData ? 'none' : 'block'}};">
+      <view class="fixed-view-content" style="background-color:white;border-top:1px solid #efefef;">
+        <view class="btn-area" bindtap="transData">
+          <text class="iconfont myWx-houtui1" style="font-size:32px;text-align:center;"></text>
+        </view>
+        <view class="line"></view>
+        <view class="btn-area" bindtap="transMe">
+          <text class="iconfont myWx-fasong4" style="font-size:32px;text-align:center;"></text>
+        </view>
+      </view>
+    </ui-fixed-view>  
   </view>
 </template>
 
@@ -195,36 +90,37 @@ line-height: 20px;
 margin:10px;
 `
 import system from '../../static/utils/system'
-var backgroundAudioManager = wx.getBackgroundAudioManager();
 var app = getApp();
 export default {
     config: {
         usingComponents: {
-          'cc-grouplist': '../../packages/cc-grouplist'
+            'cc-group-chat': '../../packages/cc-groupChat/index',
+            'cc-chat-tool': '../../packages/cc-chatTool/index'
         },
-        navigationBarTitleText: '聊天信息'
+        navigationBarTitleText: '历史消息'
     },
     data: {
-        headerHeight:"",//头部栏的高
-        scroll:{
-            toView:"",//定位滚动元素
-            pageNum:1,//要查看的页码...
-            scrollTop:1000,//滚动位置
-        },
-        transmit:{
-            transData:[],
-            isTransmit:false,
-            groupList:[]
-        },
-        modelHeight:wx.DEFAULT_CONTENT_HEIGHT - 148 + 'px',
-        statusBarHeight: wx.STATUS_BAR_HEIGHT,
-        headerHeight: wx.DEFAULT_HEADER_HEIGHT,
-        scrollHeight: wx.WIN_HEIGHT - 170,
-        defaultMonthrange: [],
+        scrollHeight: wx.DEFAULT_CONTENT_HEIGHT - 49 - 60,
+        _item:{},
         chatData:[],
-        theGroupMsg:{},
-        popUp:{
-            show:false,
+        translateY:0,
+        isTransData:false,
+        sendInputMsg :{
+            "fromUser":"",//发送人ID
+            "fromUserName":"",//发送人姓名
+            "toUser":'',//群聊不填，私聊必填
+            "content":"",//消息体
+            "cmd":0,//0发送消息，1-撤回消息,2-系统推送消息.
+            "msgType":0,//消息类型0-text,1-image,2-voice,3-vedio,4-music,5-news
+            "chatType":0,//聊天类型0-未知，1-公聊，2-私聊
+            "groupId":'',//群聊ID....群聊必填..
+            "attachUrl":'',//附件地址...
+            "position":"",
+            "msgId":'',
+            "groupName":'',
+            "status":0,
+            "isGroupManager":false,
+            "headImgUrl":app.globalData.userMsgReq.headImgUrl || '',
         },
         search:{
             showInput:true,//是否显示删除按钮..
@@ -268,7 +164,7 @@ export default {
         },
         dater:{
             start:"2015-09-01",
-            end:"2018-08-01",
+            end:"",
             date:"",
             start1:"",
             end1:"",
@@ -276,163 +172,117 @@ export default {
             timer:0,//选中的开始时间的毫秒数.....
             timer1:Infinity,//选中的结束时间的毫秒数....
         },
-        selUser:{
-            selMe:'',
-            users:[],
-            act:''
-        },
-        defaultHeadImg:"",
         userMsgReq:{},
         tabBar:{
-            "actItem":0
+            "actItem":2
         }
     },
-    onLoad( option ){
-        let _groupMsg = JSON.parse( option.item );
-        let _tabBar = JSON.parse( option.tabBar );
-        let time = new Date(),that = this;
-        let endTime = `${time.getFullYear()}-${time.getUTCMonth() + 1}-${time.getUTCDate()}`;
-        if( _tabBar.actItem == 2 ){//是历史群组不显示底部栏
-            this.setData({
-                tabBar:_tabBar
-            })
-        }
+    onLoad( options ){
+        let that = this;
+        let _item = JSON.parse( options.item );
+        app.globalData.groupMsg = _item.group;
+        app.globalData._me = this;
         this.setData({
-            "theGroupMsg":_groupMsg,
-            ['dater.end']:endTime,
-            ['dater.end1']:endTime
+            "_item":_item,
+            ['sendInputMsg.groupId']:_item.group.groupId,
+            ['sendInputMsg.groupName']:_item.group.groupName,
+            ['sendInputMsg.headImgUrl']:app.globalData.userMsgReq.headImgUrl,
+            ['sendInputMsg.isGroupManager']:app.globalData.userMsgReq.isGroupManager,
+            ['sendInputMsg.fromUser']:app.globalData.openId,
+            ['sendInputMsg.fromUserName']:app.globalData.userMsgReq.username,
+            ['searchData.openId']:app.globalData.openId,
+            ['searchData.groupId']:app.globalData.groupMsg.groupId,
+        })
+        system.getGroupMsg( app , 1 ,()=>{} );        
+    },
+    onShow(){
+        let that = this;
+        app.globalData._me = this;
+        system.isLogin(app);
+        that.selectComponent("#groupChat").setData({
+            "groupMsg":app.globalData.groupMsg
+        })
+        if( app.globalData.isAite ){
+        that.selectComponent("#chatTool").setData({
+            "isShowControlBar":false,
+            "isAite":true
+        })
+        wx.getStorage({
+            key: 'selUser',
+            success (res) {
+                that.selectComponent("#chatTool").setData({
+                    "users":res.data,
+                    "isInputing":true
+                })
+            }
         })
         this.setData({
-            ["searchData.openId"]:app.globalData.openId,
-            ["searchData.groupId"]:_groupMsg.groupId,
-            "defaultHeadImg":app.globalData.defaultImg,
-            "userMsgReq":app.globalData.userMsgReq,
-            "headerHeight":app.globalData.headHeight,
+            "translateY":  "-100"
         })
-        this.getHistoryMsg(1);
-    },
-    retOrConfirm(e){
-        let _item  = e.currentTarget.dataset;
-        let that = this;
-        if( this.data.tabBar.actItem == 0 ){
-            wx.navigateTo({
-                url:`/pages/CreateRequirement/index?groupMsg=${JSON.stringify(that.data.theGroupMsg)}&item=${JSON.stringify(_item)}&enterType=1`//编辑进
-            })
+        }else if( app.globalData.isConfirm ){
+            that.selectComponent("#chatTool").comeOver();
         }
+        this.setData({
+            "isTransData":false
+        })
+        that.selectComponent("#groupChat").setData({
+            ['transmit.isTransmit']:false
+        });
     },
-    evaluateMe(e){//评价消息
-        let that = this;
+    transData(){
+        this.setData({
+            isTransData:!this.data.isTransData
+        })
+        this.selectComponent("#groupChat").setData({
+            ['transmit.isTransmit']:this.data.isTransData
+        })
+    },
+    transMe(){//转发..
         wx.navigateTo({
-            url:`/pages/evaluate/index?groupMsg=${ JSON.stringify( that.data.theGroupMsg ) }`
+            url: `/pages/groupList/index`
         })
     },
-    bindDateChange1(e){
-        let that = this;
-        if( that.data.dater.timer <= new Date( e.detail.value ).getTime() ){
-            this.setData({
-                ["dater.date1"]:e.detail.value,
-                ["dater.timer1"]:new Date( e.detail.value ),
-                ["searchData.endAt"]:e.detail.value + " 23:59:59",
-                "chatData":[],
-                ["searchData.pageNum"]:1
-            })
-            that.getHistoryMsg(1);
-        }else{
-            system.stateMsg({
-                title:"结束时间必须晚于开始时间",
-                icon:"none",
-                time:1500
-            })
-        }
-    },
-    bindscrolltoupper(e){
+    toGroupMsg(){//点击群信息......
         var that = this;
-        this.setData({
-            ['searchData.pageNum']:++that.data.searchData.pageNum,
+        wx.navigateTo({
+            url: `/pages/groupMsg/index?tabBar=${ JSON.stringify( that.data._item.tabBar ) }`
         })
-        this.getHistoryMsg( that.data.searchData.pageNum );
+    },  
+    // 改变聊天窗口的高度...
+    toggleHeight(){
+        this.setData({
+            "translateY": 0
+        })
+        this.selectComponent("#chatTool").setData({
+            "isShowControlBar":false,
+            "isAite":false,
+            "isInputing":false,
+            "users":[],
+        })
     },
-    bindDateChange(e){
+    changeHeight(e){
+        this.setData({
+            "translateY":  e.detail.isShowControlBar ? '-170' : e.detail.isAite ? "-100" : "0"
+        })
+    },
+    addData(e){//获取分页数据.....
         let that = this;
-        if( new Date( e.detail.value ).getTime() <= that.data.dater.timer1 ){
-            this.setData({
-                ["dater.date"]:e.detail.value,
-                ["dater.timer"]:new Date( e.detail.value ).getTime(),
-                ["searchData.startAt"]:e.detail.value,
-                "chatData":[],
-                ["searchData.pageNum"]:1
-            })
-            that.getHistoryMsg(1);
-        }else{
-            system.stateMsg({
-                title:"开始时间必须早于结束时间",
-                icon:"none",
-                time:1500
-            })
-        }
+        let _msgLength = this.data.chatData.filter((item)=>{
+            return item.cmd != "time";
+        })
+        let _curPage = Math.ceil( _msgLength.length / 10 );
+        system.getGroupMsg( app , ++_curPage , ()=>{});
     },
-    playVoice(e){
-        var that = this;
-        var item = e.currentTarget.dataset.item;
-        var i = e.currentTarget.dataset.index;
-        backgroundAudioManager.index
-        if( backgroundAudioManager.paused == false ){//正在播放.....
-        if( backgroundAudioManager.index == i ){
-            backgroundAudioManager.stop();
-            this.setData({
-                [`chatData[${i}].src`]:'../../static/img/voice2.png',
-            })
-        }else{
-            backgroundAudioManager.stop();
-            this.setData({
-            [`chatData[${backgroundAudioManager.index}].src`]:'../../static/img/voice2.png',
-            })
-            backgroundAudioManager.title = "语音消息"
-            backgroundAudioManager.index = e.currentTarget.dataset.index
-            backgroundAudioManager.epname = item.fromUserName
-            backgroundAudioManager.singer = item.fromUserName
-            backgroundAudioManager.coverImgUrl = item.headImgUrl
-            backgroundAudioManager.src = item.attachUrl; // 设置了 src 之后会自动播放
-        }
-        console.log( "播放1", backgroundAudioManager.paused );
-        }else{
-            backgroundAudioManager.stop();
-            backgroundAudioManager.title = "语音消息"
-            backgroundAudioManager.index = e.currentTarget.dataset.index
-            backgroundAudioManager.epname = item.fromUserName
-            backgroundAudioManager.singer = item.fromUserName
-            backgroundAudioManager.coverImgUrl = item.headImgUrl
-            backgroundAudioManager.src = item.attachUrl; // 设置了 src 之后会自动播放
-        console.log( "播放2", backgroundAudioManager.paused );
-        }
-        console.log("播放状态", backgroundAudioManager.paused )
-        backgroundAudioManager.onPlay(()=>{
-        var d = that.data.chatData[i];
-        this.setData({
-            [`chatData[${i}].src`]:'../../static/img/voice.gif',
-        })
-        })
-        backgroundAudioManager.onPause(()=>{
-        this.setData({
-            [`chatData[${i}].src`]:'../../static/img/voice2.png',
-        })
-        })
-        backgroundAudioManager.onStop((res)=>{
-        this.data.chatData.forEach((val,ii ,arr)=>{
-            this.setData({
-            [`chatData[${ii}].src`]:'../../static/img/voice2.png',
-            })
-        })
-        })
-        backgroundAudioManager.onEnded(()=>{
-        this.setData({
-            [`chatData[${i}].src`]:'../../static/img/voice2.png',
-        })
+    getThePoint(id){
+        this.selectComponent("#groupChat").setData({
+            "toView":`the${id}`
         })
     },
-    navigateBack() {
-        wx.navigateBack()
-    },
+    scrollToBottom(){//滚动到最下面....
+        this.selectComponent("#groupChat").setData({
+            "scrollTop":1000000
+        })      
+    }, 
     getHistoryMsg(pageNumber){
         var that= this;
         if( pageNumber == 1){
@@ -465,6 +315,44 @@ export default {
                 }
             }
         })
+    },    
+    bindDateChange1(e){
+        let that = this;
+        if( that.data.dater.timer <= new Date( e.detail.value ).getTime() ){
+            this.setData({
+                ["dater.date1"]:e.detail.value,
+                ["dater.timer1"]:new Date( e.detail.value ),
+                ["searchData.endAt"]:e.detail.value + " 23:59:59",
+                "chatData":[],
+                ["searchData.pageNum"]:1
+            })
+            that.getHistoryMsg(1);
+        }else{
+            system.stateMsg({
+                title:"结束时间必须晚于开始时间",
+                icon:"none",
+                time:1500
+            })
+        }
+    },
+    bindDateChange(e){
+        let that = this;
+        if( new Date( e.detail.value ).getTime() <= that.data.dater.timer1 ){
+            this.setData({
+                ["dater.date"]:e.detail.value,
+                ["dater.timer"]:new Date( e.detail.value ).getTime(),
+                ["searchData.startAt"]:e.detail.value,
+                "chatData":[],
+                ["searchData.pageNum"]:1
+            })
+            that.getHistoryMsg(1);
+        }else{
+            system.stateMsg({
+                title:"开始时间必须早于结束时间",
+                icon:"none",
+                time:1500
+            })
+        }
     },
     clearInput(e){
         this.setData({
@@ -474,61 +362,18 @@ export default {
         });
         this.getHistoryMsg(1);
     },
-    checkboxChange(e){ //消息转发选项框选中事件......
-        if( e.detail.value.length == 0 ){
-            this.setData({
-                ['transmit.isTransmit']:false
-            })
+    inputTyping(e){
+        if( e.detail.value == "" ){
+            system.getGroupMsg( app , 1 ,()=>{} );        
         }else{
             this.setData({
-                ['transmit.isTransmit']:true
-            })
+                ["search.inputVal"]: e.detail.value,
+                ["searchData.keywords"]: e.detail.value,
+                "chatData":[],
+                ["searchData.pageNum"]:1
+            });
+            this.getHistoryMsg(1);
         }
-        this.setData({
-            ['transmit.transData']:e.detail.value
-        })
-    },
-    showModel(){
-        let that = this;
-        let _obj = {
-            chatData:that.data.chatData,
-            transData:that.data.transmit.transData
-        }
-        app.globalData._obj = JSON.stringify( _obj )
-        wx.navigateTo({
-            url:`/pages/groupList/index`
-        })
-        that.data.chatData.filter(( item )=>{
-            if( item.checked == true ){
-              item.checked = false;
-            }
-        })
-        that.setData({
-            ["transmit.isTransmit"]:false,
-            "chatData": that.data.chatData
-        })
-    },
-    previewImage: function(e){//图片预览.....
-        var imgUrl = e.currentTarget.dataset.item.attachUrl;
-        var imgList = [];
-        this.data.chatData.forEach((val,i,arr)=>{
-        if( val.msgType == 1 ){
-            imgList.push( val.attachUrl );
-        }
-        })
-        wx.previewImage({
-            current: imgUrl, // 当前显示图片的http链接
-            urls: imgList // 需要预览的图片http链接列表
-        })
-    },
-    inputTyping(e){
-        this.setData({
-            ["search.inputVal"]: e.detail.value,
-            ["searchData.keywords"]: e.detail.value,
-            "chatData":[],
-            ["searchData.pageNum"]:1
-        });
-        this.getHistoryMsg(1);
     },
     showInput(){
         var that = this;
@@ -586,180 +431,41 @@ export default {
 </script>
 
 <style lang="less">
-    #tags0{
-    //   margin:5px 10px;
+  .fixed-view-content{
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    .line{
+      width:1px;
+      height:40px;
+      background-color:#ddd;
+      top:5px;
+      position:relative;
     }
+    .btn-area{
+      flex-grow: 1;
+      text-align:center;
+    }
+  }  
+
     .fixed-view-content{
         .weui-search-bar{
             border-bottom: 0px!important;
             background-color: rgba(0,0,0,0)!important;
+            width: 100%;
         }
     }
-  .popup1{
-    height: 100%;
-    padding:0 20rpx;
-    padding-top:66px;
-    overflow: hidden;
-    .title0{
-      color:#333;
-      font-size:14px;
-      padding-left:13px;
-      line-height:50px;
-    }
-  }
+
   #container{
       height: 100%;
       width: 100%;
   }
-  .content{
-    padding:0px 8px 0px 8px;
-    .talkItem{
-      padding:15px 0;
-      margin-bottom:6px;
-    }
-    .left_icon{
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background-color:#FCB300; 
-        text-align: center;
-        line-height: 50px;
-    }
-    .left_icon2{
-        background-color: #FF7360;
-    }
-    .left_icon3{
-        background-color: #39CCC5;
-    }
-    .name,.job{
-      font-family:PingFang-SC-Medium;
-      color:rgba(102,102,102,1);
-      max-width: 90px;
-      display: inline-block;
-      .mix-text-overflow();
-    }
-    .name{
-      font-size: 13px;
-    }
-    .job{
-      font-size: 11px;
-    }
-    .userMsg{
-      vertical-align: top;
-      line-height: 13px;
-    }
-    .talkContent{
-      font-size: 15px;
-      font-family:PingFang-SC-Medium;
-      color:rgba(51,51,51,1);
-      background-color: white;
-      padding: 5px;
-      border-radius: 5px;
-      display: inline-block;
-      max-width:90%;
-      white-space: pre-line;
-      overflow-wrap:break-word;
-      text-align: left;
-      min-height: 20px;
-      position: relative;
-    }
-}
+
 .fontMini{
     font-size: 12px;
 }
-  .groupMsgBtn{
-      position: relative;
-      right: 56px;
-      top: 13px;
-      z-index: 10000;
-      font-size: 14px;
-      border-radius: 12px;
-      background-color: #FFF7F7FA;
-      line-height: 24px;
-      overflow: hidden;
-      height:60rpx;
-      .cBtn0{
-        padding:0 30rpx;
-        height:60rpx;
-        line-height:60rpx;
-        font-size:24rpx;
-        margin:0;
-        background-color:#FFF7F7FA!important;
-        display:inline-block;
-        border-radius:13px;
-        &::after{
-          border: none;
-        }
-      }
-      .line_icon{
-        border-right:0.5px solid #DBD9D9;
-        height:40rpx;
-        position:relative;
-        top:-20rpx;
-      }
-      .cancelSelect,.toGroupList{
-        font-size: 34rpx;
-      }
-    }
-.angleIcon{
-    position:absolute;
-    z-index:10000;
-    right:68rpx;
-    top:51rpx;
-    display:inline-block;
-    width:auto;
-    font-size:22rpx;
-    min-width:45rpx;
-    height:45rpx;
-    border-radius:50%;
-    background-color:white;
-    color:white;
-    line-height:45rpx;
-    padding:2rpx;
-  }
-  .angleIcon2{
-    right:-17rpx;
-    top:9rpx;
-  }
-.top_tip{
-    background-color: #fff;
-    .left_icon{
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background-color:#FCB300; 
-        text-align: center;
-        line-height: 50px;
-    }
-    .text{
-        .ui-text{
-            font-size: 16px;
-            color: #313338;
-        }
-        .ui-view{
-            color: #9C9FA4;
-            font-size: 12px;
-            .mix-text-overflow();
-        }
-        .txt{
-          font-size:12px;
-          font-family:PingFang-SC-Medium;
-          color:rgba(102,102,102,1);
-          text-align: left;
-          .mix-text-overflow();
-        }
-    }
+
+.weui-search-bar__form{
+    background-color: #f5f5f5;
 }
-  .historyLine{
-    text-align: center;
-    background-color: #cccccc;
-    padding: 5px 10px;
-    border-radius: 6px;
-    font-size: 10px;
-    margin: 10px 0;
-    color: white;
-  }
-  .weui-search-bar__form{
-      background-color: #f5f5f5;
-  }
 </style>

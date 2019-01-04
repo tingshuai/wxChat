@@ -34,13 +34,13 @@
                               </view>
                           </view>
                           <view>
-                              <view style="white-space:nowrap;font-size:12px;" wx:if="{{ item.content.demandState == true }}">确认日期{{ item.createAt }}</view>
+                              <view style="white-space:nowrap;font-size:12px;" wx:if="{{ item.content.demandState == true }}">确认日期{{ item.content.createAt }}</view>
                           </view>
                         </view>
                         <!--压图类型-->
                         <view class="talkContent" data-item="{{item}}" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="yatu" wx:if="{{ item.msgType == 40 || item.msgType == 42 || item.msgType == 41 }}" style="background-color: white;width:100%;">
                           <view style="border-bottom:1px solid rgba(0,0,0,0.1);">
-                              <view style="color:{{ !item.content.editable ? '#4EBF62' : '#267AFC' }};font-size:14px;">{{ !item.content.editable ? "已签收" : "待签收"}}</view>
+                              <view style="color:{{ item.content.signStatus ? '#4EBF62' : '#267AFC' }};font-size:14px;">{{ item.msgType == 40 ? "待签收" : item.msgType == 41 ? "修改" : "已签收" }}</view>
                           </view>
                           <view class="demandMsg">
                               <view class="demandImg">
@@ -53,7 +53,7 @@
                               </view>
                           </view>
                           <view>
-                              <view style="white-space:nowrap;font-size:12px;" wx:if="{{ !item.content.editable }}">日期{{ item.createAt }}</view>
+                              <view style="white-space:nowrap;font-size:12px;">日期{{ item.content.createAt }}</view>
                           </view>
                         </view>
                         <!--图片类型-->
@@ -112,7 +112,7 @@
                 <view class="historyLine" wx:if="{{ item.cmd == 100 && item.content }}">{{ item.content || ''}} </view>
                 <view class="historyLine" wx:if="{{ item.cmd == 999 }}" style="width:90%;">
                   {{ item.msgTemplate }}
-                  <view class="cancelAlert" bindtap="cancelAlert" data-item="{{ item }}" wx:if="{{ item.content.createUser == sendInputMsg.openId }}">取消提醒</view>
+                  <view class="cancelAlert" bindtap="cancelAlert" data-item="{{ item }}" wx:if="{{ item.content.createUser == sendInputMsg.fromUser }}">取消提醒</view>
                 </view>   
                 <view class="historyLine" wx:if="{{ item.cmd == 1000 }}" style="width:90%;">
                   {{ item.msgTemplate }}
@@ -132,13 +132,10 @@
     </scroll-view>
 </template>
 <script>
-import chatRoomBehavior from '../../static/data/chatRoomBehavior.js'
-import watch from '../../static/utils/watch'
 import system from '../../static/utils/system'
 let _audio = wx.createInnerAudioContext();
 let app = getApp();
 export default {
-  behaviors: [chatRoomBehavior],
   properties:{
     scrollHeight:{
       type: Number, // 类型（必填），目前接受的类型包括：String, Number, Boolean, Object, Array, null（表示任意类型）
@@ -148,7 +145,8 @@ export default {
     sendInputMsg:{
       type: Object, // 类型（必填），目前接受的类型包括：String, Number, Boolean, Object, Array, null（表示任意类型）
       value: {}, // 属性初始值（可选），如果未指定则会根据类型选择一个
-      observer: function (newVal, oldVal) {}
+      observer: function (newVal, oldVal) {
+      }
     },    
     chatData:{
       type:Object,
@@ -183,7 +181,9 @@ export default {
       })
     },
     bindscrolltoupper(e){
-      this.triggerEvent( "addData" , {  } );
+      if( this.data.chatData.length != 0 ){
+        this.triggerEvent( "addData" , {  } );
+      }
     },
     previewImage(e){//图片预览.....
       var imgUrl = e.currentTarget.dataset.item.attachUrl;
@@ -270,7 +270,7 @@ export default {
       let _item  = e.currentTarget.dataset;
       let _params = {
         msgId:_item.item.msgId,
-        demandId: JSON.parse(_item.item.content).demandId,
+        demandId: _item.item.content.demandId,
         groupId:_item.item.groupId,
         groupName:app.globalData.groupMsg.groupName,
         fromUser:_item.item.fromUser,
@@ -280,7 +280,7 @@ export default {
       }
       system.http({ url:'/demand/prompt/cancel', method:"post",header:{'content-type': 'application/x-www-form-urlencoded'},param:_params,scb(res){
           if ( res.data.status == 200) {
-              system.stateMsg({title:"取消成功",icon:"success",time:1500});
+              system.stateMsg({title:res.data.message,icon:"none",time:1500});
           }else{
             system.stateMsg({title:res.data.message,icon:"none",time:1500});
           }

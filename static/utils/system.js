@@ -71,6 +71,7 @@ export default {
     })
   },
   formatTime( _timer ){
+    let a = typeof(_timer)
     return new Date( _timer.replace( new RegExp("-","gm"),"/") );
     // return `${_time.getFullYear()}-${_time.getUTCMonth() + 1}-${_time.getUTCDate()}`;
   },
@@ -130,9 +131,7 @@ export default {
       app.globalData.promise.upDataGroupMsg = new Promise((resolve,reject)=>{
         switch ( _data.cmd ) {
           case 0://有人发消息过来..
-              if( _curPageThis.route == "pages/home/index"){
-                _curPageThis.requestGroupList( '/chat/groups/tree','over',2, _data.groupId );
-              }
+              that.upDataGroupMsg();
               if( _data.groupId == app.globalData.groupMsg.groupId ){
                 that.format({
                   "onMessageData":_data,
@@ -142,7 +141,7 @@ export default {
                 })
               }
               break;
-          case 1://有人发消息过来..
+          case 1:
               that.format({
                 "onMessageData":_data,
                 "resolve":resolve,
@@ -151,16 +150,16 @@ export default {
               })
               break;              
           case 100://办结评价.....
-              wx.getStorage({//更新存储的群信息....
-                key: _data.groupId,
-                success ( _data_ ) {
-                  _data_.data.splice( _data_.data.length, 0, _data );
-                  wx.setStorageSync( _data.groupId , _data_.data );
-                  resolve( { _old_:_data,_new_:_data_.data } );
-                }
+              that.upDataGroupMsg(_data);
+              that.format({
+                "onMessageData":_data,
+                "resolve":resolve,
+                "isPush":true,
+                callBack(){}
               })
               break;
           case 20:{//需求....
+            that.upDataGroupMsg(_data);
             that.format({
               "onMessageData":_data,
               "resolve":resolve,
@@ -205,19 +204,35 @@ export default {
               callBack(){}
             })
             break;
-          case 999://取消提醒..
+          case 999://到期提醒..
+            that.upDataGroupMsg(_data);
             that.format({
               "onMessageData":_data,
               "resolve":resolve,
               "isPush":true,
               callBack(){}
             })            
-            break;                          
+            break;      
+          case 30://取消提醒..
+            that.upDataGroupMsg(_data);
+            that.format({
+              "onMessageData":_data,
+              "resolve":resolve,
+              "isPush":true,
+              callBack(){}
+            })            
+          break;                                   
           default:
               break;
         }
       })
     })
+  },
+  upDataGroupMsg(_data){
+    let _curPageThis = getApp().globalData._me;
+    if( _curPageThis.route == "pages/home/index"){
+      _curPageThis.requestGroupList( '/chat/groups/tree','over',2, _data.groupId );
+    }     
   },
   sendSocketMessage(obj) {//发送socket消息......
       let that = this;
@@ -282,7 +297,6 @@ export default {
         }else{
           item.content = JSON.parse( item.content )
         }
-        item.content.createAt = this.formatTime( item.content.createAt );
         _data_.filter((val)=>{
           if( val.msgId == item.content.disableMsgId ){
             val.content.editable = false
@@ -301,7 +315,7 @@ export default {
           return item.content;
         }else{
           item.content = JSON.parse( item.content );
-          item.content.createAt = this.formatTime( item.content.createAt );
+          // item.content.createAt = this.formatTime( item.content.createAt.getTime() );
           item.content.diagramText = JSON.parse( item.content.diagramText );
           if( item.msgType == 42 && item.msgId == obj.onMessageData.msgId ){
             item.content.editable = false;
@@ -316,11 +330,9 @@ export default {
       })
     }
     wx.setStorageSync( obj.onMessageData.groupId || getApp().globalData.groupMsg.groupId , _data_ );
-    if( _curPageThis.route == "pages/groupChat/index" ){//群聊页面......
+    if( _curPageThis.route == "pages/groupChat/index" || _curPageThis.route == "pages/historyMsg/index"){//群聊页面......
       if( obj.isPush ){
         setData();
-        console.log( _curPageThis.data.chatData ,obj.onMessageData);
-        console.log("整理数据并更新群聊",obj);
         _curPageThis.scrollToBottom();
         _curPageThis.selectComponent("#chatTool").setData({//发送成功清空输入框数据....
           "inputVal":"",
@@ -337,14 +349,44 @@ export default {
     if( wx.getStorageSync('openId') != "" && wx.getStorageSync('userMsgReq') != "" ){//已登录
       app.globalData.openId = wx.getStorageSync('openId');
       app.globalData.userMsgReq = wx.getStorageSync('userMsgReq');
-      // this.connectSocket( app );//连接socket;
-      console.log("已登录")
     }else{
-      console.log("未登录")
       wx.reLaunch({
         url: '/pages/login/index'
       })
     }    
+  },
+  getHistoryMsg(){
+    var that= this;
+    if( pageNumber == 1){
+        that.setData({
+            chatData:[]
+        })
+    }
+    wx.request({
+        url: `${app.globalData.httpHost}/chat/msg/getHisGroupMsg`,
+        data: that.data.searchData,
+        success: function(res) {
+            if( res.data.status == 200 ){
+            let _rows = res.data.data.rows.reverse();
+            _rows.forEach((val,i,arr)=>{//未读@信息......
+                if(val.msgType == 7 && /(@\`-\`@)/.test(val.content) ){
+                    val.content = val.content.split('(@\`-\`@)').join(' ');
+                }else if( val.msgType == 20 || val.msgType == 21 || val.msgType == 22 ){
+                    val.content = JSON.parse( val.content );
+                }
+            })
+            that.data.chatData.splice(that.data.chatData.length,0,..._rows);
+            that.setData({
+                chatData:that.data.chatData,
+                ['searchData.pageNum']: pageNumber
+            })
+            wx.hideToast()
+            }else{
+                wx.hideToast()
+                system.stateMsg({title: '提示',content: res.data.message,scb(){},ccb(){}})
+            }
+        }
+    })
   },
   socketHeartBeat(app){
     let that = this;
@@ -368,7 +410,6 @@ export default {
       },
       header:{'content-type': 'application/x-www-form-urlencoded'},
       scb(res){
-        console.log("请求到数据",num,_groupMsg,res);
         let _resData = res.data.data;
         if( num == 1 ){//第一次进来....
           wx.setStorageSync( _groupMsg.groupId , [] );

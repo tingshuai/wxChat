@@ -306,8 +306,8 @@ export default {
               icon:"success",
               time:1500
             })
-            app.globalData.isConfirm = false;
           }
+          app.globalData.isConfirm = false;
         },
         fcb(res){
           system.stateMsg({

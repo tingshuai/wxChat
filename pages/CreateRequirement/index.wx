@@ -77,8 +77,9 @@
     <!-- 填好的需求确认单... -->
     <view wx:if="{{ come_msg.enterType == '1' }}" style="height:100%;overflow:auto;">
         <view style="padding:5px 10px;background-color:white;margin-top:7px;">
-            <ui-row style="margin-top:10px;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><ui-col>需求单{{ come_msg.item.content.demandNum }}</ui-col></ui-row>
-            <view class="weui-cells__title" style="padding-left:0px;margin-top:1px;font-size:12px;">发起时间{{ come_msg.item.createAt }}</view>
+            <ui-row style="margin-top:10px;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><ui-col>需求单: {{ come_msg.item.content.demandNum }}</ui-col></ui-row>
+            <view class="weui-cells__title" style="padding-left:0px;margin-top:1px;font-size:12px;">发起时间: {{ come_msg.item.content.createAt }}</view>
+            <view class="weui-cells__title" style="padding-left:0px;margin-top:1px;font-size:12px;">计划完成时间: {{ come_msg.item.content.planCompleteAt }}</view>
             <view class="weui-cells__title" style="padding-left:0px;font-size:12px;margin-top:20px;">发起人：{{ come_msg.item.content.fromUserName }}</view>
             <view class="weui-cells__title" style="padding-left:0px;font-size:12px;margin-top:0px;">对接人：{{ come_msg.item.content.confirmUserName }}</view>
             <view class="weui-cells__title" style="padding-left:0px;font-size:12px;color:black;font-size:15px;">需求内容</view>
@@ -98,6 +99,10 @@
             <view class="dateTit">计划完成日期</view>
             <view class="dateTit">{{ form.planCompleteAt }}</view>                
         </picker>
+        <picker mode="time" wx:if="{{ come_msg.item.content.editable && come_msg.item.toUser == userMsgReq.openId }}" class="pickerDate" bindchange="bindTimeChange" value="{{ form.planCompleteAtTime }}" start="08:00" end="23:59">
+            <view class="dateTit">计划完成时间</view>
+            <view class="dateTit">{{ form.planCompleteAtTime }}</view>                
+        </picker>
         <view class="btn-area" style="margin-top:35px;">
             <button catchtap="editRequirement" wx:if="{{ come_msg.item.content.editable && come_msg.item.toUser == userMsgReq.openId }}" type="primary" class="myBtnSuccess jingjingBtn">修改需求</button>
             <button class="jingjingBtn" catchtap="confirmRequirement" style="margin-top:15px;" type="default" wx:if="{{ come_msg.item.content.editable == true && !come_msg.item.content.demandState && ( come_msg.item.toUser == userMsgReq.openId ) }}">确认需求</button>
@@ -113,7 +118,7 @@ import system from '../../static/utils/system'
 let _promise1,_url;
   export default {
     config: {
-      navigationBarTitleText: '申请填写'
+      navigationBarTitleText: '需求单'
     },
     data: {
       model:{
@@ -132,7 +137,8 @@ let _promise1,_url;
         confirmUserName:"",
         demandAttach :[],
         demandAttachName :[],
-        msgId:""
+        msgId:"",
+        planCompleteAtTime:""
       },
       come_msg:{
         enterType:"",
@@ -172,7 +178,7 @@ let _promise1,_url;
         ['form.groupName']:_groupMsg.groupName,
         ['form.groupId']:_groupMsg.groupId,
         ['form.headImgUrl']:app.globalData.userMsgReq.headImgUrl,
-        ['form.position']:app.globalData.userMsgReq.position,
+        ['form.position']:app.globalData.userMsgReq.position || '',
         "userMsgReq":app.globalData.userMsgReq,
       });
       if( _obj.enterType == 1 ){//编辑。。。。
@@ -229,34 +235,46 @@ let _promise1,_url;
       let that = this;
       let _itemMsg = that.data.come_msg.itemMsg;
       let _userMsg = app.globalData.userMsgReq;
-      let _params = {
-        "demandId":_itemMsg.content.demandId,
-        "fromUser":_userMsg.openId,
-        "fromUserName":_userMsg.username,
-        "groupId":_itemMsg.groupId,
-        "groupName":_itemMsg.groupName,
-        "headImgUrl":_userMsg.headImgUrl,
-        "msgId":_itemMsg.msgId,
-        "position":_itemMsg.position,
-        "planCompleteAt":this.data.form.planCompleteAt
-      }
-      system.http({
-        url:'demand/confirm',
-        param:_params,
-        method:"post",
-        header:{'content-type': 'application/x-www-form-urlencoded'},
-        scb(res){
-          if( res.data.status == 200 ){
-            system.stateMsg({title:"确认成功",icon:"success",time:1000})
-            wx.navigateBack()
+      let _params;
+      let promise = new Promise((resolve,reject)=>{
+          if( this.data.form.planCompleteAt == "" ){
+                system.stateMsg({title:"完成日期不能为空",icon:"none",time:1000})
+          }else if( this.data.form.planCompleteAtTime == "" ){
+                system.stateMsg({title:"完成时间不能为空",icon:"none",time:1000})
           }else{
-            system.stateMsg({title:res.data.message,icon:"none",time:1000})
+            _params = {
+              "demandId":_itemMsg.content.demandId,
+              "fromUser":_userMsg.openId,
+              "fromUserName":_userMsg.username,
+              "groupId":_itemMsg.groupId,
+              "groupName":_itemMsg.groupName,
+              "headImgUrl":_userMsg.headImgUrl,
+              "msgId":_itemMsg.msgId,
+              "position":_itemMsg.position || "",
+              "planCompleteAt":this.data.form.planCompleteAt + " " + this.data.form.planCompleteAtTime + ":00"
+            }
+            resolve();
           }
-        },
-        fcb(res){
-            system.stateMsg({title:"操作失败",icon:"none",time:1000})
-            wx.navigateBack()
-        }
+      })
+      promise.then(()=>{
+          system.http({
+            url:'demand/confirm',
+            param:_params,
+            method:"post",
+            header:{'content-type': 'application/x-www-form-urlencoded'},
+            scb(res){
+              if( res.data.status == 200 ){
+                system.stateMsg({title:"确认成功",icon:"success",time:1000})
+                wx.navigateBack()
+              }else{
+                system.stateMsg({title:res.data.message,icon:"none",time:1000})
+              }
+            },
+            fcb(res){
+                system.stateMsg({title:"操作失败",icon:"none",time:1000})
+                wx.navigateBack()
+            }
+          })
       })
     },
     submit(e){
@@ -268,6 +286,8 @@ let _promise1,_url;
                 system.stateMsg({title:"确认人不能为空",icon:"none",time:1000})
             }else if( that.data.come_msg.enterType != 0 && that.data.form.planCompleteAt == '' ){
                 system.stateMsg({title:"完成日期不能为空",icon:"none",time:1000})
+            }else if(that.data.come_msg.enterType != 0 && that.data.form.planCompleteAtTime == ''){
+                system.stateMsg({title:"完成时间不能为空",icon:"none",time:1000})
             }else{
                 let promises = that.data.come_msg.files.map((val,i,arr)=>{
                     return that.upload({'val':val,"resolve":resolve,'i':i,"arr":arr});
@@ -282,6 +302,7 @@ let _promise1,_url;
                 })
             }
         })
+        that.data.form.planCompleteAt = that.data.form.planCompleteAt + " " + that.data.form.planCompleteAtTime;
         _promise1.then(()=>{
             let _newDemand = Object.assign( that.data.form,{demandAttach: that.data.form.demandAttach.join( ',' )}) ;
             _newDemand.demandAttachName.join(',')
@@ -395,11 +416,15 @@ let _promise1,_url;
         })
     },
     bindDateChange: function (e) {
-        console.log('picker发送选择改变，携带值为', e.detail.value)
         this.setData({
-            ["form.planCompleteAt"]: e.detail.value + " 00:00:00"
+            ["form.planCompleteAt"]: e.detail.value
         })
     },
+    bindTimeChange: function (e) {
+        this.setData({
+            ["form.planCompleteAtTime"]: e.detail.value
+        })
+    },    
     selUser(e){//选择群成员.....
         let _item = e.currentTarget.dataset;
         let that = this;

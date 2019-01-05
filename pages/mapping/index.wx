@@ -22,18 +22,18 @@
             </view>
         </view>
     </view>
-    <ui-fixed-view bottom="0" left="0" right="0" wx:if="{{ (yatuMsg.content.editable == true || yatuMsg.content.editable == 'true') && openId == yatuMsg.content.toUser }}">
+    <ui-fixed-view bottom="0" left="0" right="0">
       <view class="tiaokuan">
           <view class="left">
             <label class="checkbox">
                 <checkbox-group bindchange="checkboxChange" class="mycheckbox">
-                    <checkbox value="{{ true }}" checked="{{ checkboxVal == 'true' ? true : false }}"></checkbox>
+                    <checkbox value="{{ true }}" disabled="{{ !yatuMsg.content.editable }}" checked="{{ checkboxVal == 'true' ? true : false }}"></checkbox>
                 </checkbox-group>
                 <text class="txt">我已阅读并同意</text>
                 <text class="tiaokuanTxt1">服务条款声明</text>
             </label>
           </view>
-          <text class="right" bindtap="tapsee">点击查看</text>
+          <text class="right" wx:if="{{ yatuMsg.content.editable }}" bindtap="tapsee">点击查看</text>
       </view>        
       <ui-row height="60" class="fixed_bottom" >
         <ui-col align="right" space-right="10">

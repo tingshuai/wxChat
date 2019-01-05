@@ -47,7 +47,7 @@
             </view>
         </view> 
     </view> 
-    <cc-group-chat sendInputMsg="{{ sendInputMsg }}" bindtransData="transData" id="groupChat" style="position:relative;top:{{ translateY }}px" bindaddData="addData" scrollHeight="{{ scrollHeight }}"  bindtouchstart="toggleHeight" chatData="{{ chatData }}"></cc-group-chat>
+    <cc-group-chat sendInputMsg="{{ sendInputMsg }}" bindtransData="transData" id="groupChat" style="position:relative;top:{{ translateY }}px" bindaddData="addData" scrollHeight="{{ scrollHeight }}" chatData="{{ chatData }}"></cc-group-chat>
     <ui-fixed-view bottom="0" left="0" right="0" class="fixBtn" style="display:{{ !isTransData ? 'none' : 'block'}};">
       <view class="fixed-view-content" style="background-color:white;border-top:1px solid #efefef;">
         <view class="btn-area" bindtap="transData">
@@ -160,7 +160,7 @@ export default {
             msgType:"",
             openId:"",
             pageSize:"10",
-            pageNum:"1"
+            pageNum:1
         },
         dater:{
             start:"2015-09-01",
@@ -193,7 +193,10 @@ export default {
             ['searchData.openId']:app.globalData.openId,
             ['searchData.groupId']:app.globalData.groupMsg.groupId,
         })
-        system.getGroupMsg( app , 1 ,()=>{} );        
+        system.getHistoryMsg({
+            "onMessageData": this.data.searchData,
+            "pageNumber": 1
+        });    
     },
     onShow(){
         let that = this;
@@ -247,18 +250,6 @@ export default {
         wx.navigateTo({
             url: `/pages/groupMsg/index?tabBar=${ JSON.stringify( that.data._item.tabBar ) }`
         })
-    },  
-    // 改变聊天窗口的高度...
-    toggleHeight(){
-        this.setData({
-            "translateY": 0
-        })
-        this.selectComponent("#chatTool").setData({
-            "isShowControlBar":false,
-            "isAite":false,
-            "isInputing":false,
-            "users":[],
-        })
     },
     changeHeight(e){
         this.setData({
@@ -271,7 +262,12 @@ export default {
             return item.cmd != "time";
         })
         let _curPage = Math.ceil( _msgLength.length / 10 );
-        system.getGroupMsg( app , ++_curPage , ()=>{});
+        this.setData({
+            ["searchData.pageNum"]:++_curPage
+        })
+        system.getHistoryMsg({
+            "onMessageData": this.data.searchData,
+        });
     },
     getThePoint(id){
         this.selectComponent("#groupChat").setData({
@@ -282,40 +278,7 @@ export default {
         this.selectComponent("#groupChat").setData({
             "scrollTop":1000000
         })      
-    }, 
-    getHistoryMsg(pageNumber){
-        var that= this;
-        if( pageNumber == 1){
-            that.setData({
-                chatData:[]
-            })
-        }
-        wx.request({
-            url: `${app.globalData.httpHost}/chat/msg/getHisGroupMsg`,
-            data: that.data.searchData,
-            success: function(res) {
-                if( res.data.status == 200 ){
-                let _rows = res.data.data.rows.reverse();
-                _rows.forEach((val,i,arr)=>{//未读@信息......
-                    if(val.msgType == 7 && /(@\`-\`@)/.test(val.content) ){
-                        val.content = val.content.split('(@\`-\`@)').join(' ');
-                    }else if( val.msgType == 20 || val.msgType == 21 || val.msgType == 22 ){
-                        val.content = JSON.parse( val.content );
-                    }
-                })
-                that.data.chatData.splice(that.data.chatData.length,0,..._rows);
-                that.setData({
-                    chatData:that.data.chatData,
-                    ['searchData.pageNum']: pageNumber
-                })
-                wx.hideToast()
-                }else{
-                    wx.hideToast()
-                    system.stateMsg({title: '提示',content: res.data.message,scb(){},ccb(){}})
-                }
-            }
-        })
-    },    
+    },  
     bindDateChange1(e){
         let that = this;
         if( that.data.dater.timer <= new Date( e.detail.value ).getTime() ){
@@ -325,8 +288,11 @@ export default {
                 ["searchData.endAt"]:e.detail.value + " 23:59:59",
                 "chatData":[],
                 ["searchData.pageNum"]:1
-            })
-            that.getHistoryMsg(1);
+            });
+            system.getHistoryMsg({
+                "onMessageData": this.data.searchData,
+                "pageNumber": 1
+            });
         }else{
             system.stateMsg({
                 title:"结束时间必须晚于开始时间",
@@ -345,7 +311,10 @@ export default {
                 "chatData":[],
                 ["searchData.pageNum"]:1
             })
-            that.getHistoryMsg(1);
+            system.getHistoryMsg({
+                "onMessageData": this.data.searchData,
+                "pageNumber": 1
+            });
         }else{
             system.stateMsg({
                 title:"开始时间必须早于结束时间",
@@ -360,7 +329,10 @@ export default {
             ["searchData.keywords"]: "",
             ["search.showInput"]:true
         });
-        this.getHistoryMsg(1);
+            system.getHistoryMsg({
+                "onMessageData": this.data.searchData,
+                "pageNumber": 1
+            });
     },
     inputTyping(e){
         if( e.detail.value == "" ){
@@ -372,7 +344,10 @@ export default {
                 "chatData":[],
                 ["searchData.pageNum"]:1
             });
-            this.getHistoryMsg(1);
+            system.getHistoryMsg({
+                "onMessageData": this.data.searchData,
+                "pageNumber": 1
+            });
         }
     },
     showInput(){
@@ -417,14 +392,20 @@ export default {
             this.setData({
                 ["searchData.msgType"]:""
             })
-            this.getHistoryMsg(1);
+            system.getHistoryMsg({
+                "onMessageData": this.data.searchData,
+                "pageNumber": 1
+            });
         }else if( _item.index == 1 ){//点击日期
             
         }else{
             this.setData({
                 ["searchData.msgType"]:_item.item.msgType
             })
-            this.getHistoryMsg(1);
+            system.getHistoryMsg({
+                "onMessageData": this.data.searchData,
+                "pageNumber": 1
+            });
         }
     }
 }

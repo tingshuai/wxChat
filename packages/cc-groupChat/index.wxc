@@ -74,7 +74,7 @@
                         </view>
                         <!--文件类型-->
                         <view class="talkContent" wx:if="{{ item.msgType == 6 }}" data-item="{{item}}" style="width:80%;" catchtap="openFile">
-                          <view>
+                          <view class="file">
                               <view span="9" data-item="{{item}}" catch:longpress="openActionsheet" data-index="{{ index }}">
                                   <view style="font-size:13px;color:#333333;width:100%;">{{ item.content }}</view>
                               </view>
@@ -185,6 +185,39 @@ export default {
         this.triggerEvent( "addData" , {  } );
       }
     },
+    openFile(e){
+      var that = this;
+      var item = e.currentTarget.dataset.item;
+      const downloadTask = wx.downloadFile({
+        url:item.attachUrl,
+        success(ress) {
+          // 只要服务器有响应数据，就会把响应内容写入文件并进入 success 回调，业务需要自行判断是否下载到了想要的内容
+          function validate(url){//检测文件类型
+            var d = /\.[^\.]+$/.exec(url);
+            return d;
+          }
+          if (ress.statusCode === 200) {
+              if( validate(ress.tempFilePath) == ".doc" || validate(ress.tempFilePath) == ".xls" || validate(ress.tempFilePath) == ".ppt" || validate(ress.tempFilePath) == ".pdf" || validate(ress.tempFilePath) == ".docx" || validate(ress.tempFilePath) == ".xlsx" || validate(ress.tempFilePath) == ".pptx" ){
+                wx.openDocument({
+                  filePath: ress.tempFilePath,
+                  success(res) {},
+                  fail(res){}
+                })
+              }else{//不支持类型.....
+                wx.navigateTo({
+                  url: `/pages/webView/index?fileUrl=${item.attachUrl}`,
+                  success(res){},
+                  fail(res){}
+                })
+              }
+          }
+        },
+        fail(res){
+          system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
+        }
+      })
+      downloadTask.onProgressUpdate((res) => {})
+    },    
     previewImage(e){//图片预览.....
       var imgUrl = e.currentTarget.dataset.item.attachUrl;
       var imgList = [];
@@ -380,31 +413,10 @@ export default {
       padding-left: 10px;
     }
   }
-  .article{
-    .fixed_bottom{
-      background: #fff;
-      box-shadow: 0 0px 15px 0 #eaeaea;
-      .form_list{
-        background: #FE6A3C;
-        color: #fff;
-        height: 50px;
-        text-align: center;
-        line-height: 50px;
-        font-size: 14px;
-      }
-    }
-    .groupMsgBtn{
-        position: absolute;
-        right: 12px;
-        top: 10px;
-        z-index: 10000;
-        font-size: 14px;
-        border-radius: 12px;
-        border:1px solid #FFEEEEF2;
-        background-color: #FFF7F7FA;
-        &::after{ border: none; }
-        line-height: 24px;
-      }
+  .file{
+    display: flex;
+    justify-content: space-between;
+    
   }
 .checkboxGroup{
   padding-bottom:15px;
@@ -505,11 +517,6 @@ export default {
       position: relative;
     }
 }
-  .article{
-    position: relative;
-    width:100%;
-    overflow: hidden;
-  }
   .evaluate{
     text-align: right;
   }

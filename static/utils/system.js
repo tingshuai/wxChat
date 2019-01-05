@@ -248,10 +248,7 @@ export default {
             obj.callBack() || null;
           },
           fail(res){
-            that.connectSocket(getApp());
-            setTimeout(()=>{
-              _sendMsg(getApp());
-            },300)
+            _sendMsg();
           }
         })
       }
@@ -278,15 +275,19 @@ export default {
     return( obj.str )
   },
   format(obj){//加入消息队列.....
-    var _data_ = wx.getStorageSync( obj.onMessageData.groupId || getApp().globalData.groupMsg.groupId ) || [];//拿到缓存的群聊数据....
-    console.log("storage" , obj.onMessageData.groupId || getApp().globalData.groupMsg.groupId , _data_);
-    let _cur = null;
+    let _data_, _cur = null ;
     let _curPageThis = getApp().globalData._me;
-    if( obj.isPush ){
-      _data_ = _data_.concat( obj.onMessageData );
+    if(obj.history){
+      _data_ = obj.onMessageData;
+      obj.isPush ? _cur = null : _cur = obj._current;
     }else{
-      _data_ = obj.onMessageData.concat( _data_ );
-      _cur = obj.onMessageData.length;
+      _data_ = wx.getStorageSync( obj.onMessageData.groupId || getApp().globalData.groupMsg.groupId ) || [];//拿到缓存的群聊数据....
+      if( obj.isPush ){
+        _data_ = _data_.concat( obj.onMessageData );
+      }else{
+        _data_ = obj.onMessageData.concat( _data_ );
+        _cur = obj.onMessageData.length;
+      }
     }
     _data_.forEach((item,i,arr)=>{
       if( item.msgType == 7 ){//处理@消息....
@@ -311,14 +312,17 @@ export default {
           item.content = JSON.parse( item.content )
         }
       }else if( item.msgType == 40 || item.msgType == 42 || item.msgType == 41 ){//41编辑42签收
-        if(typeof item.content == "object"){
-          return item.content;
-        }else{
+        if(typeof item.content != "object"){
           item.content = JSON.parse( item.content );
           // item.content.createAt = this.formatTime( item.content.createAt.getTime() );
           item.content.diagramText = JSON.parse( item.content.diagramText );
-          if( item.msgType == 42 && item.msgId == obj.onMessageData.msgId ){
+        }
+        if( (item.content.diagramId != "undefined") && !Array.isArray(obj.onMessageData) ){
+          obj.onMessageData.content
+          debugger;
+          if( (item.content.diagramId == obj.onMessageData.content.diagramId) && item.msgType == 42 ){
             item.content.editable = false;
+            item.content.signStatus = true;
           }
         }
       }
@@ -333,11 +337,13 @@ export default {
     if( _curPageThis.route == "pages/groupChat/index" || _curPageThis.route == "pages/historyMsg/index"){//群聊页面......
       if( obj.isPush ){
         setData();
+        if( _curPageThis.route == "pages/groupChat/index" ){
+          _curPageThis.selectComponent("#chatTool").setData({//发送成功清空输入框数据....
+            "inputVal":"",
+            "isInputing":false
+          })
+        }
         _curPageThis.scrollToBottom();
-        _curPageThis.selectComponent("#chatTool").setData({//发送成功清空输入框数据....
-          "inputVal":"",
-          "isInputing":false
-        })
       }else{
         setData();
         _curPageThis.getThePoint(_cur);
@@ -355,35 +361,38 @@ export default {
       })
     }    
   },
-  getHistoryMsg(){
+  getHistoryMsg(obj){//请求历史消息.......
     var that= this;
-    if( pageNumber == 1){
-        that.setData({
-            chatData:[]
-        })
+    let _curPageThis = getApp().globalData._me;
+    if( obj.pageNumber == 1){
+      _curPageThis.setData({
+          chatData:[]
+      })
     }
-    wx.request({
-        url: `${app.globalData.httpHost}/chat/msg/getHisGroupMsg`,
-        data: that.data.searchData,
-        success: function(res) {
+    this.http({
+        url: `chat/msg/getHisGroupMsg`,
+        method:"get",
+        param: obj.onMessageData,
+        header:{'content-type': 'application/x-www-form-urlencoded'},
+        scb:(res)=>{
             if( res.data.status == 200 ){
-            let _rows = res.data.data.rows.reverse();
-            _rows.forEach((val,i,arr)=>{//未读@信息......
-                if(val.msgType == 7 && /(@\`-\`@)/.test(val.content) ){
-                    val.content = val.content.split('(@\`-\`@)').join(' ');
-                }else if( val.msgType == 20 || val.msgType == 21 || val.msgType == 22 ){
-                    val.content = JSON.parse( val.content );
+              let _isPush;
+              let _rows = res.data.data.rows;
+              let newData = _rows.concat(_curPageThis.data.chatData);
+              obj.pageNumber == 1 ? _isPush = true : _isPush = false;
+              that.format({
+                "onMessageData":newData,
+                "resolve":()=>{},
+                "isPush":_isPush,
+                "history":true,
+                "_current":_curPageThis.data.chatData.length,
+                callBack(){
+                  wx.hideToast();
                 }
-            })
-            that.data.chatData.splice(that.data.chatData.length,0,..._rows);
-            that.setData({
-                chatData:that.data.chatData,
-                ['searchData.pageNum']: pageNumber
-            })
-            wx.hideToast()
+              });
             }else{
-                wx.hideToast()
-                system.stateMsg({title: '提示',content: res.data.message,scb(){},ccb(){}})
+                wx.hideToast();
+                that.stateMsg({title: '提示',content: res.data.message,scb(){},ccb(){}})
             }
         }
     })

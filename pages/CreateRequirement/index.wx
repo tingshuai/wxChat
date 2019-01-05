@@ -6,7 +6,7 @@
         <view class="weui-cells weui-cells_after-title" style="display:block;">
             <view class="weui-cell" style="padding:0;">
                 <view class="weui-cell__bd">
-                    <textarea placeholder="建议使用1,2,3点来列举需求" placeholder-style="font-size:16px;color:#ddd;" wx:if="{{ !model.show }}" fixed="{{ true }}" maxlength="-1" show-confirm-bar="{{ false }}" id="reqMsg" auto-height="{{ true }}" style="min-height:80px;box-sizing:border-box;position:relative;padding:11px 16px;font-size:14px;height:auto;" value="{{ form.demandText }}" data-index="{{ index }}" class="weui-textarea" bindinput="inputing"/>
+                    <textarea placeholder="建议使用1,2,3点来列举需求" placeholder-style="font-size:16px;color:#ddd;" wx:if="{{ !model.show }}" fixed="{{ true }}" maxlength="150" show-confirm-bar="{{ false }}" id="reqMsg" auto-height="{{ true }}" style="min-height:80px;box-sizing:border-box;position:relative;padding:11px 16px;font-size:14px;height:auto;" value="{{ form.demandText }}" data-index="{{ index }}" class="weui-textarea" bindinput="inputing"/>
                 </view>
             </view>
         </view>

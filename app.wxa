@@ -48,9 +48,9 @@ export default {
     }
   },
   globalData: {
-    socketHost: 'wss://www.china-cms.com', // 祝天洋 'wss://192.168.0.49', 张龙：192.168.1.230:8443 线上：www.china-cms.com  www.comayi.com
-    httpHost: 'https://www.china-cms.com', //'https://192.168.0.144',
-    httpUpload: 'https://www.china-cms.com', //文件上传地址......
+    socketHost: 'wss://www.comayi.com', // 祝天洋 'wss://192.168.0.49', 张龙：192.168.1.230:8443 线上：www.china-cms.com  www.comayi.com
+    httpHost: 'https://www.comayi.com', //'https://192.168.0.144',
+    httpUpload: 'https://www.comayi.com', //文件上传地址......
     userMsg: {},
     openId: '', //'oc6Hd1BHJF55T1jIWr2eC2AEYoUQ',
     sessionId: '',

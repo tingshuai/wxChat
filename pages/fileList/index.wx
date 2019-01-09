@@ -14,7 +14,7 @@
     </view>
     <view class="top_tip">
         <ui-row height="80" border-bottom hover-class="touchui-hover" wx:for="{{ fileList }}" wx:key="{{ index }}" catchtap="openFile" data-item="{{item}}">
-            <ui-col width="80" align="center" vertical-align="middle">
+            <ui-col width="50" align="center" vertical-align="middle">
                 <view class="left_icon left_icon1">
                     <ui-icon type="api-access" color="#6BD39F" size="50" class="iconfont {{ item.extendName == '.doc' || item.extendName == '.docx' ? 'myWx-yunxiangmugongdanweixintubiao-1' : item.extendName == '.pdf' ? 'myWx-yunxiangmugongdanweixintubiao-' : item.extendName == '.ppt' || item.extendName == '.pptx' ? 'myWx-yunxiangmugongdanweixintubiao-2' : item.extendName == '.xls' || item.extendName == '.xlsx' ? 'myWx-yunxiangmugongdanweixintubiao-3' : 'myWx-552cd47fba2cc'}}"></ui-icon>
                 </view>
@@ -165,6 +165,7 @@ export default {
             color: #9C9FA4;
             font-size: 12px;
             .mix-text-overflow();
+            overflow: auto;
         }
     }
 }

@@ -128,10 +128,12 @@ export default {
     app.globalData.socketTask.onMessage((res)=>{
       let _curPageThis = getApp().globalData._me;
       var _data = JSON.parse( res.data );
+      console.log("收到",_data);
+      
       app.globalData.promise.upDataGroupMsg = new Promise((resolve,reject)=>{
         switch ( _data.cmd ) {
           case 0://有人发消息过来..
-              that.upDataGroupMsg();
+              that.upDataGroupMsg(_data);
               if( _data.groupId == app.globalData.groupMsg.groupId ){
                 that.format({
                   "onMessageData":_data,
@@ -169,21 +171,10 @@ export default {
             break;
           }
           case 3://已读消息提醒
-              wx.getStorage({//更新存储的群信息....
-                key: _data.groupId,
-                success ( _data_ ) {
-                  _data_.data.filter((val)=>{
-                    if( val.msgId == _data.msgId ){
-                      val.readStatus = 1;
-                      val.readCount = _data.readCount;
-                      return val;
-                    }
-                  })
-                  wx.setStorageSync( _data.groupId , _data_.data );
-                  resolve( { _old_:_data,_new_:_data_.data } );
-                }
-              })
-              break;
+            if( _curPageThis.route == "pages/home/index" ){
+              _curPageThis.setGroupList( _data );
+            }
+            break;
           case 2://有群解散..
               if( _curPageThis.route == "pages/home/index" ){
                 _curPageThis.setGroupList( _data );
@@ -229,6 +220,7 @@ export default {
     })
   },
   upDataGroupMsg(_data){
+    console.log("_data",_data);
     let _curPageThis = getApp().globalData._me;
     if( _curPageThis.route == "pages/home/index"){
       _curPageThis.requestGroupList( '/chat/groups/tree','over',2, _data.groupId );
@@ -312,17 +304,20 @@ export default {
           item.content = JSON.parse( item.content )
         }
       }else if( item.msgType == 40 || item.msgType == 42 || item.msgType == 41 ){//41编辑42签收
+        let type = typeof item.content
         if(typeof item.content != "object"){
           item.content = JSON.parse( item.content );
-          // item.content.createAt = this.formatTime( item.content.createAt.getTime() );
           item.content.diagramText = JSON.parse( item.content.diagramText );
         }
         if( (item.content.diagramId != "undefined") && !Array.isArray(obj.onMessageData) ){
           obj.onMessageData.content
-          debugger;
           if( (item.content.diagramId == obj.onMessageData.content.diagramId) && item.msgType == 42 ){
-            item.content.editable = false;
-            item.content.signStatus = true;
+            _data_.forEach((it,ii,array)=>{
+              if( it.msgType == 40 || it.msgType == 41 ){
+                it.content.editable = false;
+                it.content.signStatus = true;
+              }
+            })
           }
         }
       }
@@ -335,7 +330,7 @@ export default {
     }
     wx.setStorageSync( obj.onMessageData.groupId || getApp().globalData.groupMsg.groupId , _data_ );
     if( _curPageThis.route == "pages/groupChat/index" || _curPageThis.route == "pages/historyMsg/index"){//群聊页面......
-      if( obj.isPush ){
+      if( obj.isPush || obj.isFist ){
         setData();
         if( _curPageThis.route == "pages/groupChat/index" ){
           _curPageThis.selectComponent("#chatTool").setData({//发送成功清空输入框数据....
@@ -425,7 +420,8 @@ export default {
           that.format({
             "onMessageData":_resData.rows,
             "resolve":resolve,
-            "isPush":true,
+            "isPush":false,
+            "isFist":true,
             callBack(){}
           });
         }else{//翻页....

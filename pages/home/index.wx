@@ -55,6 +55,7 @@
 
 <script>
 var app = getApp();
+let interval;
 import system from '../../static/utils/system'
 export default {
   config: {
@@ -95,8 +96,6 @@ export default {
   onShow(e){
     let that = this;
     app.globalData._me = this;
-    this.requestGroupList( '/history/groups/tree','history');
-    this.requestGroupList( '/chat/groups/tree','over',1 );
     system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:20000});
     wx.onNetworkStatusChange(function(res) {
       if( res.isConnected ){
@@ -107,6 +106,14 @@ export default {
         }
       }
     })
+    clearInterval(interval)
+    interval = setInterval(()=>{
+        this.requestGroupList( '/history/groups/tree','history');
+        this.requestGroupList( '/chat/groups/tree','over',1 );
+    },2000)
+  },
+  onHide(){
+      clearInterval(interval)
   },
   exData(_data){
       console.log( _data );

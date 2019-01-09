@@ -47,7 +47,7 @@
             </view>
         </view> 
     </view> 
-    <cc-group-chat sendInputMsg="{{ sendInputMsg }}" bindtransData="transData" id="groupChat" style="position:relative;top:{{ translateY }}px" bindaddData="addData" scrollHeight="{{ scrollHeight }}" chatData="{{ chatData }}"></cc-group-chat>
+    <cc-group-chat sendInputMsg="{{ sendInputMsg }}" bindtransData="transData" id="groupChat" style="position:relative;top:{{ translateY }}px" bindaddData="addData" scrollHeight="{{ scrollHeight }}" tabBar="{{ tabBar }}" chatData="{{ chatData }}"></cc-group-chat>
     <ui-fixed-view bottom="0" left="0" right="0" class="fixBtn" style="display:{{ !isTransData ? 'none' : 'block'}};">
       <view class="fixed-view-content" style="background-color:white;border-top:1px solid #efefef;">
         <view class="btn-area" bindtap="transData">

@@ -19,7 +19,7 @@
                         <!--文本类型-->
                         <text selectable='true' class="talkContent" data-index="{{ index }}" data-item="{{item}}" bind:longpress="openActionsheet" wx:if="{{ ( item.msgType == 0 && item.cmd != 100 ) || item.msgType == 7}}" style="background-color: white;">{{ item.content }} </text>
                         <!--需求类型-->
-                        <view class="talkContent" data-item="{{ item }}" bind:longpress="openActionsheet" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="retOrConfirm" wx:if="{{ item.msgType == 20 || item.msgType == 22 || item.msgType == 21 }}" style="background-color: white;width:100%;">
+                        <view class="talkContent" data-item="{{ item }}" bind:longpress="{{ tabBar.actItem == 0 ? 'openActionsheet' : null}}" data-item="{{ item }}" data-itemcontent="{{ item.content }}" data-index="{{ index }}" catchtap="retOrConfirm" wx:if="{{ item.msgType == 20 || item.msgType == 22 || item.msgType == 21 }}" style="background-color: white;width:100%;">
                           <view style="border-bottom:1px solid rgba(0,0,0,0.1);">
                               <view style="color:{{ item.content.demandState ? '#4EBF62' : '#267AFC' }};font-size:12px;">{{ item.msgType == 20 || item.msgType == 21 ? "需求确认" : "修改需求确认" }}</view>
                           </view>
@@ -152,6 +152,11 @@ export default {
       type:Object,
       value:{},
       observer:function( newVal,oldVal){}
+    },
+    tabBar:{
+      type:Object,
+      value:{},
+      observe:function(newVal,oldVal){}
     }
   },  
   data: {
@@ -201,7 +206,9 @@ export default {
                 wx.openDocument({
                   filePath: ress.tempFilePath,
                   success(res) {},
-                  fail(res){}
+                  fail(res){
+                    system.msgTip({title: '提示',content: "不支持此文档类型.",scb(){},ccb(){}})
+                  }
                 })
               }else{//不支持类型.....
                 wx.navigateTo({
@@ -333,15 +340,15 @@ export default {
       }
       function toggle(){
         if(new Date().getTime() - creatTime > 120000){
-          typeCode == 2 ? list = ['转发',"语音转文字"] : ( (typeCode == 20 || typeCode == 21 || typeCode == 22 || typeCode == 30) ? list = [] : list = ['转发']);
+          typeCode == 2 ? list = ['转发',"语音转文字"] : ( (typeCode == 20 || typeCode == 21 || typeCode == 22 || typeCode == 30) ? list = [] : list = []);
         }else{
-          typeCode == 2 ? list = ['转发','撤回',"语音转文字"] : ( (typeCode == 20 || typeCode == 21 || typeCode == 22) ? list = [] : list = ['转发','撤回']);
+          typeCode == 2 ? list = ['转发','撤回',"语音转文字"] : ( (typeCode == 20 || typeCode == 21 || typeCode == 22) ? list = [] : list = ['撤回']);
         }
       }
       if( item.fromUser == that.data.sendInputMsg.fromUser ){
         toggle();
       }else{
-        typeCode == 2 ? list = ["转发","语音转文字"] : list = ["转发"];
+        typeCode == 2 ? list = ["转发","语音转文字"] :( (typeCode == 20 || typeCode == 21 || typeCode == 22 || typeCode == 30) ? list = [] : list = ["转发"]);
       }
       // 语音转文字后更新内容.....
       function changeData(){

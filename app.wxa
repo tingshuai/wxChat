@@ -41,7 +41,7 @@ export default {
       navigationStyle: 'default'
     },
     networkTimeout: {
-      request: 20000
+      request: 18000
     },
     theme: {
       'theme-color': '#1aad19'
@@ -77,12 +77,15 @@ export default {
     system.netChange();
   },
   onHide() {
-    clearInterval(this.globalData.socketHeartBeat);
-    setTimeout(()=>{
-      system.closeSocket(this);
-    },1000)
+    let _a = wx.getLaunchOptionsSync()
+    if( _a.scene != 1001 ){
+      clearInterval(this.globalData.socketHeartBeat);
+      setTimeout(()=>{
+        system.closeSocket(this);
+      },1000)
+    }
     console.log("切到后台");
-    console.log("socket",this.globalData.socketTask);
+    console.log("场景值",_a);
   },
   onShow(){
     system.isLogin(this);

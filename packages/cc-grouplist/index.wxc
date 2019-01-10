@@ -70,9 +70,12 @@ export default {
           url: `/pages/groupChat/index?item=${JSON.stringify(item)}`
         })
       }else{
+        // wx.navigateTo({
+        //   url: `/pages/historyMsg/index?item=${JSON.stringify(item)}`
+        // })
         wx.navigateTo({
-          url: `/pages/historyMsg/index?item=${JSON.stringify(item)}`
-        })
+          url: `/pages/groupMsg/index?item=${ JSON.stringify( item ) }`
+        })        
       }
     },
   }

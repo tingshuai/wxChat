@@ -42,7 +42,6 @@ export default {
         if (res.code) {
           //发起网络请求
           console.log( "code",res.code );
-          
           system.http({
             url:`wechat/miniapp/login/${res.code}`,
             param:{},

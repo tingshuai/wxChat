@@ -228,7 +228,6 @@ export default {
   },
   sendSocketMessage(obj) {//发送socket消息......
       let that = this;
-      let _ready = getApp().globalData.socketTask
       let _sendMsg = (_obj)=>{
         getApp().globalData.socketTask.send({data: obj.params})
         console.log("再连");
@@ -240,7 +239,10 @@ export default {
             obj.callBack() || null;
           },
           fail(res){
-            _sendMsg();
+            console.log(res);
+            wx.nextTick(()=>{
+              that.sendSocketMessage(obj)
+            })
           }
         })
       }
@@ -311,7 +313,7 @@ export default {
         }
         if( (item.content.diagramId != "undefined") && !Array.isArray(obj.onMessageData) ){
           obj.onMessageData.content
-          if( (item.content.diagramId == obj.onMessageData.content.diagramId) && item.msgType == 42 ){
+          if( (item.content.diagramId == obj.onMessageData.content.diagramId) && (item.msgType == 42||item.msgType == 41) ){
             _data_.forEach((it,ii,array)=>{
               if( it.msgType == 40 || it.msgType == 41 ){
                 it.content.editable = false;

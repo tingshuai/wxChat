@@ -110,7 +110,7 @@ export default {
     interval = setInterval(()=>{
         this.requestGroupList( '/history/groups/tree','history');
         this.requestGroupList( '/chat/groups/tree','over',1 );
-    },2000)
+    },5000)
   },
   onHide(){
       clearInterval(interval)

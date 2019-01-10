@@ -68,24 +68,31 @@
         addMemberOpenIds:[]
       },
       tabBar:{
-        "actItem":2
+        "actItem":0
       }
     },
     onLoad( option ){
       let that = this;
-      let _tabBar = JSON.parse( option.tabBar );
-      let _groupMsg = app.globalData.groupMsg;
-      this.setData({
-        groupMsg:_groupMsg,
-        ['submitData.groupId']:_groupMsg.groupId,
-        ['submitData.groupName']:_groupMsg.groupName,
-        ['submitData.groupDesc']:_groupMsg.groupDesc,
-        "userMsg":app.globalData.userMsgReq,
-        tabBar:_tabBar,
-      })
+      let _item = JSON.parse( option.item );
+      if( _item.tabBar.actItem == 0 ){
+        let _groupMsg = app.globalData.groupMsg;
+        this.setData({
+          groupMsg:_groupMsg,
+          ['submitData.groupId']:_groupMsg.groupId,
+          ['submitData.groupName']:_groupMsg.groupName,
+          ['submitData.groupDesc']:_groupMsg.groupDesc,
+          "userMsg":app.globalData.userMsgReq
+        })          
+      }else{
+        app.globalData.groupMsg = _item.group;
+        this.setData({
+          groupMsg:_item.group,
+          "tabBar":_item.tabBar
+        })
+      }
       wx.setNavigationBarTitle({//设置页面标题....
-        title: _groupMsg.groupName
-      })
+        title: app.globalData.groupMsg.groupName
+      })          
       this.canAddMenuber();
     },
     onShow(){
@@ -114,9 +121,17 @@
         param: {groupId:app.globalData.groupMsg.groupId},
         scb(res){
           if ( res.data.status == 200) {
+              let _groupMsg = res.data.data.rows[0];
               that.setData({
-                'groupMsg':res.data.data.rows[0]
+                'groupMsg':_groupMsg
               })
+              that.setData({
+                groupMsg:_groupMsg,
+                ['submitData.groupId']:_groupMsg.groupId,
+                ['submitData.groupName']:_groupMsg.groupName,
+                ['submitData.groupDesc']:_groupMsg.groupDesc,
+                "userMsg":app.globalData.userMsgReq,
+              })     
           }else{
             system.msgTip({title: '提示',content: res.data.message,scb(){},ccb(){}})
           }

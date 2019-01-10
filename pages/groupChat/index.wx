@@ -20,6 +20,9 @@
             <text style="display:block;text-align:center;color:white;background-color:{{ voice.color }}">{{ voice.content }}</text>
           </view>
       </ui-fixed-view>
+      <ui-fixed-view bottom="0" wx:if="{{ _item.tabBar.actItem == 0 }}" left="0" right="0">
+          <cc-chat-tool sendInputMsg="{{ sendInputMsg }}" id="chatTool" bindcheight="changeHeight" bindscrollToBottom="scrollToBottom"></cc-chat-tool>
+      </ui-fixed-view>
       <ui-fixed-view bottom="0" left="0" right="0" class="fixBtn" style="display:{{ !isTransData ? 'none' : 'block'}};">
         <view class="fixed-view-content" style="background-color:white;border-top:1px solid #efefef;">
           <view class="btn-area" bindtap="transData">
@@ -32,9 +35,6 @@
         </view>
       </ui-fixed-view>
       <!--底部输入工具-->
-      <ui-fixed-view bottom="0" wx:if="{{ _item.tabBar.actItem == 0 }}" left="0" right="0" style="display:{{ isTransData ? 'none' : 'block'}};">
-          <cc-chat-tool sendInputMsg="{{ sendInputMsg }}" id="chatTool" bindcheight="changeHeight" bindscrollToBottom="scrollToBottom"></cc-chat-tool>
-      </ui-fixed-view>
   </view>
 </template>
 <script>

@@ -182,7 +182,7 @@ export default {
     yatu(e){
       let _item  = e.currentTarget.dataset;
       wx.navigateTo({
-        url:`/pages/mapping/index?_obj=${JSON.stringify( _item.item )}`//编辑进
+        url:`/pages/mapping/index?_obj=${JSON.stringify( _item.item )}&tabBar=${JSON.stringify(this.data.tabBar)}`//编辑进
       })
     },
     bindscrolltoupper(e){
@@ -313,9 +313,9 @@ export default {
         demandId: _item.item.content.demandId,
         groupId:_item.item.groupId,
         groupName:app.globalData.groupMsg.groupName,
-        fromUser:_item.item.fromUser,
-        fromUserName:_item.item.fromUserName,
-        headImgUrl:_item.item.headImgUrl,
+        fromUser:app.globalData.openId,
+        fromUserName:app.globalData.userMsgReq.username,
+        headImgUrl:app.globalData.userMsgReq.headImgUrl,
         position:_item.item.position || ''
       }
       system.http({ url:'/demand/prompt/cancel', method:"post",header:{'content-type': 'application/x-www-form-urlencoded'},param:_params,scb(res){
@@ -340,9 +340,9 @@ export default {
       }
       function toggle(){
         if(new Date().getTime() - creatTime > 120000){
-          typeCode == 2 ? list = ['转发',"语音转文字"] : ( (typeCode == 20 || typeCode == 21 || typeCode == 22 || typeCode == 30) ? list = [] : list = []);
+          typeCode == 2 ? list = ['转发',"语音转文字"] : ( (typeCode == 20 || typeCode == 21 || typeCode == 22 || typeCode == 30) ? list = [] : list = ["转发"]);
         }else{
-          typeCode == 2 ? list = ['转发','撤回',"语音转文字"] : ( (typeCode == 20 || typeCode == 21 || typeCode == 22) ? list = [] : list = ['撤回']);
+          typeCode == 2 ? list = ['转发','撤回',"语音转文字"] : ( (typeCode == 20 || typeCode == 21 || typeCode == 22) ? list = [] : list = ['撤回',"转发"]);
         }
       }
       if( item.fromUser == that.data.sendInputMsg.fromUser ){

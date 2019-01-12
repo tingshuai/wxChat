@@ -311,13 +311,17 @@ export default {
           item.content = JSON.parse( item.content );
           item.content.diagramText = JSON.parse( item.content.diagramText );
         }
-        if( (item.content.diagramId != "undefined") && !Array.isArray(obj.onMessageData) ){
+        if( (item.content.diagramId != "undefined") && !Array.isArray(obj.onMessageData) && (obj.onMessageData.msgType == 42 ||  obj.onMessageData.msgType == 41)){
           obj.onMessageData.content
           if( (item.content.diagramId == obj.onMessageData.content.diagramId) && (item.msgType == 42||item.msgType == 41) ){
             _data_.forEach((it,ii,array)=>{
-              if( it.msgType == 40 || it.msgType == 41 ){
-                it.content.editable = false;
-                it.content.signStatus = true;
+              if(( it.msgType == 40 || it.msgType == 41 ) && it.msgId != obj.onMessageData.msgId){
+                if( obj.onMessageData.msgType == 41 ){
+                  it.content.editable = false;
+                }else if( obj.onMessageData.msgType == 42 ){
+                  it.content.editable = false;
+                  it.content.signStatus = true;
+                }
               }
             })
           }

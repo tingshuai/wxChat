@@ -106,11 +106,13 @@ export default {
         }
       }
     })
+    this.requestGroupList( '/history/groups/tree','history');
+    this.requestGroupList( '/chat/groups/tree','over',1 );    
     clearInterval(interval)
     interval = setInterval(()=>{
         this.requestGroupList( '/history/groups/tree','history');
         this.requestGroupList( '/chat/groups/tree','over',1 );
-    },5000)
+    },6000)
   },
   onHide(){
       clearInterval(interval)

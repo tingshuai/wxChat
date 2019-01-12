@@ -47,6 +47,7 @@ export default {
             param:{},
             method:"get",
             scb(res){
+              console.log("miniapp/login--scb",res);
               if (res.data.status == '500') {
                 app.globalData._me.setData({
                   loginMsg:res.data
@@ -56,6 +57,7 @@ export default {
               }
             },
             fcb(res){
+              console.log("miniapp/login--fcb",res);
               system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
             }
           })

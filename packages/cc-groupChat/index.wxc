@@ -98,7 +98,7 @@
                                   <text style="font-size:12px;color:#5C6466;text-align:left;display:block;width:100%;font-size:13px;">尊敬的客户你好，你的项目已经完结请对我们的服务进行评价。</text>
                               </view>
                           </view>
-                          <view>
+                          <view wx:if="{{ tabBar.actItem == 0 }}">
                               <view class="evaluate"> 
                                   <text wx:if="{{ item.toUser == sendInputMsg.fromUser }}" style="font-size:12px;color:#2A79FB;padding:9px 0;" catchtap="evaluateMe">点击评价</text>
                                   <text wx:else style="font-size:12px;color:#bbb;padding:9px 0;" class="evaluate">点击评价</text>
@@ -273,7 +273,8 @@ export default {
       let that = this;
       let _obj = {
         "item":_item.item,
-        "enterType":1
+        "enterType":1,
+        "tabBar":this.data.tabBar
       }
       app.globalData._obj = JSON.stringify(_obj)
       wx.navigateTo({

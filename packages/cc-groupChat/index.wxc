@@ -13,7 +13,7 @@
                     <view style="width: 100%;">
                         <view height="20" wx:if="{{ sendInputMsg.fromUser != item.fromUser }}">
                             <view align="{{ sendInputMsg.fromUser == item.fromUser ? 'right' : 'left'}}">
-                                <view class="userMsg"><text class="name">{{ item.fromUserName }}</text><text decode="true">&nbsp;&nbsp;</text><text class="job">{{ item.position || '' }}</text></view>
+                                <view class="userMsg"><text class="name">{{ item.fromUserName || "" }}</text><text decode="true">&nbsp;&nbsp;</text><text class="job">{{ item.position || '' }}</text></view>
                             </view>
                         </view>
                         <!--文本类型-->
@@ -319,7 +319,7 @@ export default {
         headImgUrl:app.globalData.userMsgReq.headImgUrl,
         position:_item.item.position || ''
       }
-      system.http({ url:'/demand/prompt/cancel', method:"post",header:{'content-type': 'application/x-www-form-urlencoded'},param:_params,scb(res){
+      system.http({ url:'/demand/prompt/cancel', method:"POST",header:{'content-type': 'application/x-www-form-urlencoded'},param:_params,scb(res){
           if ( res.data.status == 200) {
               system.stateMsg({title:res.data.message,icon:"none",time:1500});
           }else{

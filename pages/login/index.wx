@@ -26,6 +26,8 @@ export default {
   },
   onLoad(options){
     if( wx.getStorageSync('openId') != "" && wx.getStorageSync('userMsgReq') != "" ){
+      console.log("这个发现已有openId和usermsgreq然后直接进home");
+      
       wx.redirectTo({
         url: '/pages/home/index'
       })
@@ -45,7 +47,7 @@ export default {
           system.http({
             url:`wechat/miniapp/login/${res.code}`,
             param:{},
-            method:"get",
+            method:"GET",
             scb(res){
               console.log("miniapp/login--scb",res);
               if (res.data.status == '500') {
@@ -74,9 +76,9 @@ export default {
   getLogo(){
     let that = this;
     wx.request({
-      url: `${getApp().globalData.httpHost}/chat/attach/logo`, //请求已加入群组或者未加入群组
+      url: `${getApp().globalData.httpHost}/chat/attach/logo`, 
       data: {},
-      method: 'get',
+      method: 'GET',
       header: {
         'content-type': 'application/json' // 默认值
       },
@@ -102,14 +104,16 @@ export default {
           encryptedData:e.detail.encryptedData,
           ivStr:e.detail.iv
         },
-        method:"get",
+        method:"GET",
         scb(res){
+          console.log("打印点击确认登录后成功函数",res);
           if (res.data.status == '500') {
             system.stateMsg({title:res.data.message || "登录失败", icon:"none",time:1500});
             that.setData({
               'loginMsg':res.data,
               'loading':false
             })
+            that.login();
           } else if( res.data.status == '200' ) {
             let _response = res.data.data;
             if( _response.state == 2 ){
@@ -149,6 +153,7 @@ export default {
           })
         },
         fcb(res){
+          console.log("打印点击确认登录后失败函数",res);
           system.msgTip({title: '提示',content: res.errMsg,scb(){},ccb(){}})
           that.setData({
             "loading":false

@@ -264,7 +264,7 @@ let _promise1,_url;
           system.http({
             url:'demand/confirm',
             param:_params,
-            method:"post",
+            method:"POST",
             header:{'content-type': 'application/x-www-form-urlencoded'},
             scb(res){
               if( res.data.status == 200 ){
@@ -313,7 +313,7 @@ let _promise1,_url;
             system.http({
                 url:_url,
                 param:_newDemand,
-                method:"post",
+                method:"POST",
                 header:{'content-type': 'application/x-www-form-urlencoded'},
                 scb(res){
                     if( res.data.status == 200 ){

@@ -97,22 +97,28 @@ export default {
     let that = this;
     app.globalData._me = this;
     system.stateMsg({ title:"加载中...",content:"",icon:"loading",time:20000});
-    wx.onNetworkStatusChange(function(res) {
-      if( res.isConnected ){
-        if( that.data.tabBar.actItem == 0 ){
-            that.requestGroupList( '/chat/groups/tree','over',1 );
-        }else{
-            that.requestGroupList( '/history/groups/tree','history');
-        }
-      }
-    })
-    this.requestGroupList( '/history/groups/tree','history');
-    this.requestGroupList( '/chat/groups/tree','over',1 );    
-    clearInterval(interval)
-    interval = setInterval(()=>{
+    if( wx.getStorageSync('openId') != "" && wx.getStorageSync('userMsgReq') != "" ){//已登录
+        wx.onNetworkStatusChange(function(res) {
+          if( res.isConnected ){
+            if( that.data.tabBar.actItem == 0 ){
+                that.requestGroupList( '/chat/groups/tree','over',1 );
+            }else{
+                that.requestGroupList( '/history/groups/tree','history');
+            }
+          }
+        })
         this.requestGroupList( '/history/groups/tree','history');
-        this.requestGroupList( '/chat/groups/tree','over',1 );
-    },6000)
+        this.requestGroupList( '/chat/groups/tree','over',1 );    
+        clearInterval(interval)
+        interval = setInterval(()=>{
+            this.requestGroupList( '/history/groups/tree','history');
+            this.requestGroupList( '/chat/groups/tree','over',1 );
+        },6000)
+    }else{
+      wx.reLaunch({
+        url: '/pages/login/index'
+      })
+    }       
   },
   onHide(){
       clearInterval(interval)
@@ -197,7 +203,7 @@ export default {
   exitGroup(e){
     let that = this;
     let groupMsg = e.currentTarget.dataset.item;
-    system.http({ url:'chat/groups/quit', method:"post",param:{groupId : groupMsg.groupId,openId:app.globalData.openId} ,scb(res){
+    system.http({ url:'chat/groups/quit', method:"POST",param:{groupId : groupMsg.groupId,openId:app.globalData.openId} ,scb(res){
         if ( res.data.status == 200) {
             system.stateMsg({title:"退群成功",icon:"success",time:1500});
             setTimeout(() => {
@@ -360,7 +366,7 @@ export default {
       let that = this;
       system.http({
           url:'chat/attach/defaultGroupIcon',
-          method:'get',
+          method:'GET',
           scb(res){
               app.globalData._me.setData({
                   "defaultHeadImg":res.data.data.base64Str

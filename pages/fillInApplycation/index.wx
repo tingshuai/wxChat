@@ -182,7 +182,7 @@ var app = getApp();
         wx.request({
             url: `${app.globalData.httpHost}/chat/group/req`, //仅为示例，并非真实的接口地址
             data: that.data.form,
-            method:'post',
+            method:'POST',
             header: {
                  'content-type': 'application/x-www-form-urlencoded'
             },

@@ -77,7 +77,7 @@ export default {
   },
   reqGroupList(obj){//请求群列表树
     let that = this;
-    this.http({ url:`chat/groups/tree`, method:"get",param:{pageSize:0,openId:obj.openId} ,header:{'content-type': 'application/x-www-form-urlencoded'},scb(res){
+    this.http({ url:`chat/groups/tree`, method:"GET",param:{pageSize:0,openId:obj.openId} ,header:{'content-type': 'application/x-www-form-urlencoded'},scb(res){
       return res.data.data.rows
     }})
   },
@@ -372,7 +372,7 @@ export default {
     }
     this.http({
         url: `chat/msg/getHisGroupMsg`,
-        method:"get",
+        method:"GET",
         param: obj.onMessageData,
         header:{'content-type': 'application/x-www-form-urlencoded'},
         scb:(res)=>{
@@ -401,7 +401,7 @@ export default {
   socketHeartBeat(app){
     let that = this;
     app.globalData.socketHeartBeat = setInterval(() => {
-      if( app.globalData.socketTask.readyState != 1 ){
+      if( app.globalData.socketTask.readyState != 1 && wx.getStorageSync('openId') != "" && wx.getStorageSync('userMsgReq') != ""){
         that.connectSocket(app);
       }
       console.log(app.globalData.socketTask);
@@ -411,7 +411,7 @@ export default {
     let _groupMsg = app.globalData.groupMsg;
     let that = this;
     this.http({
-      url:`/chat/msg/getGroupMsg`, method:"get",
+      url:`/chat/msg/getGroupMsg`, method:"GET",
       param:{
         groupId : _groupMsg.groupId ,//群ID
         pageSize : 10,//一页几条

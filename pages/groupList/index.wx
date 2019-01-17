@@ -82,7 +82,7 @@ export default {
     },
     reqGroupList(e){
         let that = this;
-        system.http({ url:`chat/groups/tree`, method:"get",param:{pageSize:0,openId:app.globalData.openId} ,header:{'content-type': 'application/x-www-form-urlencoded'},scb(res){
+        system.http({ url:`chat/groups/tree`, method:"GET",param:{pageSize:0,openId:app.globalData.openId} ,header:{'content-type': 'application/x-www-form-urlencoded'},scb(res){
             let _data = res.data.data.rows;
             let _newData = _data.filter((item)=>{
                 return item.groupId != app.globalData.groupMsg.groupId

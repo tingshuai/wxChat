@@ -159,7 +159,7 @@ export default {
     let that = this;
     system.http({
       url:'axb/binding',
-      method:"post",
+      method:"POST",
       param:{
         "fromOpenId": app.globalData.openId,
         "toOpenId": that.data.selOpenId

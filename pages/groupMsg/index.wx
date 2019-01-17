@@ -117,7 +117,7 @@
     getGroupMsg(){
       let that = this;
       system.http({ url:'chat/groups',
-        method:"get",
+        method:"GET",
         param: {groupId:app.globalData.groupMsg.groupId},
         scb(res){
           if ( res.data.status == 200) {
@@ -217,7 +217,7 @@
         });
         promise.then((obj)=>{
           system.http({ url:obj.myurl,
-            method:"post",
+            method:"POST",
             param: obj.params,
             header: {
                 'content-type': 'application/x-www-form-urlencoded'

@@ -140,7 +140,7 @@ export default {
                 signerName:app.globalData.userMsgReq.username
             },
             header:{'content-type': 'application/x-www-form-urlencoded'},
-            method:"post",
+            method:"POST",
             scb(res){
             if( res.data.status == 200 ){
                 system.stateMsg({title:"确认成功",icon:"success",time:1000})

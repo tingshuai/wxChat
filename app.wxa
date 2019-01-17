@@ -41,7 +41,7 @@ export default {
       navigationStyle: 'default'
     },
     networkTimeout: {
-      request: 18000
+      request: 20000
     },
     theme: {
       'theme-color': '#1aad19'

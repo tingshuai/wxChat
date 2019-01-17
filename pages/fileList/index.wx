@@ -100,7 +100,7 @@ export default {
     let that = this;
     system.http({
       url:'chat/msg',
-      method:"get",
+      method:"GET",
       param:{
         "keywords":that.data.inputVal,
         "msgType":6,

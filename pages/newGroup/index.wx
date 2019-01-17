@@ -1,5 +1,5 @@
 <template id="page">
-  <view class="weui-toptips weui-toptips_warn" style="top:66px;" wx:if="{{ tip.showTopTips }}">{{ tip.tipMsg }}</view>
+  <!-- <view class="weui-toptips weui-toptips_warn" style="top:66px;" wx:if="{{ tip.showTopTips }}">{{ tip.tipMsg }}</view> -->
   <view class="pageContainer">
     <form catchsubmit="submitGroupData" catchreset="formCancel">
 
@@ -356,7 +356,7 @@ export default {
     let that = this;
     system.http({
       url:'chat/groups/tree',
-      method:'get',
+      method:'GET',
       param:{
         "openId":app.globalData.openId,
         "pageSize":0
@@ -391,8 +391,7 @@ export default {
   submitGroupData(e){
     let that = this;
     this.setData({
-      ["submitFormData.openIds"]:[],
-      "disabled":true
+      ["submitFormData.openIds"]:[]
     })
     that.data.formData.userList.filter((item)=>{
       if( item.checked ){
@@ -406,22 +405,12 @@ export default {
       if( !that.data.formRuler.groupName.require && !that.data.formRuler.deadline.require ){
         if( that.data.submitFormData.openIds.length < 3 ){
           system.stateMsg({title:"成员人数不能小于3人",icon:"none",time:1500});
-          wx.hideToast();
         }else{
           resolve();
         }
       }else{
-        that.setData({
-          ["tip.showTopTips"]:true,
-          ["tip.enable"]:true,
-          ["tip.tipMsg"]:"请补充完带星号内容"
-        })
-        setTimeout(function(){
-          that.setData({
-            ["tip.showTopTips"]:false,
-            "disabled":false
-          })
-        },1000)
+        system.stateMsg({title:"请补充完带星号内容",icon:"none",time:1500});
+
       }
     })
     promise.then(()=>{
@@ -429,7 +418,8 @@ export default {
         val.isAddMember == true ? that.data.submitFormData.addMemberOpenIds.push(val.openId) : null;
       })
       that.setData({
-        ['submitFormData.addMemberOpenIds']:that.data.submitFormData.addMemberOpenIds
+        ['submitFormData.addMemberOpenIds']:that.data.submitFormData.addMemberOpenIds,
+        "disabled":true
       })
       let formData = Object.assign({},e.detail.value,that.data.submitFormData);
       if(that.data.edit == 'true'){
@@ -438,7 +428,7 @@ export default {
       delete formData.deadline;
       system.http({
         url: that.data.edit == 'true' ? `chat/groups/${that.data.groupMsg.groupId}` : 'chat/groups',//新增&修改....
-        method:'post',
+        method:'POST',
         header:{'content-type': 'application/x-www-form-urlencoded'},
         param: formData,
         scb(res){
@@ -470,7 +460,7 @@ export default {
     let that = this;
     system.http({
       url:'chat/users',
-      method:'get',
+      method:'GET',
       param:{
         "keywords":keywords,
         "pageSize":0,
